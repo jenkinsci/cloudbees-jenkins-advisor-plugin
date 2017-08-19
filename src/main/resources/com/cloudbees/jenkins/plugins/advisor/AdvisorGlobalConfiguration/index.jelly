@@ -1,0 +1,69 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+  <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
+    <st:include page="sidepanel.jelly" it="${app}"/>
+    <l:main-panel>
+      <h1>
+        ${it.actionTitle}
+      </h1>
+		<div>
+		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
+		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>
+		<p>As issues are detected in your master, CloudBees Jenkins Advisor will send new reports to your email address.</p>
+		</div>
+      <f:form name="config" method="POST" action="configure">
+        <j:set var="instance" value="${it}"/>
+        <j:set var="descriptor" value="${it.descriptor}"/>
+        <f:entry title="${%Email}" field="email">
+          <f:textbox/>
+        </f:entry>
+        <f:entry title="${%Password}" field="password">
+          <f:password/>
+        </f:entry>
+        <f:validateButton
+          title="${%Test Connection}" progress="${%Testing...}"
+          method="testConnection" with="email,password" />       
+        <f:block>
+        	<table style="text-align:left">
+            <f:section name="advanced" title="Configure data">
+       			<h2>Advanced configuration</h2>
+   				<p>By default, CloudBees will not scan your agent logs or configurations, or your global configurations. You can choose to filter out other data from being analyzed by configuring the options below.</p>
+            	<f:advanced>
+            	<j:forEach var="component" items="${it.components}">
+            	<f:entry field="component">
+                 <div name="components" style="margin-left:0">
+                   <j:if test="${component.enabled}">
+                     <f:checkbox name="selected" checked="${it.selectedByDefault(component)}"
+                                 title="${component.displayName}"/>
+                   </j:if>
+                   <j:if test="${!component.enabled}">
+                     <input type="checkbox"
+                       name="selected"
+                       value="false"
+                       disabled="disabled"/>
+                     <label class="attach-previous" style="text-decoration: line-through;"
+                       title="${%permissionPreReqs(component.displayPermissions)}">${component.displayName}
+                     </label>
+                   </j:if>
+                   <input style="display:none" name="name" value="${component.id}"/>
+                 </div>
+               </f:entry>
+               </j:forEach>
+               </f:advanced>
+            </f:section>
+            <f:entry title="${%Suppress register account reminder}" field="nagDisabled">
+            	<f:checkbox/>
+            </f:entry>
+            </table>
+    	</f:block>
+		<f:entry>
+    	    <div>
+				<p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/terms-service-cloudbees-jenkins-advisor'>our Terms of Service.</a></p>
+    	  <f:submit target='_signup' value="${%Connect account}"/>			</div>
+
+   		</f:entry>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

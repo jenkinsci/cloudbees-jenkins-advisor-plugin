@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="warning">
+    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      <j:if test="${h.hasPermission(app.ADMINISTER)}">
+        ${%AdministratorMessage}
+      </j:if>
+      <j:if test="${!h.hasPermission(app.ADMINISTER)}">
+        ${%NonAdministratorMessage}
+      </j:if>
+      <st:nbsp/>
+      <st:nbsp/>
+      <f:submit name="yes" value="${%Connect Now}"/>
+      <f:submit name="no" value="${%Dismiss}"/>
+    </form>
+  </div>
+</j:jelly>

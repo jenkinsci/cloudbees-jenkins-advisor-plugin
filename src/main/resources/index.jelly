@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+ Get daily reports on security, performance, or stability issues found in your Jenkins master by connecting to CloudBees.
+</div>
