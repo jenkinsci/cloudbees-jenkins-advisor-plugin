@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                buildPlugin(findbugs: [archive: true])
+                buildPlugin()
             }
         }
     }
