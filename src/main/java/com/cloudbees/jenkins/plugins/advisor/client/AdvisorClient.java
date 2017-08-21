@@ -3,7 +3,7 @@ package com.cloudbees.jenkins.plugins.advisor.client;
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.google.gson.Gson;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.asynchttpclient.*;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.asynchttpclient.request.body.multipart.FilePart;
