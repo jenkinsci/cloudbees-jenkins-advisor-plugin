@@ -59,7 +59,7 @@
     	</f:block>
 		<f:entry>
     	    <div>
-				<p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/terms-service-cloudbees-jenkins-advisor'>our Terms of Service.</a></p>
+				<p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/products/cloudbees-jenkins-advisor/terms-service'>our Terms of Service.</a></p>
     	  <f:submit target='_signup' value="${%Connect account}"/>			</div>
 
    		</f:entry>
