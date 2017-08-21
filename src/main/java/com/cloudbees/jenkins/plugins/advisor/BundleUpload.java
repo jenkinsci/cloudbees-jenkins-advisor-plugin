@@ -14,7 +14,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.request.body.multipart.FileLikePart;
 import org.jenkinsci.Symbol;
