@@ -16,22 +16,6 @@ To enable uploads, [Grand Central](grandcentral.cloudbees.com) credentials must 
 
 ### System Properties
 
-#### CloudBees Jenkins Advisor URL
-
-Can be overridden dynamically at runtime, via Script Console:
-
-```java
-System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL", "https://insights.beescloud.com");
-```
-
-Settings are lost after restart.
-
-Can be permanently added by amending Jenkins Java System Properties:
-
-```bash
--Dcom.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL=https://insights.beescloud.com
-```
-
 #### CloudBees Jenkins Advisor Upload Recurrence Period
 
 Cannot be overridden at runtime. Requires restart to take effect. Defaults to (60 * 24) (24hrs).
