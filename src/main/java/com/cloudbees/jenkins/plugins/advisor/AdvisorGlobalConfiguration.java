@@ -211,13 +211,13 @@ public class AdvisorGlobalConfiguration
     return email;
   }
 
-  public @Nonnull String getPassword() {
-    return Secret.toString(password);
+  public @Nonnull Secret getPassword() {
+    return password;
   }
 
   @SuppressWarnings("unused")
-  public void setPassword(@CheckForNull String password) {
-    this.password = Secret.fromString(password);
+  public void setPassword(@CheckForNull Secret password) {
+    this.password = password;
   }
 
   public Set<String> getExcludedComponents() {
