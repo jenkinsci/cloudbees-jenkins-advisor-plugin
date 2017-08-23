@@ -1,6 +1,6 @@
 # CloudBees Jenkins Advisor Plugin
 
-Periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by [CloudBees Jenkins Advisor](https://cloudbees.atlassian.net/wiki/display/CE/CloudBees+Insights+1.0).
+Periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by CloudBees Jenkins Advisor.
 
 To enable uploads, [Grand Central](grandcentral.cloudbees.com) credentials must First be configured - *Manage Jenkins > CloudBees Jenkins Advisor*.
 
@@ -10,7 +10,7 @@ To enable uploads, [Grand Central](grandcentral.cloudbees.com) credentials must 
 
 ## Build Job
 
-* TO REPLACE with link to job in ci.jenkins.io
+* You can see the plugin's build status [here](https://ci.jenkins.io/job/Plugins/job/cloudbees-advisor-plugin/).
 
 ## Configuration
 
