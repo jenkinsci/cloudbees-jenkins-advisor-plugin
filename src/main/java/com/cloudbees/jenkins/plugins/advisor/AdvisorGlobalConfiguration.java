@@ -211,13 +211,13 @@ public class AdvisorGlobalConfiguration
     return email;
   }
 
-  public @Nonnull String getPassword() {
-    return Secret.toString(password);
+  public @Nonnull Secret getPassword() {
+    return password;
   }
 
   @SuppressWarnings("unused")
-  public void setPassword(@CheckForNull String password) {
-    this.password = Secret.fromString(password);
+  public void setPassword(@CheckForNull Secret password) {
+    this.password = password;
   }
 
   public Set<String> getExcludedComponents() {
@@ -310,10 +310,10 @@ public class AdvisorGlobalConfiguration
         ProxyConfiguration proxy = Jenkins.getInstance().proxy;
         if (proxy != null) {
           List<String> nonProxyHosts = proxy.getNoProxyHostPatterns().stream().map(Pattern::toString).collect(Collectors.toList());
-          AccountCredentials accountCredentials = new AccountCredentials(email.trim(), password, proxy.name, proxy.port, proxy.getUserName(), proxy.getPassword(), nonProxyHosts);
+          AccountCredentials accountCredentials = new AccountCredentials(email.trim(), Secret.fromString(password).toString(), proxy.name, proxy.port, proxy.getUserName(), proxy.getPassword(), nonProxyHosts);
           advisorClient = new AdvisorClient(accountCredentials);
         } else {
-          advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), password, null, -1, null, null, null));
+          advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.fromString(password).toString(), null, -1, null, null, null));
         }
         advisorClient.doAuthenticate().get();
         return FormValidation.ok("Success");
