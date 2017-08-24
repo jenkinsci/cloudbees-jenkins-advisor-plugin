@@ -3,7 +3,6 @@ package com.cloudbees.jenkins.plugins.advisor;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
 
@@ -15,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Displays the reminder that the user needs to register.
  */
-@Extension @Symbol("cloudBeesJenkinsAdvisorReminder")
+@Extension
 public class Reminder extends AdministrativeMonitor {
 
   @Override
