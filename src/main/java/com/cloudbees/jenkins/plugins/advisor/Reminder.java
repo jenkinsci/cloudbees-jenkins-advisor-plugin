@@ -35,16 +35,14 @@ public class Reminder extends AdministrativeMonitor {
     }
   }
 
-  public HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
+  protected HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
                             @QueryParameter(fixEmpty = true) String no) throws IOException, ServletException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (yes != null) {
       return HttpResponses.redirectViaContextPath(config.getUrlName());
     } else if (no != null) {
       // should never return null if we get here
-      Jenkins.getInstance().getPluginManager().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME).disable();
-      return HttpResponses
-        .redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
+      return HttpResponses.redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
     } else { //remind later
       return HttpResponses.forwardToPreviousPage();
     }
