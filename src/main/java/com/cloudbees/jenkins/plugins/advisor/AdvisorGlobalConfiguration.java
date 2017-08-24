@@ -310,10 +310,10 @@ public class AdvisorGlobalConfiguration
         ProxyConfiguration proxy = Jenkins.getInstance().proxy;
         if (proxy != null) {
           List<String> nonProxyHosts = proxy.getNoProxyHostPatterns().stream().map(Pattern::toString).collect(Collectors.toList());
-          AccountCredentials accountCredentials = new AccountCredentials(email.trim(), password.toString(), proxy.name, proxy.port, proxy.getUserName(), proxy.getPassword(), nonProxyHosts);
+          AccountCredentials accountCredentials = new AccountCredentials(email.trim(), Secret.toString(password), proxy.name, proxy.port, proxy.getUserName(), proxy.getPassword(), nonProxyHosts);
           advisorClient = new AdvisorClient(accountCredentials);
         } else {
-          advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), password.toString(), null, -1, null, null, null));
+          advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.toString(password), null, -1, null, null, null));
         }
         advisorClient.doAuthenticate().get();
         return FormValidation.ok("Success");
