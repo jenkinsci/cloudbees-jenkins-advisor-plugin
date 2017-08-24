@@ -10,6 +10,7 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.util.IOUtils;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
@@ -64,7 +65,7 @@ public class BundleUpload extends AsyncPeriodicWork {
 
     Optional<File> bundle = generateBundle();
     if (bundle.isPresent()) {
-      executeInternal(config.getEmail(), config.getPassword(), bundle.get());
+      executeInternal(config.getEmail(), Secret.toString(config.getPassword()), bundle.get());
     } else {
       LOG.warning("Unable to generate support bundle");
     }
