@@ -1,10 +1,11 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
 import hudson.Extension;
-import hudson.model.PageDecorator;
+import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -15,15 +16,10 @@ import java.util.concurrent.TimeUnit;
  * Displays the reminder that the user needs to register.
  */
 @Extension
-public class Reminder extends PageDecorator {
+public class Reminder extends AdministrativeMonitor {
 
-  private transient volatile long lastNagTime;
-
-  public Reminder() {
-    load();
-  }
-
-  public boolean isNagDue() {
+  @Override
+  public boolean isActivated() {
     if (!(Jenkins.getInstance().servletContext.getAttribute("app") instanceof Jenkins)) {
       return false;   // no point in nagging the user during licensing screens
     }
@@ -31,49 +27,25 @@ public class Reminder extends PageDecorator {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (config.isValid()) {
       return false; // no nag when registered
-    }
-    if (!config.isPluginEnabled()) {
+    } else if (!config.isPluginEnabled()) {
       return false; // no nag when disabled
-    }
-    if (config.isNagDisabled()) {
+    } else if (config.isNagDisabled()) {
       return false; // no nag when explicitly avoided
+    } else {
+      return true;
     }
-    try {
-      HttpSession session = Stapler.getCurrentRequest().getSession(false);
-      if (session != null) {
-        Long nextNagTime = (Long) session.getAttribute(Reminder.class.getName() + ".nextNagTime");
-        if (nextNagTime != null) {
-          return System.currentTimeMillis() > nextNagTime;
-        }
-      }
-      return System.currentTimeMillis() >= lastNagTime + TimeUnit.SECONDS.toMillis(600);
-    } catch (Exception ex) {
-      // If there's an issue trying to figure out if we need to nag, let's nag
-    }
-    return true;
   }
 
-  public static Reminder getInstance() {
-    for (PageDecorator d : PageDecorator.all()) {
-      if (d instanceof Reminder) {
-        return (Reminder) d;
-      }
-    }
-    throw new AssertionError(Reminder.class + " is missing its descriptor");
-  }
-
-  public HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
+  @RequirePOST
+  protected HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
                             @QueryParameter(fixEmpty = true) String no) throws IOException, ServletException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (yes != null) {
       return HttpResponses.redirectViaContextPath(config.getUrlName());
     } else if (no != null) {
       // should never return null if we get here
-      Jenkins.getInstance().getPluginManager().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME).disable();
-      return HttpResponses
-        .redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
+      return HttpResponses.redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
     } else { //remind later
-      lastNagTime = System.currentTimeMillis();
       return HttpResponses.forwardToPreviousPage();
     }
   }
