@@ -5,6 +5,7 @@ import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -35,6 +36,7 @@ public class Reminder extends AdministrativeMonitor {
     }
   }
 
+  @RequirePOST
   protected HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
                             @QueryParameter(fixEmpty = true) String no) throws IOException, ServletException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
