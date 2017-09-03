@@ -37,8 +37,8 @@ public class Reminder extends AdministrativeMonitor {
   }
 
   @RequirePOST
-  protected HttpResponse doAct(StaplerRequest request, @QueryParameter(fixEmpty = true) String yes,
-                            @QueryParameter(fixEmpty = true) String no) throws IOException, ServletException {
+  public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes,
+                            @QueryParameter(fixEmpty = true) String no) throws IOException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (yes != null) {
       return HttpResponses.redirectViaContextPath(config.getUrlName());
