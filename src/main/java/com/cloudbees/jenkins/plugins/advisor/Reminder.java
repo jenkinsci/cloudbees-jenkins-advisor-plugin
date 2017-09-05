@@ -3,14 +3,14 @@ package com.cloudbees.jenkins.plugins.advisor;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Displays the reminder that the user needs to register.
@@ -36,6 +36,7 @@ public class Reminder extends AdministrativeMonitor {
     }
   }
 
+  @Restricted(NoExternalUse.class)
   @RequirePOST
   public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes,
                             @QueryParameter(fixEmpty = true) String no) throws IOException {
