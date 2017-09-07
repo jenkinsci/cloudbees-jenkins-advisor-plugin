@@ -64,6 +64,11 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
   }
 
   @Test
+  public void testHelpOnPage() throws Exception{
+      j.assertHelpExists(AdvisorGlobalConfiguration.class, "-nagDisabled");
+  }
+
+  @Test
   public void testConfigure() throws Exception {
     WebClient wc = j.createWebClient();
     URL url = wc.createCrumbedUrl(advisor.getUrlName());
@@ -73,24 +78,36 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     doConfigure.setUp("", password);
     HttpRedirect hr1 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url1 = Whitebox.getInternalState(hr1, "url");
-    assertEquals("Rerouted back to main mpage", url1, "/jenkins/cloudbees-jenkins-advisor");
+    assertEquals("Rerouted back to configuration", url1, "/jenkins/cloudbees-jenkins-advisor");
 
     // Invalid password - send back to main page
     doConfigure.setUp("fake@test.com", "");
     HttpRedirect hr2 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url2 = Whitebox.getInternalState(hr2, "url");
-    assertEquals("Rerouted back to main mpage", url2, "/jenkins/cloudbees-jenkins-advisor");
+    assertEquals("Rerouted back to configuration", url2, "/jenkins/cloudbees-jenkins-advisor");
 
     // Redirect to Pardot
     doConfigure.setUp(email, password);
     HttpRedirect hr3 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url3 = Whitebox.getInternalState(hr3, "url");
-    assertThat(url3.contains("pardot"), is(true));
+    assertThat(url3.contains("go.pardot.com"), is(true));
 
     // Redirect to main page
     HttpRedirect hr4 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url4 = Whitebox.getInternalState(hr4, "url");
     assertEquals("Rerouted back to main mpage", url4, "/jenkins/manage");
+  }
+
+  @Test
+  public void testPersistance() throws Exception {
+    assertNull("Email before configuration save - ", advisor.getEmail());
+
+    WebClient wc = j.createWebClient();
+    URL url = wc.createCrumbedUrl(advisor.getUrlName());
+    DoConfigureInfo doConfigure = new DoConfigureInfo();
+    doConfigure.setUp(email, password);
+    j.executeOnServer(doConfigure);
+    assertEquals("Email before configuration save - ", email, advisor.getEmail());
   }
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
