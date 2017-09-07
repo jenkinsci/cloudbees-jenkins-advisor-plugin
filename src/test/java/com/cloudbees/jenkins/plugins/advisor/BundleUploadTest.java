@@ -139,7 +139,7 @@ public class BundleUploadTest {
 
     assertThat(getTestCapturedLog(), containsString("SEVERE: Issue while uploading file to bundle upload service: " +
         "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsAuthenticationException: Unable to authenticate. " +
-        "Reason: Connection refused: localhost/127.0.0.1:9999"));
+        "Reason: Connection refused"));
   }
 
   @WithoutJenkins
