@@ -1,8 +1,5 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
-import hudson.util.FormValidation;
-import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -15,24 +12,16 @@ import com.google.gson.Gson;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareOnlyThisForTest;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.powermock.reflect.Whitebox;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,9 +39,6 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
   @Rule
   public JenkinsRule j = new JenkinsRule();
 
-  //@Rule
-  //PowerMockRule pmr = new PowerMockRule();
-
   private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
   private final String password = "test123";
@@ -69,41 +55,12 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     WebClient wc = j.createWebClient();
     wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     WebRequest req = new WebRequest(
-            new URL(j.jenkins.getRootUrl() + advisor.getUrlName()),
-            HttpMethod.GET
+        new URL(j.jenkins.getRootUrl() + advisor.getUrlName()),
+        HttpMethod.GET
     );
 
     Page page = wc.getPage(wc.addCrumb(req));
     j.assertGoodStatus(page);
-  }
-
-  @Test
-  @PrepareOnlyThisForTest(AdvisorGlobalConfiguration.DescriptorImpl.class)
-  public void testConnection() throws Exception {
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(password));
-    assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
-    initMockCJAService(advisorDescriptor);
-    formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(password));
-    //assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
-    assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.getMessage());
-  }
-  
-  /**
-   * Mock connection to the CloudBees Jenkins Advisor service.
-   */
-  private void initMockCJAService(AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor) throws Exception {
-    //MockitoAnnotations.initMocks(this);
-    AdvisorClient impl = PowerMockito.mock(AdvisorClient.class);
-    PowerMockito.when(impl.doAuthenticate()).thenReturn(CompletableFuture.completedFuture("success"));
-    PowerMockito.whenNew(AdvisorClient.class).withAnyArguments().thenReturn(impl);
-  }
-
-  @Test
-  public void testValidateEmail() throws Exception {
-      final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-      FormValidation fv1 = advisorDescriptor.doCheckEmail("");
-      assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, fv1.kind);
   }
 
   @Test
