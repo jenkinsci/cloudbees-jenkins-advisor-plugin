@@ -1,5 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
+import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -8,14 +10,24 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.google.gson.Gson;
+import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.gson.Gson;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.powermock.reflect.Whitebox;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URL;
@@ -23,11 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import net.sf.json.JSONObject;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
 
 /**
  * Test the AdvisorGlobalConfiguration page; essentially the core of 
@@ -38,6 +45,9 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   @Rule
   public JenkinsRule j = new JenkinsRule();
+
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.wireMockConfig().port(9999));
 
   private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
@@ -63,9 +73,33 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     j.assertGoodStatus(page);
   }
 
+
   @Test
-  public void testHelpOnPage() throws Exception{
+  public void testHelpOnPage() throws Exception {
       j.assertHelpExists(AdvisorGlobalConfiguration.class, "-nagDisabled");
+  }
+
+  @Test
+  public void testConnection() throws Exception {
+    String wrongPassword = "sosowrong";
+    stubFor(post(urlEqualTo("/login"))
+      .withHeader("Content-Type", WireMock.equalTo("application/json"))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password,null, -1, null, null, null))))
+      .willReturn(aResponse()
+          .withStatus(200)
+          .withHeader("Authorization", "Bearer 327hfeaw7ewa9")));
+
+    stubFor(post(urlEqualTo("/login"))
+      .withHeader("Content-Type", WireMock.equalTo("application/json"))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword,null, -1, null, null, null))))
+      .willReturn(aResponse()
+          .withStatus(404)));
+            
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    FormValidation formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(wrongPassword));
+    assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
+    formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(password));
+    assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
   }
 
   @Test
@@ -98,6 +132,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     assertEquals("Rerouted back to main mpage", url4, "/jenkins/manage");
   }
 
+
   @Test
   public void testPersistance() throws Exception {
     assertNull("Email before configuration save - ", advisor.getEmail());
@@ -109,6 +144,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     j.executeOnServer(doConfigure);
     assertEquals("Email before configuration save - ", email, advisor.getEmail());
   }
+
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
     private String testEmail = "";
