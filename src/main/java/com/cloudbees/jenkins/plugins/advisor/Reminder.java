@@ -20,10 +20,6 @@ public class Reminder extends AdministrativeMonitor {
 
   @Override
   public boolean isActivated() {
-    if (!(Jenkins.getInstance().servletContext.getAttribute("app") instanceof Jenkins)) {
-      return false;   // no point in nagging the user during licensing screens
-    }
-
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (config.isValid()) {
       return false; // no nag when registered
