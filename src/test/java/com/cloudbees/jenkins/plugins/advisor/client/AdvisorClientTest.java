@@ -5,18 +5,17 @@ import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
-import org.asynchttpclient.Response;
+import com.ning.http.client.Response;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.lang.String.format;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class AdvisorClientTest {
 
@@ -25,7 +24,7 @@ public class AdvisorClientTest {
   private static final String TEST_TOKEN = "token";
   private static final String TEST_INSTANCE_ID = "12345";
 
-  private final AccountCredentials accountCredentials = new AccountCredentials(TEST_EMAIL, TEST_PASSWORD,null, -1, null, null, null);
+  private final AccountCredentials accountCredentials = new AccountCredentials(TEST_EMAIL, TEST_PASSWORD);
 
   private final AdvisorClient subject = new AdvisorClient(accountCredentials);
 

@@ -1,15 +1,5 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import hudson.util.FormValidation;
-import hudson.util.Secret;
-import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -18,23 +8,30 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
+import hudson.util.FormValidation;
+import hudson.util.Secret;
+import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.powermock.reflect.Whitebox;
+
+import java.net.URL;
+import java.util.concurrent.Callable;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import net.sf.json.JSONObject;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Test the AdvisorGlobalConfiguration page; essentially the core of 
@@ -84,14 +81,14 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     String wrongPassword = "sosowrong";
     stubFor(post(urlEqualTo("/login"))
       .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password,null, -1, null, null, null))))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password))))
       .willReturn(aResponse()
           .withStatus(200)
           .withHeader("Authorization", "Bearer 327hfeaw7ewa9")));
 
     stubFor(post(urlEqualTo("/login"))
       .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword,null, -1, null, null, null))))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword))))
       .willReturn(aResponse()
           .withStatus(404)));
             

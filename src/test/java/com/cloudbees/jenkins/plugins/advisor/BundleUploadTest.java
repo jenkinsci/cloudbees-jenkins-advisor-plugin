@@ -75,7 +75,7 @@ public class BundleUploadTest {
     Gson gson = new Gson();
     stubFor(post(urlEqualTo("/login"))
         .withHeader("Content-Type", WireMock.equalTo("application/json"))
-        .withRequestBody(equalToJson(gson.toJson(new AccountCredentials(TEST_EMAIL, TEST_PASSWORD,null, -1, null, null, null))))
+        .withRequestBody(equalToJson(gson.toJson(new AccountCredentials(TEST_EMAIL, TEST_PASSWORD))))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Authorization", "Bearer " + TEST_TOKEN)));
@@ -138,8 +138,8 @@ public class BundleUploadTest {
     subject.execute(NOOP_LISTENER);
 
     assertThat(getTestCapturedLog(), containsString("SEVERE: Issue while uploading file to bundle upload service: " +
-        "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsAuthenticationException: Unable to authenticate. " +
-        "Reason: Connection refused"));
+        "Execution exception trying to get bearer token from authentication request. " +
+        "Message: java.util.concurrent.ExecutionException: java.net.ConnectException: Connection refused"));
   }
 
   @WithoutJenkins
