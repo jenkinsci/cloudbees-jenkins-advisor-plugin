@@ -12,7 +12,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.ManagementLink;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
-import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -20,11 +19,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
@@ -36,10 +31,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Extension
@@ -306,15 +303,8 @@ public class AdvisorGlobalConfiguration
                                            @QueryParameter("password") final Secret password)
       throws IOException, ServletException {
       try {
-        AdvisorClient advisorClient;
-        ProxyConfiguration proxy = Jenkins.getInstance().proxy;
-        if (proxy != null) {
-          List<String> nonProxyHosts = proxy.getNoProxyHostPatterns().stream().map(Pattern::toString).collect(Collectors.toList());
-          AccountCredentials accountCredentials = new AccountCredentials(email.trim(), Secret.toString(password), proxy.name, proxy.port, proxy.getUserName(), proxy.getPassword(), nonProxyHosts);
-          advisorClient = new AdvisorClient(accountCredentials);
-        } else {
-          advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.toString(password), null, -1, null, null, null));
-        }
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.toString(password)));
+
         advisorClient.doAuthenticate().get();
         return FormValidation.ok("Success");
       } catch (Exception e) {

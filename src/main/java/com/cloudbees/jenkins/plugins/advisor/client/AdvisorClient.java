@@ -3,49 +3,55 @@ package com.cloudbees.jenkins.plugins.advisor.client;
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.google.gson.Gson;
+import com.ning.http.client.*;
+import com.ning.http.multipart.FilePart;
+import jenkins.plugins.asynchttpclient.AHCUtils;
 import org.apache.commons.lang.StringUtils;
-import org.asynchttpclient.*;
-import org.asynchttpclient.proxy.ProxyServer;
-import org.asynchttpclient.request.body.multipart.FilePart;
 
-import java.util.concurrent.CompletableFuture;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 public class AdvisorClient {
+
+  private static final Logger LOG = Logger.getLogger(AdvisorClient.class.getName());
 
   private final AsyncHttpClient httpClient;
   private final AccountCredentials credentials;
   private final Gson gson;
 
   public AdvisorClient(AccountCredentials accountCredentials) {
-    this.httpClient = new DefaultAsyncHttpClient();
+    this.httpClient = new AsyncHttpClient((
+        new AsyncHttpClientConfig.Builder()
+            .setRequestTimeoutInMs(AdvisorClientConfig.insightsUploadTimeoutMilliseconds())
+            .setProxyServer(AHCUtils.getProxyServer())
+            .setFollowRedirects(true)
+            .build()));
     this.credentials = accountCredentials;
     this.gson = new Gson();
   }
 
-  public CompletableFuture<String> doAuthenticate() {
-    BoundRequestBuilder requestBuilder = httpClient.preparePost(AdvisorClientConfig.loginURI())
-      .setHeader("Content-Type", "application/json")
-      .setBody(gson.toJson(credentials))
-      .setFollowRedirect(true);
+  public ListenableFuture<String> doAuthenticate() {
+    try {
+      return httpClient.preparePost(AdvisorClientConfig.loginURI())
+          .setHeader("Content-Type", "application/json")
+          .setBody(gson.toJson(credentials))
+          .execute(new AsyncCompletionHandler<String>() {
+            @Override
+            public String onCompleted(Response response) throws Exception {
+              return getBearerToken(response);
+            }
 
-    addProxySettings(requestBuilder);
-
-    return requestBuilder.execute()
-      .toCompletableFuture()
-      .exceptionally(e -> {throw new InsightsAuthenticationException("Unable to authenticate. Reason: " + e.getMessage());})
-      .thenApply(this::getBearerToken);
-  }
-
-  private void addProxySettings(BoundRequestBuilder requestBuilder) {
-    if (StringUtils.isNotBlank(credentials.getProxyHost())) {
-      ProxyServer.Builder proxyBuilder = new ProxyServer.Builder(credentials.getProxyHost(), credentials.getProxyPort());
-      proxyBuilder.setNonProxyHosts(credentials.getNonProxyHosts());
-
-      if (StringUtils.isNotBlank(credentials.getProxyUsername())) {
-        Realm realm = new Realm.Builder(credentials.getProxyUsername(), credentials.getProxyPassword()).setScheme(Realm.AuthScheme.BASIC).build();
-        proxyBuilder.setRealm(realm);
-      }
-      requestBuilder.setProxyServer(proxyBuilder);
+            @Override
+            public void onThrowable(Throwable t) {
+              throw new InsightsAuthenticationException("Unable to authenticate. Message: " + t.getMessage());
+            }
+          });
+    } catch (IOException e) {
+      throw new InsightsAuthenticationException("IOException try to authenticate. Message: " + e);
     }
   }
 
@@ -53,39 +59,60 @@ public class AdvisorClient {
     try {
       String header = response.getHeader("Authorization");
       if (StringUtils.isEmpty(header)) {
-        throw new InsightsAuthenticationException("No authorization header found in response.");
+        throw new InsightsAuthenticationException("Authorization failed. No authorization header found in response.");
       }
       return header.split("Bearer ")[1];
     } catch (Exception e) {
-      throw new InsightsAuthenticationException("Authentication failed. Unable to get bearer token", e);
+      throw new InsightsAuthenticationException("Authentication failed. Unable to get bearer token. Message: " + e.getMessage());
     }
   }
 
-  public CompletableFuture<Response> uploadFile(ClientUploadRequest uploadRequest) {
-    return doAuthenticate().thenApply(t -> doUploadFile(uploadRequest, t)).join();
+  public ListenableFuture<Response> uploadFile(ClientUploadRequest uploadRequest) {
+    try {
+      String token = doAuthenticate().get(AdvisorClientConfig.insightsUploadTimeoutMilliseconds(), TimeUnit.MILLISECONDS);
+      return doUploadFile(uploadRequest, token);
+    } catch (InterruptedException e) {
+      throw new InsightsAuthenticationException("Interrupted trying to get bearer token from authentication request. Message: " + e.getMessage());
+    } catch (ExecutionException e) {
+      throw new InsightsAuthenticationException("Execution exception trying to get bearer token from authentication request. Message: " + e);
+    } catch (TimeoutException e) {
+      throw new InsightsAuthenticationException("Timeout trying to get bearer token from authentication request. Message: " + e);
+    }
   }
 
-  private CompletableFuture<Response> doUploadFile(ClientUploadRequest r, String token) {
-    BoundRequestBuilder requestBuilder = httpClient.preparePost(AdvisorClientConfig.apiUploadURI(credentials.getUsername(), r.getInstanceId()))
-      .addHeader("Authorization", token)
-      .addBodyPart(new FilePart("file", r.getFile()))
-      .setRequestTimeout(AdvisorClientConfig.insightsUploadTimeoutMilliseconds())
-      .setFollowRedirect(true);
+  private ListenableFuture<Response> doUploadFile(ClientUploadRequest r, String token) {
+    try {
+      return httpClient.preparePost(AdvisorClientConfig.apiUploadURI(credentials.getUsername(), r.getInstanceId()))
+          .addHeader("Authorization", token)
+          .addBodyPart(new FilePart("file", r.getFile()))
+          .execute(new AsyncCompletionHandler<Response>() {
+            @Override
+            public Response onCompleted(Response response) throws Exception {
+              if (response.getStatusCode() == 200) {
+                LOG.info("Bundle successfully uploaded. Response code was: " + response.getStatusCode() + ". " +
+                    "Response status text: " + response.getStatusText());
+              } else {
+                LOG.severe("Bundle upload failed. Response code was: " + response.getStatusCode() + ". " +
+                    "Response status text: " + response.getStatusText() + ". Response body: " + response.getResponseBody());
+              }
+              return response;
+            }
 
-    addProxySettings(requestBuilder);
-
-    return requestBuilder.execute()
-      .toCompletableFuture()
-      .exceptionally(e -> {throw new InsightsUploadFileException("Unable to upload file. Reason: " + e.getMessage());});
+            @Override
+            public void onThrowable(Throwable t) {
+              throw new InsightsUploadFileException("Unable to upload support bundle. Message: " + t.getMessage());
+            }
+          });
+    } catch (FileNotFoundException e) {
+      throw new InsightsUploadFileException(String.format("Support bundle to upload: [%s] not found. Message: [%s]", r.getFile().getPath(), e));
+    } catch (IOException e) {
+      throw new InsightsUploadFileException("IOException trying to upload support bundle. Message: " + e.getMessage());
+    }
   }
 
   private static final class InsightsAuthenticationException extends RuntimeException {
     private InsightsAuthenticationException(String message) {
       super(message);
-    }
-
-    private InsightsAuthenticationException(String message, Throwable cause) {
-      super(message, cause);
     }
   }
 
