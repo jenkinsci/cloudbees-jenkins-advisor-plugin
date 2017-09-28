@@ -154,7 +154,8 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     DoConfigureInfo doConfigure2 = new DoConfigureInfo();
     doConfigure2.setUp(allComponentsSelected);
     j.executeOnServer(doConfigure2);
-    assertTrue(advisor.getExcludedComponents().isEmpty());
+    assertThat(advisor.getExcludedComponents().size(), is(1));
+    assertTrue(advisor.getExcludedComponents().contains("SENDALL"));
 
     //survives "restart"
     doConfigure.setUp(noComponentsSelected);

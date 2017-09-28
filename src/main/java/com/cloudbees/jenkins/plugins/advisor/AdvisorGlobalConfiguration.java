@@ -326,6 +326,10 @@ public class AdvisorGlobalConfiguration
           remove.add(s.getName());
         }
       }
+      // Note that we're not excluding anything
+      if(remove.isEmpty()) { 
+        remove.add("SENDALL");  
+      }
 
       final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
       if (insights != null) {
