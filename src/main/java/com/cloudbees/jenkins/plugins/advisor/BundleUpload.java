@@ -87,7 +87,6 @@ public class BundleUpload extends AsyncPeriodicWork {
         IOUtils.closeQuietly(fos);
       }
     } catch (Throwable t) {
-      //LOG.log(Level.WARNING, "Could not save support bundle", t);
       log(Level.WARNING, "Could not save support bundle\n" + t);
     } finally {
       SecurityContextHolder.setContext(old);
