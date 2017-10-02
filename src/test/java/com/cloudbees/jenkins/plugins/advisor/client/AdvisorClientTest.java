@@ -16,6 +16,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static java.lang.String.format;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class AdvisorClientTest {
 
@@ -41,9 +42,30 @@ public class AdvisorClientTest {
   }
 
   @Test
+  public void testWrongCredentials() throws Exception {
+    AccountCredentials failCredentials = new AccountCredentials(TEST_EMAIL, "very_very_wrong");
+    Gson gson = new Gson();
+    stubFor(post(urlEqualTo("/login"))
+        .withHeader("Content-Type", WireMock.equalTo("application/json"))
+        .withRequestBody(equalToJson(gson.toJson(failCredentials)))
+        .willReturn(aResponse()
+            .withStatus(500)
+            .withHeader("Authorization", "")));
+
+    AdvisorClient withError = new AdvisorClient(failCredentials);
+    try {
+      withError.doAuthenticate().get();
+    } catch(Exception ex) {
+      assertTrue(ex.getMessage().contains("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsAuthenticationException: Authentication failed."));
+      assertTrue(ex.getMessage().contains("Message: Authorization failed. No authorization header found in response."));
+    }
+  }
+
+  @Test
   public void uploadFile() throws Exception {
     stubAuth();
     stubUpload();
+    //assertNull(getAllServeEvents());
 
     File bundle = new File(getClass().getResource("/bundle.zip").getFile());
     Response response = subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle)).get();
