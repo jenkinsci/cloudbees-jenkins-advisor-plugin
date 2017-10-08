@@ -4,6 +4,7 @@ import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -137,7 +138,9 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     doConfigure.setUp(email, password);
     j.executeOnServer(doConfigure);
+    advisor.load();
     assertEquals("Email after configuration save - ", email, advisor.getEmail());
+    assertThat(advisor.getExcludedComponents().size(), is(5));
   }
 
   @Test
@@ -149,21 +152,29 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     doConfigure.setUp(noComponentsSelected);
     j.executeOnServer(doConfigure);
     assertThat(advisor.getExcludedComponents().size(), is(25));
-
+    HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertTrue(managePage.asText().contains("uncheckedJenkinsLogs"));
+    assertTrue(managePage.asText().contains("uncheckedSlaveLogs"));
+    
     String allComponentsSelected = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": true, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure2 = new DoConfigureInfo();
     doConfigure2.setUp(allComponentsSelected);
     j.executeOnServer(doConfigure2);
     assertThat(advisor.getExcludedComponents().size(), is(1));
     assertTrue(advisor.getExcludedComponents().contains("SENDALL"));
+    managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertTrue(managePage.asText().contains("checkedJenkinsLogs"));
+    assertTrue(managePage.asText().contains("checkedSlaveLogs"));
 
-    //survives "restart"
-    doConfigure.setUp(noComponentsSelected);
-    j.executeOnServer(doConfigure);
-    advisor.load();
-    assertThat(advisor.getExcludedComponents().size(), is(25));
+    String mixCompoentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
+    DoConfigureInfo doConfigure3 = new DoConfigureInfo();
+    doConfigure3.setUp(mixCompoentsSelected);
+    j.executeOnServer(doConfigure3);
+    assertThat(advisor.getExcludedComponents().size(), is(11));
+    managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertTrue(managePage.asText().contains("uncheckedJenkinsLogs"));
+    assertTrue(managePage.asText().contains("checkedSlaveLogs"));
   }
-
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
     private String testEmail = "";
