@@ -65,7 +65,6 @@ public class AdvisorClientTest {
   public void uploadFile() throws Exception {
     stubAuth();
     stubUpload();
-    //assertNull(getAllServeEvents());
 
     File bundle = new File(getClass().getResource("/bundle.zip").getFile());
     Response response = subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle)).get();
