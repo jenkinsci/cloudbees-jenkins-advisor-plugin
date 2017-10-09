@@ -36,7 +36,7 @@ public class BundleUploadTest {
   private static final String TEST_EMAIL = "test";
   private static final String TEST_PASSWORD = "password";
   private static final String TEST_TOKEN = "token";
-  private static final TaskListener NOOP_LISTENER = new LogTaskListener(null, null);
+  private static final TaskListener NOOP_LISTENER = new LogTaskListener(Logger.getLogger(BundleUploadTest.class.getName()), Level.INFO);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   private static OutputStream logCapturingStream;

@@ -33,6 +33,7 @@ public class BundleUpload extends AsyncPeriodicWork {
     BundleUpload.class.getName()+".recurrencePeriodMinutes", (int) TimeUnit.HOURS.toMinutes(24));
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
+  Optional<TaskListener> task = Optional.empty();
 
   @SuppressWarnings("unused")
   public BundleUpload() {
@@ -41,18 +42,19 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   @Override
   protected void execute(TaskListener listener) throws IOException, InterruptedException {
-    AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+    task = Optional.ofNullable(listener);
 
+    AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (config == null) {
       return;
     }
 
     if (!config.isPluginEnabled()) {
-      LOG.finest("CloudBees Jenkins Advisor plugin disabled. Skipping bundle upload.");
+      log(Level.FINEST, "CloudBees Jenkins Advisor plugin disabled. Skipping bundle upload.");
       return;
     }
     if (!config.isValid()) {
-      LOG.finest("User not registered. Skipping bundle upload.");
+      log(Level.FINEST, "User not registered. Skipping bundle upload.");
       return;
     }
 
@@ -60,7 +62,7 @@ public class BundleUpload extends AsyncPeriodicWork {
     if (bundle.isPresent()) {
       executeInternal(config.getEmail(), Secret.toString(config.getPassword()), bundle.get());
     } else {
-      LOG.warning("Unable to generate support bundle");
+      log(Level.WARNING, "Unable to generate support bundle");
     }
   }
 
@@ -85,7 +87,7 @@ public class BundleUpload extends AsyncPeriodicWork {
         IOUtils.closeQuietly(fos);
       }
     } catch (Throwable t) {
-      LOG.log(Level.WARNING, "Could not save support bundle", t);
+      log(Level.WARNING, "Could not save support bundle\n" + t);
     } finally {
       SecurityContextHolder.setContext(old);
     }
@@ -98,13 +100,25 @@ public class BundleUpload extends AsyncPeriodicWork {
 
       advisorClient.uploadFile(new ClientUploadRequest(Jenkins.getInstance().getLegacyInstanceId(), file));
     } catch (Exception e) {
-      LOG.severe("Issue while uploading file to bundle upload service: " + e.getMessage());
-      LOG.finest("Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
+      log(Level.SEVERE, "Issue while uploading file to bundle upload service: " + e.getMessage());
+      log(Level.FINEST, "Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
     }
   }
 
   @Override
   public long getRecurrencePeriod() {
     return TimeUnit.MINUTES.toMillis(RECURRENCE_PERIOD_MINUTES);
+  }
+
+  /**
+   * Log to both this class and the task listener's logger.
+   */
+  private void log(Level level, String message) {
+    if(level.equals(Level.SEVERE) || level.equals(Level.WARNING)) {
+      task.ifPresent(t -> t.error(message));
+    } else {
+      task.ifPresent(t -> t.getLogger().println(message));
+    }
+    LOG.log(level, message);
   }
 }
