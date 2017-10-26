@@ -318,9 +318,9 @@ public class AdvisorGlobalConfiguration
         String[] creds = credentials.split(",");
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(creds[0].trim(), creds[1]));
         advisorClient.doAuthenticate().get();
-        return "You are connected!";
+        return "You are connected to CloudBees Jenkins Advisor!";
       } catch(Exception e) {
-        return "Connection failure: " + e.getMessage();
+        return "" + e.getMessage();
       }
     }
 

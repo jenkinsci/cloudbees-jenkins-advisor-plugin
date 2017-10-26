@@ -10,15 +10,30 @@
     </st:attribute>
   </st:documentation>
 
-  <st:adjunct includes="lib.advisor.validateOnLoad"/>
+  <style type="text/css">
+    .alert-success {
+      color: #155724;
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+    }
+  </style>
 
   <div>
     <j:if test="${email!=null and password!=null}"> 
-      <div>
-        <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email+','+password)}"/>
-        <p>Current status of your Advisor service connection: ${validationStatus}</p>
-        <p>If you change your credentials, please check using "Test Connection" button below.</p>
-      </div>
+      <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email+','+password)}"/>
+        <j:if test="${validationStatus.contains('connected')}">
+          <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading">${validationStatus}</h4>
+            <p>If you change your credentials, please check using "Test Connection" button below.</p>
+          </div>
+        </j:if>
+        <j:if test="${validationStatus.contains('xception')}">
+          <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor</h4>
+            <p>${validationStatus}</p>
+            <p>If you change your credentials, please check using "Test Connection" button below.</p>
+          </div>
+        </j:if>
     </j:if>
   </div>
 </j:jelly>
