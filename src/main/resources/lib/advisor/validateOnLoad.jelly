@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Check if the current admin is connected to CloudBees Jenkins Advisor.
+    <st:attribute name="email" use="required">
+      Email of the admin.
+    </st:attribute>
+    <st:attribute name="password" use="required">
+      Password of the admin.
+    </st:attribute>
+  </st:documentation>
+
+  <st:adjunct includes="lib.advisor.validateOnLoad"/>
+
+  <div>
+    <j:if test="${email!=null and password!=null}"> 
+      <div>
+        <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email+','+password)}"/>
+        <p>Current status of your Advisor service connection: ${validationStatus}</p>
+        <p>If you change your credentials, please check using "Test Connection" button below.</p>
+      </div>
+    </j:if>
+  </div>
+</j:jelly>

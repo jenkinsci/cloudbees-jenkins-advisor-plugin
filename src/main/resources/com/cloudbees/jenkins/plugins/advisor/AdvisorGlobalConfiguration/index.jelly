@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form">
+         xmlns:f="/lib/form" xmlns:a="/lib/advisor">
   <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
@@ -11,6 +11,7 @@
 		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
 		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>
 		<p>As issues are detected in your master, CloudBees Jenkins Advisor will send new reports to your email address.</p>
+    <a:validateOnLoad email="${it.email}" password="${it.password}"/>
 		</div>
       <f:form name="config" method="POST" action="configure">
         <j:set var="instance" value="${it}"/>
