@@ -13,14 +13,13 @@ import java.util.Properties;
 
 import com.google.gson.Gson;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.Assert.*;
 
-@Ignore("Wiremock class exceptions") public class AdvisorConnectionIssueTest {
+public class AdvisorConnectionIssueTest {
 
   @Rule
   public JenkinsRule j = new JenkinsRule();
@@ -70,7 +69,7 @@ import static org.junit.Assert.*;
     managePage = w.goTo("manage");
     assertTrue(managePage.asText().contains(blurb));
 
-    // page shows warning
+    // page doesn't show warning
     submitForm(w, part, email, password, false);
     managePage = w.goTo("manage");
     assertFalse(managePage.asText().contains(blurb));
