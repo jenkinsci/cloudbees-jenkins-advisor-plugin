@@ -312,6 +312,18 @@ public class AdvisorGlobalConfiguration
       }
     }
 
+    @SuppressWarnings("unused")
+    public String connectionTest(String credentials) {
+      try {
+        String[] creds = credentials.split(",");
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(creds[0].trim(), creds[1]));
+        advisorClient.doAuthenticate().get();
+        return "You are connected to CloudBees Jenkins Advisor!";
+      } catch(Exception e) {
+        return "" + e.getMessage();
+      }
+    }
+
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
       String email = json.getString("email");

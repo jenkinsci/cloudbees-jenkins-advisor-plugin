@@ -100,10 +100,42 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
   }
 
+  public void testConnectionUI() throws Exception {
+    String wrongPassword = "sosowrong";
+    stubFor(post(urlEqualTo("/login"))
+      .withHeader("Content-Type", WireMock.equalTo("application/json"))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password))))
+      .willReturn(aResponse()
+          .withStatus(200)
+          .withHeader("Authorization", "Bearer 327hfeaw7ewa9")));
+
+    stubFor(post(urlEqualTo("/login"))
+      .withHeader("Content-Type", WireMock.equalTo("application/json"))
+      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword))))
+      .willReturn(aResponse()
+          .withStatus(404)));
+
+    WebClient wc = j.createWebClient();
+    HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertFalse(managePage.asText().contains("There was a connection failure"));
+    assertFalse(managePage.asText().contains("You are connected"));
+    
+    DoConfigureInfo doConfigure = new DoConfigureInfo();
+
+    doConfigure.setUp(email, wrongPassword);
+    j.executeOnServer(doConfigure);
+    managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertTrue(managePage.asText().contains("There was a connection failure"));
+
+    doConfigure.setUp(email, password);
+    j.executeOnServer(doConfigure);
+    managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertTrue(managePage.asText().contains("You are connected"));
+  }
+
   @Test
   public void testConfigure() throws Exception {
     WebClient wc = j.createWebClient();
-    URL url = wc.createCrumbedUrl(advisor.getUrlName());
 
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     // Invalid email - send back to main page
