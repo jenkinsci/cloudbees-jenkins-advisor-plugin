@@ -8,6 +8,7 @@ import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -67,8 +68,7 @@ public class BundleUpload extends AsyncPeriodicWork {
   }
 
   private Optional<File> generateBundle() {
-    SecurityContext old = ACL.impersonate(ACL.SYSTEM);
-    try {
+    try(ACLContext context = ACL.as(ACL.SYSTEM)) {
       File bundleDir = SupportPlugin.getRootDirectory();
       if (!bundleDir.exists()) {
         if (!bundleDir.mkdirs()) {
@@ -77,19 +77,13 @@ public class BundleUpload extends AsyncPeriodicWork {
       }
 
       File file = new File(bundleDir, SupportPlugin.getBundleFileName());
-      FileOutputStream fos = null;
-      try {
-        fos = new FileOutputStream(file);
+      try(FileOutputStream fos = new FileOutputStream(file)) {
         AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
         SupportPlugin.writeBundle(fos, config.getIncludedComponents());
         return Optional.of(file);
-      } finally {
-        IOUtils.closeQuietly(fos);
       }
     } catch (Throwable t) {
       log(Level.WARNING, "Could not save support bundle\n" + t);
-    } finally {
-      SecurityContextHolder.setContext(old);
     }
     return Optional.empty();
   }
