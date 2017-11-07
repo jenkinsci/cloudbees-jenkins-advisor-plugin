@@ -12,7 +12,6 @@ import hudson.security.ACLContext;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.exception.ExceptionUtils;
