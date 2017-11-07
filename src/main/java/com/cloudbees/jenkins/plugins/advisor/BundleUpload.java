@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 @Symbol("bundleUpload")
 public class BundleUpload extends AsyncPeriodicWork {
 
-  public static final int RECURRENCE_PERIOD_MINUTES = SystemProperties.getInteger(
+  public static final int RECURRENCE_PERIOD_MINUTES = Integer.getInteger(
     BundleUpload.class.getName()+".recurrencePeriodMinutes", (int) TimeUnit.HOURS.toMinutes(24));
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
