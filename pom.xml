@@ -82,6 +82,12 @@
       <artifactId>async-http-client</artifactId>
       <version>1.7.24.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.1</version>
+    </dependency>
+
 
     <!-- test dependencies -->
     <dependency>

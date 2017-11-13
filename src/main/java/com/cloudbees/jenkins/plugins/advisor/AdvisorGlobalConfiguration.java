@@ -257,6 +257,10 @@ public class AdvisorGlobalConfiguration
     isValid = valid;
   }
 
+  public AdvisorReports getAdvisorReports() {
+    return Jenkins.getInstance().getExtensionList(AdvisorReports.class).get(0);
+  }
+
   @SuppressWarnings("unused")
   @Extension
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {

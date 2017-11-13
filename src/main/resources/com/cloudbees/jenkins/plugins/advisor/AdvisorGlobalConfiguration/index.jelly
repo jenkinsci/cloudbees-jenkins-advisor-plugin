@@ -7,6 +7,9 @@
       <h1>
         ${it.actionTitle}
       </h1>
+    <div align="left">
+       <a href='./reports'>See recent CloudBees Jenkins Advisor reports for this instance. --></a>
+    </div>
 		<div>
 		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
 		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>

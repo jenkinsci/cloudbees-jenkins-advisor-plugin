@@ -1,0 +1,28 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form" xmlns:a="/lib/advisor">
+    <l:layout title="Advisor Reports" norefresh="true" permission="${it.ADMINISTRATOR}">
+    <st:include page="sidepanel.jelly" it="${app}"/>
+    <l:main-panel>
+        <div align="left">
+           <a href='.'>Back to CloudBees Jenkins Advisor configuration.</a>
+        </div>
+        <p>Current results for the provided Advisor report</p>
+        <j:set var="reports" value="${it.advisorReports}"/>
+        <j:if test="${reports.isEmpty}">
+            No reports are available within Jenkins at this time.  Please check your email for reports available before plugin update/install.
+        </j:if>
+        <j:forEach var="report" items="${reports.allReports}">
+            <f:entry field="report">
+            <ul>
+                <li>Security: ${report.securityCount}</li>
+                <li>Performance: ${report.performanceCount}</li>
+                <li>Best Practice: ${report.bestPracticeCount}</li>
+                <li>Stability: ${report.issueCount}</li>
+            </ul>
+            </f:entry>
+            <br />
+        </j:forEach>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
