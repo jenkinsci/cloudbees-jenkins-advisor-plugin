@@ -23,6 +23,9 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +36,7 @@ public class AdvisorReports implements Describable<AdvisorReports>, ExtensionPoi
 
   public static final String ADVISOR_LOC = "advisor-results";
   private final String DIRECTORY = "cloudbees-jenkins-advisor";
+  private final DateFormat DATE_FORMATTER = new SimpleDateFormat("MM/dd/yyyy");
 
   private Queue<AdvisorReport> allReports;
 
@@ -62,6 +66,10 @@ public class AdvisorReports implements Describable<AdvisorReports>, ExtensionPoi
   public void addNewReport(AdvisorReport report) {
     allReports.add(report);
   }
+
+  public String getFormattedTimestamp(long timestamp) {
+    return DATE_FORMATTER.format(new Date(timestamp));
+  } 
 
   /**
    * {@inheritDoc}

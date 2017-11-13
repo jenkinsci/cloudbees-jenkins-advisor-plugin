@@ -62,12 +62,8 @@ public class AdvisorWebhook implements UnprotectedRootAction {
   @Restricted(NoExternalUse.class)
   public void doIndex(@Nonnull StaplerRequest req) {
     try {
-        LOGGER.info("HIT URL WITH POST");
-        LOGGER.info("params? " + req);
         JSONObject json = req.getSubmittedForm();
-        LOGGER.info("SECURITY COUNT: " + json.getString("securityCount"));
         AdvisorReport newestReport = req.bindJSON(AdvisorReport.class, json);
-        LOGGER.info("SECURITY COUNT from newestReport: " + newestReport.getSecurityCount());
         AdvisorReports reports = AdvisorReports.getInstance();
         reports.addNewReport(newestReport);
         reports.save();

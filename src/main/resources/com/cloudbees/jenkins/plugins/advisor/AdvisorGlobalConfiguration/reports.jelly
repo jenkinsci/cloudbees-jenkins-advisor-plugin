@@ -9,12 +9,14 @@
         </div>
         <p>Current results for the provided Advisor report</p>
         <j:set var="reports" value="${it.advisorReports}"/>
-        <j:if test="${reports.isEmpty}">
+        <j:if test="${reports.allReports.isEmpty()}">
             No reports are available within Jenkins at this time.  Please check your email for reports available before plugin update/install.
         </j:if>
         <j:forEach var="report" items="${reports.allReports}">
             <f:entry field="report">
+            
             <ul>
+                <lh>${reports.getFormattedTimestamp(report.timestamp)}</lh>
                 <li>Security: ${report.securityCount}</li>
                 <li>Performance: ${report.performanceCount}</li>
                 <li>Best Practice: ${report.bestPracticeCount}</li>
