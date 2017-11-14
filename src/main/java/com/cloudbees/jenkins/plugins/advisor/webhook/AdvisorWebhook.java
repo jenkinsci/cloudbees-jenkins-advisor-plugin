@@ -28,10 +28,6 @@ public class AdvisorWebhook implements UnprotectedRootAction {
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvisorWebhook.class);
   public static final String URLNAME = "advisor-webhook";
 
-  // headers used for testing the endpoint configuration
-  public static final String URL_VALIDATION_HEADER = "X-Jenkins-Validation";
-  public static final String X_INSTANCE_IDENTITY = "X-Instance-Identity";
-
   //private final transient SequentialExecutionQueue queue = new SequentialExecutionQueue(threadPoolForRemoting);
 
   @Override

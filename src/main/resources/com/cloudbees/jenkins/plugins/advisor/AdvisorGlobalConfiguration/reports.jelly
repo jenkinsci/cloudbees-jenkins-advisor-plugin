@@ -7,7 +7,7 @@
         <div align="left">
            <a href='.'>Back to CloudBees Jenkins Advisor configuration.</a>
         </div>
-        <p>Current results for the provided Advisor report</p>
+        <h1>Current results for the provided Advisor report</h1>
         <j:set var="reports" value="${it.advisorReports}"/>
         <j:if test="${reports.allReports.isEmpty()}">
             No reports are available within Jenkins at this time.  Please check your email for reports available before plugin update/install.
