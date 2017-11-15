@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -218,7 +219,7 @@ public class AdvisorGlobalConfiguration
   }
 
   public Set<String> getExcludedComponents() {
-    return excludedComponents != null ? excludedComponents : Collections.emptySet();
+    return excludedComponents != null ? excludedComponents : Collections.<String>emptySet();
   }
 
   public void setExcludedComponents(Set<String> excludedComponents) {
@@ -226,14 +227,21 @@ public class AdvisorGlobalConfiguration
   }
 
   public List<Component> getIncludedComponents() {
+    List<Component> included = new ArrayList<Component>();
     if (getExcludedComponents().isEmpty()) {
-      return getComponents().stream()
-        .filter(Component::isSelectedByDefault)
-        .collect(Collectors.toList());
+      for(Component c : getComponents()) {
+        if(c.isSelectedByDefault()) {
+          included.add(c);
+        }
+      }
+    } else {
+      for(Component c : getComponents()) {
+        if(!getExcludedComponents().contains(c.getId())) {
+          included.add(c);
+        }
+      }
     }
-    return getComponents().stream()
-      .filter(c -> !getExcludedComponents().contains(c.getId()))
-      .collect(Collectors.toList());
+    return included;
   }
 
   @SuppressWarnings("unused")
