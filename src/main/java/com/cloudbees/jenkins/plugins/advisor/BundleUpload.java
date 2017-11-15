@@ -9,11 +9,8 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jenkinsci.Symbol;
 

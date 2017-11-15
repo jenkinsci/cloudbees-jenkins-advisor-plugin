@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Extension
 public class AdvisorGlobalConfiguration
@@ -227,7 +226,7 @@ public class AdvisorGlobalConfiguration
   }
 
   public List<Component> getIncludedComponents() {
-    List<Component> included = new ArrayList<Component>();
+    List<Component> included = new ArrayList<>();
     if (getExcludedComponents().isEmpty()) {
       for(Component c : getComponents()) {
         if(c.isSelectedByDefault()) {
