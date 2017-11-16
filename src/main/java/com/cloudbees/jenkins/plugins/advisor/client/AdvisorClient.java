@@ -2,6 +2,7 @@ package com.cloudbees.jenkins.plugins.advisor.client;
 
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
+import com.cloudbees.jenkins.plugins.advisor.client.model.WebhookUploadRequest;
 import com.google.gson.Gson;
 import com.ning.http.client.*;
 import com.ning.http.multipart.FilePart;
@@ -107,6 +108,46 @@ public class AdvisorClient {
       throw new InsightsUploadFileException(String.format("Support bundle to upload: [%s] not found. Message: [%s]", r.getFile().getPath(), e));
     } catch (IOException e) {
       throw new InsightsUploadFileException("IOException trying to upload support bundle. Message: " + e.getMessage());
+    }
+  }
+
+  public ListenableFuture<Response> registerWebhook(WebhookUploadRequest webhookRequest) {
+    try {
+      String token = doAuthenticate().get(AdvisorClientConfig.insightsUploadTimeoutMilliseconds(), TimeUnit.MILLISECONDS);
+      return doRegisterWebhook(webhookRequest, token);
+    } catch (InterruptedException e) {
+      throw new InsightsAuthenticationException("Interrupted trying to get bearer token from authentication request. Message: " + e.getMessage());
+    } catch (ExecutionException e) {
+      throw new InsightsAuthenticationException("Execution exception trying to get bearer token from authentication request. Message: " + e);
+    } catch (TimeoutException e) {
+      throw new InsightsAuthenticationException("Timeout trying to get bearer token from authentication request. Message: " + e);
+    }
+  }
+
+  private ListenableFuture<Response> doRegisterWebhook(WebhookUploadRequest r, String token) {
+    try {
+      return httpClient.preparePost(AdvisorClientConfig.apiRegisterWebhookURI(credentials.getUsername(), r.getInstanceId()))
+          .addHeader("Authorization", token)
+          .execute(new AsyncCompletionHandler<Response>() {
+            @Override
+            public Response onCompleted(Response response) throws Exception {
+              if (response.getStatusCode() == 200) {
+                LOG.info("Successfully registered the webhook. Response code was: " + response.getStatusCode() + ". " +
+                    "Response status text: " + response.getStatusText());
+              } else {
+                LOG.severe("Failed. Response code was: " + response.getStatusCode() + ". " +
+                    "Response status text: " + response.getStatusText() + ". Response body: " + response.getResponseBody());
+              }
+              return response;
+            }
+
+            @Override
+            public void onThrowable(Throwable t) {
+              throw new InsightsUploadFileException("Unable to register a webhook. Message: " + t.getMessage());
+            }
+          });
+    } catch (IOException e) {
+      throw new InsightsUploadFileException("IOException trying to register a webhook. Message: " + e.getMessage());
     }
   }
 

@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form" xmlns:a="/lib/advisor">
+         xmlns:f="/lib/form" xmlns:a="/lib/advisor" xmlns:c="/lib/credentials">
   <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
@@ -27,7 +27,10 @@
         </f:entry>
         <f:validateButton
           title="${%Test Connection}" progress="${%Testing...}"
-          method="testConnection" with="email,password" />       
+          method="testConnection" with="email,password" />
+        <f:entry field="credentialsId" title="${%Advisor Webhook Credentials}">
+          <c:select/>
+        </f:entry>       
         <f:block>
         	<table style="text-align:left">
             <f:section name="advanced" title="Configure data">

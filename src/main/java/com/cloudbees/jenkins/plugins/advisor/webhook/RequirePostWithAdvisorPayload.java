@@ -18,6 +18,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static org.kohsuke.stapler.HttpResponses.error;
 import static org.kohsuke.stapler.HttpResponses.errorWithoutStack;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -62,6 +63,8 @@ public @interface RequirePostWithAdvisorPayload {
     private void shouldContainParseablePayload(Object[] arguments) {
       for(int x=0; x< arguments.length; x++ ) {
         LOGGER.info("VALUE OF ARGS: " + arguments[x]);
+        //isTrue should be called here
+        //also check if the payload is null
       }
     }
 
@@ -81,12 +84,26 @@ public @interface RequirePostWithAdvisorPayload {
         /*String digest = substringAfter(signHeader.get(), SHA1_PREFIX);
         LOGGER.trace("Trying to verify sign from header {}", signHeader.get());
         isTrue(
-                GHWebhookSignature.webhookSignature(payloadFrom(req, args), secret).matches(digest),
+                CalculateValidSignature.setUp(payloadFrom(req, args), secret).matches(digest),
                 String.format("Provided signature [%s] did not match to calculated", digest)
         );*/
       } else {
           LOGGER.info("Apparently it was null");
       }
     }
+
+            /**
+         * Utility method to stop preprocessing if condition is false
+         *
+         * @param condition on false throws exception
+         * @param msg       to add to exception
+         *
+         * @throws InvocationTargetException BAD REQUEST 400 status code with message
+         */
+        private void isTrue(boolean condition, String msg) throws InvocationTargetException {
+          if (!condition) {
+              throw new InvocationTargetException(errorWithoutStack(SC_BAD_REQUEST, msg));
+          }
+}
   }
 }
