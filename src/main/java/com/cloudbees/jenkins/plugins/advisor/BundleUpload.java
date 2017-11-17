@@ -9,18 +9,14 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +29,7 @@ public class BundleUpload extends AsyncPeriodicWork {
     BundleUpload.class.getName()+".recurrencePeriodMinutes", (int) TimeUnit.HOURS.toMinutes(24));
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
-  Optional<TaskListener> task = Optional.empty();
+  TaskListener task;
 
   @SuppressWarnings("unused")
   public BundleUpload() {
@@ -42,7 +38,7 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   @Override
   protected void execute(TaskListener listener) throws IOException, InterruptedException {
-    task = Optional.ofNullable(listener);
+    task = listener;
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (config == null) {
@@ -58,20 +54,20 @@ public class BundleUpload extends AsyncPeriodicWork {
       return;
     }
 
-    Optional<File> bundle = generateBundle();
-    if (bundle.isPresent()) {
-      executeInternal(config.getEmail(), Secret.toString(config.getPassword()), bundle.get());
+    File bundle = generateBundle();
+    if (bundle != null) {
+      executeInternal(config.getEmail(), Secret.toString(config.getPassword()), bundle);
     } else {
       log(Level.WARNING, "Unable to generate support bundle");
     }
   }
 
-  private Optional<File> generateBundle() {
+  private File generateBundle() {
     try(ACLContext context = ACL.as(ACL.SYSTEM)) {
       File bundleDir = SupportPlugin.getRootDirectory();
       if (!bundleDir.exists()) {
         if (!bundleDir.mkdirs()) {
-          return Optional.empty();
+          return null;
         }
       }
 
@@ -79,12 +75,12 @@ public class BundleUpload extends AsyncPeriodicWork {
       try(FileOutputStream fos = new FileOutputStream(file)) {
         AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
         SupportPlugin.writeBundle(fos, config.getIncludedComponents());
-        return Optional.of(file);
+        return file;
       }
     } catch (Throwable t) {
       log(Level.WARNING, "Could not save support bundle\n" + t);
     }
-    return Optional.empty();
+    return null;
   }
 
   private void executeInternal(String email, String password, File file) {
@@ -107,11 +103,14 @@ public class BundleUpload extends AsyncPeriodicWork {
    * Log to both this class and the task listener's logger.
    */
   private void log(Level level, String message) {
-    if(level.equals(Level.SEVERE) || level.equals(Level.WARNING)) {
-      task.ifPresent(t -> t.error(message));
-    } else {
-      task.ifPresent(t -> t.getLogger().println(message));
+    if(task != null) {
+      if(level.equals(Level.SEVERE) || level.equals(Level.WARNING)) {
+          task.error(message);
+      } else {
+        task.getLogger().println(message);
+      }
     }
+    
     LOG.log(level, message);
   }
 }
