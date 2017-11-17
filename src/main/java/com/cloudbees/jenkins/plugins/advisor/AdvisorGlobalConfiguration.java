@@ -345,7 +345,6 @@ public class AdvisorGlobalConfiguration
 
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
       LOG.log(Level.INFO, "DOES kwhetstone_advisor_webhook exist? "  + AdvisorWebhookCredentialsManager.credentialsExists("kwhetstone_advisor_webhook") );
-      AdvisorWebhookCredentialsManager.listAllCredentials(LOG);
       return AdvisorWebhookCredentialsManager.populateDropdown(credentialsId) ;
     }
   

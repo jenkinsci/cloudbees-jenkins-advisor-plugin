@@ -1,8 +1,9 @@
 package com.cloudbees.jenkins.plugins.advisor.webhook;
 
 
+import com.cloudbees.jenkins.plugins.advisor.AdvisorReport;
 import com.google.common.base.Optional;
-import org.kohsuke.stapler.HttpResponses;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.Interceptor;
@@ -35,7 +36,7 @@ public @interface RequirePostWithAdvisorPayload {
     public Object invoke(StaplerRequest req, StaplerResponse rsp, Object instance, Object[] arguments)
             throws IllegalAccessException, InvocationTargetException, ServletException {
       shouldBePostMethod(req);
-      shouldContainParseablePayload(arguments);
+      shouldContainParseablePayload(req);
       shouldProvideValidSignature(req, arguments);
 
       return target.invoke(req, rsp, instance, arguments);
@@ -59,13 +60,11 @@ public @interface RequirePostWithAdvisorPayload {
      * Determine if this payload is valid.
      * 
      * @param arguments   arguments from payload
+     * @throws ServletException  if unparseable
      */
-    private void shouldContainParseablePayload(Object[] arguments) {
-      for(int x=0; x< arguments.length; x++ ) {
-        LOGGER.info("VALUE OF ARGS: " + arguments[x]);
-        //isTrue should be called here
-        //also check if the payload is null
-      }
+    private void shouldContainParseablePayload(StaplerRequest request) throws ServletException {
+        JSONObject json = request.getSubmittedForm();
+        request.bindJSON(AdvisorReport.class, json);  
     }
 
     /**
@@ -73,37 +72,37 @@ public @interface RequirePostWithAdvisorPayload {
      *
      * @param req Incoming request.
      * @throws InvocationTargetException if any of preconditions is not satisfied
+     * @throws ServletException  if unparseable
      */
-    protected void shouldProvideValidSignature(StaplerRequest req, Object[] args) throws InvocationTargetException {
+    protected void shouldProvideValidSignature(StaplerRequest req, Object[] args) throws InvocationTargetException, ServletException {
       Optional<String> signHeader = Optional.fromNullable(req.getHeader(SIGNATURE_HEADER));
-      
-      //Secret secret = GitHubPlugin.configuration().getHookSecretConfig().getHookSecret();
 
-      if (signHeader.isPresent()){ //&& Optional.fromNullable(secret).isPresent()) {
-        LOGGER.info("SIGNED HEADER: " + signHeader.get());
-        /*String digest = substringAfter(signHeader.get(), SHA1_PREFIX);
-        LOGGER.trace("Trying to verify sign from header {}", signHeader.get());
+      if (signHeader.isPresent()) {
+        String digest = signHeader.get();
+        JSONObject json = req.getSubmittedForm();
+
         isTrue(
-                CalculateValidSignature.setUp(payloadFrom(req, args), secret).matches(digest),
-                String.format("Provided signature [%s] did not match to calculated", digest)
-        );*/
+            CalculateValidSignature.setUp(json.toString()).matches(digest),
+            String.format("Provided signature [%s] did not match the calculated", digest)
+        );
       } else {
           LOGGER.info("Apparently it was null");
+          isTrue(false, "Missing header on request");
       }
     }
 
-            /**
-         * Utility method to stop preprocessing if condition is false
-         *
-         * @param condition on false throws exception
-         * @param msg       to add to exception
-         *
-         * @throws InvocationTargetException BAD REQUEST 400 status code with message
-         */
-        private void isTrue(boolean condition, String msg) throws InvocationTargetException {
-          if (!condition) {
-              throw new InvocationTargetException(errorWithoutStack(SC_BAD_REQUEST, msg));
-          }
-}
+    /**
+     * Utility method to stop preprocessing if condition is false
+     *
+     * @param condition on false throws exception
+     * @param msg       to add to exception
+     * @throws InvocationTargetException BAD REQUEST 400 status code with message
+     */
+    private void isTrue(boolean condition, String msg) throws InvocationTargetException {
+      if (!condition) {
+        LOGGER.info("Error in Advsior Webhook prechecks: " + msg);
+        throw new InvocationTargetException(errorWithoutStack(SC_BAD_REQUEST, msg));
+      }
+    }
   }
 }

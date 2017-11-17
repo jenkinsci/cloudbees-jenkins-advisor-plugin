@@ -5,7 +5,6 @@ import com.cloudbees.jenkins.plugins.advisor.AdvisorReports;
 import hudson.Extension;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
-import hudson.util.SequentialExecutionQueue;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.Validate;
@@ -17,18 +16,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
-import static hudson.model.Computer.threadPoolForRemoting;
 
 /**
- * Receives Jenkins hook.
+ * Receives and saves the reports provided by the 
+ * CloudBees Jenkins Advisor hook.
  *
  */
 @Extension
 public class AdvisorWebhook implements UnprotectedRootAction {
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvisorWebhook.class);
   public static final String URLNAME = "advisor-webhook";
-
-  //private final transient SequentialExecutionQueue queue = new SequentialExecutionQueue(threadPoolForRemoting);
 
   @Override
   public String getIconFileName() {

@@ -13,7 +13,7 @@ public class AdvisorReport {
     private int bestPracticeCount;
     private int issueCount;
     private long percent;
-    private long timestamp;
+    private long date;
 
 
   public AdvisorReport() {
@@ -22,18 +22,18 @@ public class AdvisorReport {
     this.bestPracticeCount = 0;
     this.issueCount = 0;
     this.percent = 100L;
-    this.timestamp = System.currentTimeMillis();
+    this.date = System.currentTimeMillis();
   }
 
   @DataBoundConstructor
   public AdvisorReport(int securityCount, int performanceCount, int bestPracticeCount, int issueCount, 
-      long percent, long timestamp) {
+    long percent, long date) {
     this.securityCount = securityCount;
     this.performanceCount = performanceCount;
     this.bestPracticeCount = bestPracticeCount;
     this.issueCount = issueCount;
     this.percent = percent;
-    this.timestamp = timestamp > 0 ? timestamp : System.currentTimeMillis();
+    this.date = date > 0 ? date : System.currentTimeMillis();
   }
 
   public int getSecurityCount() {
@@ -56,8 +56,8 @@ public class AdvisorReport {
     return percent;
   }
 
-  public long getTimestamp() {
-    return timestamp;
+  public long getDate() {
+    return date;
   }
-    
+  
 }

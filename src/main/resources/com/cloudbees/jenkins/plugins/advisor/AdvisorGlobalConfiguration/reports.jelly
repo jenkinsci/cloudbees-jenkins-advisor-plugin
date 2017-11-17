@@ -16,7 +16,7 @@
             <f:entry field="report">
             
             <ul>
-                <lh>${reports.getFormattedTimestamp(report.timestamp)}</lh>
+                <lh>${reports.getFormattedTimestamp(report.date)}</lh>
                 <li>Security: ${report.securityCount}</li>
                 <li>Performance: ${report.performanceCount}</li>
                 <li>Best Practice: ${report.bestPracticeCount}</li>

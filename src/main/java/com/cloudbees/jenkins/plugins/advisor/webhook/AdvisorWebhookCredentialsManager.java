@@ -13,9 +13,6 @@ import jenkins.model.Jenkins;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import java.util.logging.Logger;
-
-import static com.cloudbees.plugins.credentials.CredentialsMatchers.always;
 
 import static com.cloudbees.plugins.credentials.CredentialsMatchers.filter;
 import static com.cloudbees.plugins.credentials.CredentialsMatchers.withId;
@@ -24,16 +21,6 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 
 public class AdvisorWebhookCredentialsManager {
-
-    public static void listAllCredentials(Logger logger) {
-        List<AdvisorWebhookCredentials> creds = filter(
-            lookupCredentials(AdvisorWebhookCredentials.class, Jenkins.getInstance(), 
-                ACL.SYSTEM, Collections.<DomainRequirement>emptyList()),
-                always());
-        for(AdvisorWebhookCredentials awc : creds) {
-            logger.info("listAllCredentials getId() " + awc.getId());
-        }
-    }
 
   public static ListBoxModel populateDropdown(String selectedId) {
     StandardListBoxModel result = new StandardListBoxModel();
