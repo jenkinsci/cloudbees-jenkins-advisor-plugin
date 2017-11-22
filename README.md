@@ -18,12 +18,12 @@ To enable uploads, [Grand Central](grandcentral.cloudbees.com) credentials must 
 
 #### CloudBees Jenkins Advisor Upload Recurrence Period
 
-Cannot be overridden at runtime. Requires restart to take effect. Defaults to (60 * 24) (24hrs).
+Cannot be overridden at runtime. Requires restart to take effect. Defaults to 24hrs.
 
 Overriding with Java System Property:
 
 ```bash
--Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.recurrencePeriodMinutes=60
+-Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.recurrencePeriodHours=1
 ```
 
 #### CloudBees Jenkins Advisor Upload Timeout

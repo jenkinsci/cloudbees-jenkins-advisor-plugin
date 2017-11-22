@@ -145,7 +145,7 @@ public class BundleUploadTest {
   @WithoutJenkins
   @Test
   public void getRecurrencePeriod() throws Exception {
-    assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.RECURRENCE_PERIOD_MINUTES))));
+    assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
   }
 
 }
