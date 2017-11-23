@@ -57,6 +57,10 @@ public class AdvisorClientConfig {
     return advisorURL() + format("/api/users/%s/upload/%s", username, instanceId);
   }
 
+  public static String apiRegisterWebhookURI(String username, String instanceId) {
+    return advisorURL() + format("/api/users/%s/registerWebhook/%s", username, instanceId);
+  }
+
   /**
    * Recursively resolves a property value, taking property substitution into account, and allowing System property
    * overrides to take precedence.

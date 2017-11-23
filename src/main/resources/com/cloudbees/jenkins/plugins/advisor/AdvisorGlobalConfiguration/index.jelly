@@ -1,12 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form" xmlns:a="/lib/advisor">
+         xmlns:f="/lib/form" xmlns:a="/lib/advisor" xmlns:c="/lib/credentials">
   <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
         ${it.actionTitle}
       </h1>
+    <div align="left">
+       <a href='./reports'>See recent CloudBees Jenkins Advisor reports for this instance. --></a>
+    </div>
 		<div>
 		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
 		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>
@@ -24,7 +27,10 @@
         </f:entry>
         <f:validateButton
           title="${%Test Connection}" progress="${%Testing...}"
-          method="testConnection" with="email,password" />       
+          method="testConnection" with="email,password" />
+        <f:entry field="credentialsId" title="${%Advisor Webhook Credentials}">
+          <c:select/>
+        </f:entry>       
         <f:block>
         	<table style="text-align:left">
             <f:section name="advanced" title="Configure data">

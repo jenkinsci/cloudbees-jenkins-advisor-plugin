@@ -2,21 +2,26 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.webhook.AdvisorWebhookCredentialsManager;
 import com.cloudbees.jenkins.support.SupportAction;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import com.cloudbees.jenkins.support.api.Component;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.*;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Item;
 import hudson.model.Descriptor.FormException;
 import hudson.model.ManagementLink;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -53,6 +58,7 @@ public class AdvisorGlobalConfiguration
   private Set<String> excludedComponents;
   private boolean isValid;
   private boolean nagDisabled;
+  private String credentialsId;
 
   @SuppressWarnings("unused")
   public AdvisorGlobalConfiguration() {
@@ -61,10 +67,11 @@ public class AdvisorGlobalConfiguration
 
   @SuppressWarnings("unused")
   @DataBoundConstructor
-  public AdvisorGlobalConfiguration(String email, Secret password, Set<String> excludedComponents) {
+  public AdvisorGlobalConfiguration(String email, Secret password, Set<String> excludedComponents, String credentialsId) {
     this.email = email;
     this.password = password;
     this.excludedComponents = excludedComponents;
+    this.credentialsId = credentialsId;
   }
 
   @CheckForNull
@@ -264,6 +271,18 @@ public class AdvisorGlobalConfiguration
     isValid = valid;
   }
 
+  public void setCredentialsId(String credentialsId) {
+    this.credentialsId = credentialsId;
+  }
+
+  public String getCredentialsId() {
+    return credentialsId;
+  }
+
+  public AdvisorReports getAdvisorReports() {
+    return Jenkins.getInstance().getExtensionList(AdvisorReports.class).get(0);
+  }
+
   @SuppressWarnings("unused")
   @Extension
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
@@ -330,6 +349,30 @@ public class AdvisorGlobalConfiguration
         return "" + e.getMessage();
       }
     }
+
+    public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
+      LOG.log(Level.INFO, "DOES kwhetstone_advisor_webhook exist? "  + AdvisorWebhookCredentialsManager.credentialsExists("kwhetstone_advisor_webhook") );
+      return AdvisorWebhookCredentialsManager.populateDropdown(credentialsId) ;
+    }
+  
+    //USE THIS TO RUN THE VALIDATION TO INSIGHTS
+    public FormValidation doCheckCredentialsId(@AncestorInPath Item item, @QueryParameter String value) {
+        if (item == null ) {
+          return FormValidation.ok();
+        }
+        if(!item.hasPermission(Item.EXTENDED_READ) && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+          return FormValidation.ok();
+        }
+  
+        if (StringUtils.isBlank(value)) {
+          return FormValidation.ok();
+        }
+  
+        if (AdvisorWebhookCredentialsManager.credentialsExists(value)) {
+          return FormValidation.error("Cannot find currently selected credentials");
+        }
+        return FormValidation.ok();
+      }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
