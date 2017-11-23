@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 @Symbol("bundleUpload")
 public class BundleUpload extends AsyncPeriodicWork {
 
-  public static final int RECURRENCE_PERIOD_MINUTES = Integer.getInteger(
-    BundleUpload.class.getName()+".recurrencePeriodMinutes", (int) TimeUnit.HOURS.toMinutes(24));
+  public static final int RECURRENCE_PERIOD_HOURS = Integer.getInteger(
+    BundleUpload.class.getName()+".recurrencePeriodHours", 24);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   TaskListener task;
@@ -96,7 +96,7 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   @Override
   public long getRecurrencePeriod() {
-    return TimeUnit.MINUTES.toMillis(RECURRENCE_PERIOD_MINUTES);
+    return TimeUnit.HOURS.toMillis(RECURRENCE_PERIOD_HOURS);
   }
 
   /**
