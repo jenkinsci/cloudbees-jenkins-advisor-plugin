@@ -43,17 +43,17 @@ public class ReminderTest {
       assertTrue(managePage.asText().contains(blurb));
 
       // page doesn't show warning
-      submitForm(w, part, "test@test.test", "testPassword", false);
+      submitForm(w, part, "test@test.test", false);
       managePage = w.goTo("manage");
       assertFalse(managePage.asText().contains(blurb));
 
       // page shows warning
-      submitForm(w, part, "", "", false);
+      submitForm(w, part, "", false);
       managePage = w.goTo("manage");
       assertTrue(managePage.asText().contains(blurb));
 
       // page doesn't show warning
-      submitForm(w, part, "", "", true);
+      submitForm(w, part, "", true);
       managePage = w.goTo("manage");
       assertFalse(managePage.asText().contains(blurb));
   }
@@ -67,10 +67,9 @@ public class ReminderTest {
       assertFalse(managePage.asText().contains(blurb));
   }
 
-  private void submitForm(WebClient wc, String part, String userEmail, String userPassword, boolean nagOff) throws Exception {
+  private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff) throws Exception {
       HtmlForm form = (HtmlForm) (wc.goTo(part).getFirstByXPath("//form[@action='configure']"));
       form.getInputByName("_.email").setValueAttribute(userEmail);
-      form.getInputByName("_.password").setValueAttribute(userPassword);
       form.getInputByName("_.nagDisabled").setChecked(nagOff);
       j.submit(form);
   }

@@ -13,7 +13,6 @@ import hudson.model.ManagementLink;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -49,7 +48,6 @@ public class AdvisorGlobalConfiguration
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
   private String email;
-  private Secret password;
   private Set<String> excludedComponents;
   private boolean isValid;
   private boolean nagDisabled;
@@ -61,9 +59,8 @@ public class AdvisorGlobalConfiguration
 
   @SuppressWarnings("unused")
   @DataBoundConstructor
-  public AdvisorGlobalConfiguration(String email, Secret password, Set<String> excludedComponents) {
+  public AdvisorGlobalConfiguration(String email, Set<String> excludedComponents) {
     this.email = email;
-    this.password = password;
     this.excludedComponents = excludedComponents;
   }
 
@@ -208,15 +205,6 @@ public class AdvisorGlobalConfiguration
     return email;
   }
 
-  public @Nonnull Secret getPassword() {
-    return password;
-  }
-
-  @SuppressWarnings("unused")
-  public void setPassword(@CheckForNull Secret password) {
-    this.password = password;
-  }
-
   public Set<String> getExcludedComponents() {
     return excludedComponents != null ? excludedComponents : Collections.<String>emptySet();
   }
@@ -297,22 +285,16 @@ public class AdvisorGlobalConfiguration
       return FormValidation.ok();
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public FormValidation doCheckPassword(@QueryParameter String value) throws IOException, ServletException {
-      if (value == null || value.isEmpty()) {
-        return FormValidation.error("Password cannot be blank");
-      }
-      return FormValidation.ok();
-    }
-
     @SuppressWarnings("unused")
-    public FormValidation doTestConnection(@QueryParameter("email") final String email,
-                                           @QueryParameter("password") final Secret password)
+    public FormValidation doTestConnection(@QueryParameter("email") final String email)
       throws IOException, ServletException {
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.toString(password)));
+        if(email.isEmpty()){
+          return FormValidation.error("Missing email");
+        }
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
 
-        advisorClient.doAuthenticate().get();
+        advisorClient.doCheckHealth().get();
         return FormValidation.ok("Success");
       } catch (Exception e) {
         return FormValidation.error("Client error : "+e.getMessage());
@@ -322,9 +304,8 @@ public class AdvisorGlobalConfiguration
     @SuppressWarnings("unused")
     public String connectionTest(String credentials) {
       try {
-        String[] creds = credentials.split(",");
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(creds[0].trim(), creds[1]));
-        advisorClient.doAuthenticate().get();
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
+        advisorClient.doCheckHealth().get();
         return "You are connected to CloudBees Jenkins Advisor!";
       } catch(Exception e) {
         return "" + e.getMessage();
@@ -334,7 +315,6 @@ public class AdvisorGlobalConfiguration
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
       String email = json.getString("email");
-      String password = json.getString("password");
       Boolean nagDisabled = json.getBoolean("nagDisabled");
       JSONObject advanced = json.getJSONObject("advanced");
 
@@ -357,8 +337,7 @@ public class AdvisorGlobalConfiguration
 
       try {
         if(!nagDisabled) {
-          if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)
-            || doCheckPassword(password).kind.equals(FormValidation.Kind.ERROR)) {
+          if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)) {
             return false;
           }
         }
