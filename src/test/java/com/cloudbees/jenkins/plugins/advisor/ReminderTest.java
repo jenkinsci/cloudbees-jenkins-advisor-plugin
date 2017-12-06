@@ -8,7 +8,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -188,15 +188,9 @@ public class AdvisorGlobalConfiguration
       boolean acceptToS = json.getBoolean("acceptToS");
       
       if(email != null && !email.isEmpty() && acceptToS) {
-        
-        LOG.info("OLD EMAIL: " + oldEmail);
-        LOG.info("NEW EMAIL: " + email);
-        LOG.info("OLD TOS: " + oldToS);
-        LOG.info("NEW TOS: " + acceptToS);
         boolean diffEmail = (oldEmail == null || !email.equals(oldEmail));
 
         if(diffEmail || (!diffEmail && !oldToS)) {
-          LOG.info("VALID?");
           url = URLEncoder.encode(url, "UTF-8");
           email = URLEncoder.encode(email, "UTF-8");
           url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
