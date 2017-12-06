@@ -51,6 +51,7 @@ public class AdvisorGlobalConfiguration
   private Set<String> excludedComponents;
   private boolean isValid;
   private boolean nagDisabled;
+  private boolean acceptToS;
 
   @SuppressWarnings("unused")
   public AdvisorGlobalConfiguration() {
@@ -114,6 +115,17 @@ public class AdvisorGlobalConfiguration
     }
   }
 
+  public boolean isAcceptToS() {
+    return acceptToS;
+  }
+
+  @SuppressWarnings("unused")
+  public void setAcceptToS(boolean acceptToS) {
+    if (this.acceptToS != acceptToS) {
+      this.acceptToS = acceptToS;
+    }
+  }
+
   /**
    * Handles the form submission
    *
@@ -134,10 +146,12 @@ public class AdvisorGlobalConfiguration
     try {
       // For Pardot; only want to send on new email setup
       String oldEmail = email;
+      boolean oldAcceptToS = acceptToS;
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
-      String validPath = sendToPardot(req.getSubmittedForm(), oldEmail, req.getContextPath());
-      return HttpResponses.redirectTo(isValid ? validPath : req.getContextPath() + "/" + getUrlName());
+      return HttpResponses.redirectTo(isValid ? 
+        sendToPardot(req.getSubmittedForm(), oldEmail, oldAcceptToS, req.getContextPath()) : 
+        req.getContextPath() + "/" + getUrlName());
 
     } catch (Exception e) {
       isValid = false;
@@ -166,16 +180,29 @@ public class AdvisorGlobalConfiguration
    * requests with a non-null email, which isn't a guaranteed state for the
    * GlobalConfiguration.  Only forward the request onto Pardot if the email exists.
    */
-  private String sendToPardot(JSONObject json, String oldEmail, String contextPath) {
+  private String sendToPardot(JSONObject json, String oldEmail, boolean oldToS, String contextPath) {
     String url = contextPath + "/manage";
 
     try {
       String email = json.getString("email");
-      if(email != null && !email.isEmpty() && (oldEmail == null || !email.equals(oldEmail))) {
-        url = URLEncoder.encode(url, "UTF-8");
-        email = URLEncoder.encode(email, "UTF-8");
-        url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
+      boolean acceptToS = json.getBoolean("acceptToS");
+      
+      if(email != null && !email.isEmpty() && acceptToS) {
+        
+        LOG.info("OLD EMAIL: " + oldEmail);
+        LOG.info("NEW EMAIL: " + email);
+        LOG.info("OLD TOS: " + oldToS);
+        LOG.info("NEW TOS: " + acceptToS);
+        boolean diffEmail = (oldEmail == null || !email.equals(oldEmail));
+
+        if(diffEmail || (!diffEmail && !oldToS)) {
+          LOG.info("VALID?");
+          url = URLEncoder.encode(url, "UTF-8");
+          email = URLEncoder.encode(email, "UTF-8");
+          url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
+        }
       }
+
     } catch (UnsupportedEncodingException ex) {
       //Don't bother sending information to Pardot; continue on
     }
@@ -317,6 +344,12 @@ public class AdvisorGlobalConfiguration
       String email = json.getString("email");
       Boolean nagDisabled = json.getBoolean("nagDisabled");
       JSONObject advanced = json.getJSONObject("advanced");
+      Boolean acceptToS = json.getBoolean("acceptToS");
+      
+      // Have to accept the Terms of Service to have a valid configuration
+      if(!acceptToS) {
+        return false;
+      }
 
       Set<String> remove = new HashSet<>();
       for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {

@@ -128,8 +128,15 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     String url1 = Whitebox.getInternalState(hr1, "url");
     assertEquals("Rerouted back to configuration", url1, "/jenkins/cloudbees-jenkins-advisor");
 
-    // Redirect to Pardot
+    // Didn't accept Terms of Service - send back to main page
     doConfigure.setUp(email);
+    doConfigure.setTerms(false);
+    HttpRedirect hr2 = (HttpRedirect)j.executeOnServer(doConfigure);
+    String url2 = Whitebox.getInternalState(hr2, "url");
+    assertEquals("Rerouted back to configuration", url2, "/jenkins/cloudbees-jenkins-advisor");
+
+    // Redirect to Pardot
+    doConfigure.setTerms(true);
     HttpRedirect hr3 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url3 = Whitebox.getInternalState(hr3, "url");
     assertThat(url3.contains("go.pardot.com"), is(true));
@@ -188,6 +195,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
     private String testEmail = "";
+    private Boolean testAcceptToS = true;
     private String allToEnable = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     
     public void setUp(String testEmail) {
@@ -206,12 +214,17 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
       this.allToEnable = allToEnable;
     }
 
+    public void setTerms(boolean terms) {
+      testAcceptToS = terms;
+    }
+
     @Override public HttpResponse call() throws Exception {
         StaplerRequest spyRequest = PowerMockito.spy(Stapler.getCurrentRequest());
 
         JSONObject json1 = new JSONObject();
         json1.element("email", testEmail);
         json1.element("nagDisabled", false);
+        json1.element("acceptToS", testAcceptToS);
         json1.element("advanced", new Gson().fromJson(allToEnable, JSONObject.class));
         doReturn(json1)
             .when(spyRequest).getSubmittedForm();

@@ -53,13 +53,16 @@
             <f:entry title="${%Suppress register account reminder}" field="nagDisabled">
             	<f:checkbox/>
             </f:entry>
-            </table>
-    	</f:block>
+        </table>
+      </f:block>
+        
+      <f:entry field="acceptToS">
+        <p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
+        <f:checkbox title="${%Agree to Terms of Service}"/>
+      </f:entry>
+    
 		<f:entry>
-    	    <div>
-				<p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
-    	  <f:submit target='_signup' value="${%Connect account}"/>			</div>
-
+    	  <f:submit target='_signup' value="${%Connect account}"/>
    		</f:entry>
       </f:form>
     </l:main-panel>
