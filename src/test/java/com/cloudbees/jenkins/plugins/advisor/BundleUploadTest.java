@@ -119,8 +119,6 @@ public class BundleUploadTest {
     wireMockRule.shutdownServer();
 
     subject.run();
-
-    //assertThat(getTestCapturedLog(), containsString("SEVERE:"));
   }
 
   @WithoutJenkins

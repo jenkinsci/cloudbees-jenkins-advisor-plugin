@@ -21,14 +21,12 @@
         <j:if test="${validationStatus.contains('connected')}">
           <div class="alert alert-success" role="alert">
             <h4 class="alert-heading">${validationStatus}</h4>
-            <p>If you change your credentials, please check using "Test Connection" button below.</p>
           </div>
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
             <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor</h4>
             <p>${validationStatus}</p>
-            <p>If you change your credentials, please check using "Test Connection" button below.</p>
           </div>
         </j:if>
     </j:if>
