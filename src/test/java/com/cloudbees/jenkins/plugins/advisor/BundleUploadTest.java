@@ -46,6 +46,7 @@ public class BundleUploadTest {
     customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
     LOG.addHandler(customLogHandler);
     LOG.setLevel(Level.FINEST);
+    wireMockRule.resetAll();
   }
 
   private static String getTestCapturedLog() throws IOException {
