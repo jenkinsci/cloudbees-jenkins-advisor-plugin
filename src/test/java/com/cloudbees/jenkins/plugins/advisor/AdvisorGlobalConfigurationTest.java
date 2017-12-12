@@ -1,16 +1,13 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,7 +46,6 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
-  private final String password = "test123";
 
   
   @Before
@@ -78,56 +74,44 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
   }
 
   @Test
-  public void testConnection() throws Exception {
-    String wrongPassword = "sosowrong";
-    stubFor(post(urlEqualTo("/login"))
-      .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password))))
-      .willReturn(aResponse()
-          .withStatus(200)
-          .withHeader("Authorization", "Bearer 327hfeaw7ewa9")));
-
-    stubFor(post(urlEqualTo("/login"))
-      .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword))))
-      .willReturn(aResponse()
-          .withStatus(404)));
-            
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(wrongPassword));
-    assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doTestConnection(email, Secret.fromString(password));
-    assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
-  }
-
-  public void testConnectionUI() throws Exception {
-    String wrongPassword = "sosowrong";
-    stubFor(post(urlEqualTo("/login"))
-      .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, password))))
-      .willReturn(aResponse()
-          .withStatus(200)
-          .withHeader("Authorization", "Bearer 327hfeaw7ewa9")));
-
-    stubFor(post(urlEqualTo("/login"))
-      .withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .withRequestBody(equalToJson(new Gson().toJson(new AccountCredentials(email, wrongPassword))))
+  public void testConnectionFailure() throws Exception {
+    wireMockRule.resetAll();
+    stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
           .withStatus(404)));
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertFalse(managePage.asText().contains("There was a connection failure"));
-    assertFalse(managePage.asText().contains("You are connected"));
+            
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    FormValidation formValidation = advisorDescriptor.doTestConnection(email);
+    assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
     
     DoConfigureInfo doConfigure = new DoConfigureInfo();
-
-    doConfigure.setUp(email, wrongPassword);
+    doConfigure.setUp(email);
     j.executeOnServer(doConfigure);
     managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertTrue(managePage.asText().contains("There was a connection failure"));
+  }
 
-    doConfigure.setUp(email, password);
+  @Test
+  public void testConnectionPass() throws Exception {
+    wireMockRule.resetAll();
+    stubFor(get(urlEqualTo("/api/health"))
+    .willReturn(aResponse()
+        .withStatus(200)));
+
+    WebClient wc = j.createWebClient();
+    HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
+    assertFalse(managePage.asText().contains("You are connected"));
+
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    FormValidation formValidation = advisorDescriptor.doTestConnection(email);
+    assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
+
+    DoConfigureInfo doConfigure = new DoConfigureInfo();
+    doConfigure.setUp(email);
     j.executeOnServer(doConfigure);
     managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertTrue(managePage.asText().contains("You are connected"));
@@ -135,23 +119,23 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   @Test
   public void testConfigure() throws Exception {
-    WebClient wc = j.createWebClient();
-
+    
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     // Invalid email - send back to main page
-    doConfigure.setUp("", password);
+    doConfigure.setUp("");
     HttpRedirect hr1 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url1 = Whitebox.getInternalState(hr1, "url");
     assertEquals("Rerouted back to configuration", url1, "/jenkins/cloudbees-jenkins-advisor");
 
-    // Invalid password - send back to main page
-    doConfigure.setUp("fake@test.com", "");
+    // Didn't accept Terms of Service - send back to main page
+    doConfigure.setUp(email);
+    doConfigure.setTerms(false);
     HttpRedirect hr2 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url2 = Whitebox.getInternalState(hr2, "url");
     assertEquals("Rerouted back to configuration", url2, "/jenkins/cloudbees-jenkins-advisor");
 
     // Redirect to Pardot
-    doConfigure.setUp(email, password);
+    doConfigure.setTerms(true);
     HttpRedirect hr3 = (HttpRedirect)j.executeOnServer(doConfigure);
     String url3 = Whitebox.getInternalState(hr3, "url");
     assertThat(url3.contains("go.pardot.com"), is(true));
@@ -168,7 +152,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     assertNull("Email before configuration save - ", advisor.getEmail());
 
     DoConfigureInfo doConfigure = new DoConfigureInfo();
-    doConfigure.setUp(email, password);
+    doConfigure.setUp(email);
     j.executeOnServer(doConfigure);
     advisor.load();
     assertEquals("Email after configuration save - ", email, advisor.getEmail());
@@ -177,11 +161,15 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   @Test
   public void testSaveExcludedComponents() throws Exception {
+    wireMockRule.resetAll();
+    stubFor(get(urlEqualTo("/api/health"))
+    .willReturn(aResponse()
+        .withStatus(200)));
     WebClient wc = j.createWebClient();
 
     String noComponentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": false, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": false\r\n, \"name\": \"BuildQueue\"}, {\"selected\": false, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": false, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": false, \"name\": \"LoadStats\"}, {\"selected\": false, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": false, \"name\": \"NetworkInterfaces\"}, {\"selected\": false, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": false, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": false\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure = new DoConfigureInfo();
-    doConfigure.setUp(noComponentsSelected);
+    doConfigure.setUpComponents(noComponentsSelected);
     j.executeOnServer(doConfigure);
     assertThat(advisor.getExcludedComponents().size(), is(25));
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
@@ -190,7 +178,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
     
     String allComponentsSelected = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": true, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure2 = new DoConfigureInfo();
-    doConfigure2.setUp(allComponentsSelected);
+    doConfigure2.setUpComponents(allComponentsSelected);
     j.executeOnServer(doConfigure2);
     assertThat(advisor.getExcludedComponents().size(), is(1));
     assertTrue(advisor.getExcludedComponents().contains("SENDALL"));
@@ -200,7 +188,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
     String mixCompoentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure3 = new DoConfigureInfo();
-    doConfigure3.setUp(mixCompoentsSelected);
+    doConfigure3.setUpComponents(mixCompoentsSelected);
     j.executeOnServer(doConfigure3);
     assertThat(advisor.getExcludedComponents().size(), is(11));
     managePage = wc.goTo("cloudbees-jenkins-advisor");
@@ -210,12 +198,11 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
     private String testEmail = "";
-    private String testPassword = "";
+    private Boolean testAcceptToS = true;
     private String allToEnable = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     
-    public void setUp(String testEmail, String testPassword) {
+    public void setUp(String testEmail) {
         this.testEmail = testEmail;
-        this.testPassword = testPassword;
     }
 
     /**
@@ -225,10 +212,13 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
      *
      * This call is designed to run successfully.
      */
-    public void setUp(String allToEnable) {
+    public void setUpComponents(String allToEnable) {
       testEmail = email;
-      testPassword = password;
       this.allToEnable = allToEnable;
+    }
+
+    public void setTerms(boolean terms) {
+      testAcceptToS = terms;
     }
 
     @Override public HttpResponse call() throws Exception {
@@ -236,8 +226,8 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
         JSONObject json1 = new JSONObject();
         json1.element("email", testEmail);
-        json1.element("password", testPassword);
         json1.element("nagDisabled", false);
+        json1.element("acceptToS", testAcceptToS);
         json1.element("advanced", new Gson().fromJson(allToEnable, JSONObject.class));
         doReturn(json1)
             .when(spyRequest).getSubmittedForm();

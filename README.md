@@ -2,7 +2,7 @@
 
 Periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by CloudBees Jenkins Advisor.
 
-To enable uploads, [Grand Central](grandcentral.cloudbees.com) credentials must First be configured - *Manage Jenkins > CloudBees Jenkins Advisor*.
+To configure your Advisor uploads - *Manage Jenkins > CloudBees Jenkins Advisor*.
 
 ## Project Tracking
 

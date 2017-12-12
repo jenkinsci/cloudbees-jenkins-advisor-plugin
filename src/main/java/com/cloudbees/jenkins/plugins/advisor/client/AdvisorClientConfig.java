@@ -49,8 +49,8 @@ public class AdvisorClientConfig {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadTimeoutMinutes());
   }
 
-  public static String loginURI() {
-    return advisorURL() + "/login";
+  public static String healthURI() {
+    return advisorURL() + "/api/health";
   }
 
   public static String apiUploadURI(String username, String instanceId) {

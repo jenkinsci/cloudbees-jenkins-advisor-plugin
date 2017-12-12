@@ -56,7 +56,7 @@ public class BundleUpload extends AsyncPeriodicWork {
 
     File bundle = generateBundle();
     if (bundle != null) {
-      executeInternal(config.getEmail(), Secret.toString(config.getPassword()), bundle);
+      executeInternal(config.getEmail(), bundle);
     } else {
       log(Level.WARNING, "Unable to generate support bundle");
     }
@@ -83,9 +83,9 @@ public class BundleUpload extends AsyncPeriodicWork {
     return null;
   }
 
-  private void executeInternal(String email, String password, File file) {
+  private void executeInternal(String email, File file) {
     try {
-      AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email, password));
+      AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email));
 
       advisorClient.uploadFile(new ClientUploadRequest(Jenkins.getInstance().getLegacyInstanceId(), file));
     } catch (Exception e) {

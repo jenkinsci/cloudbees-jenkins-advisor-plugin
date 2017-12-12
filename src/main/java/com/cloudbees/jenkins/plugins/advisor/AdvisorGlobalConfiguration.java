@@ -13,7 +13,6 @@ import hudson.model.ManagementLink;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -49,10 +48,10 @@ public class AdvisorGlobalConfiguration
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
   private String email;
-  private Secret password;
   private Set<String> excludedComponents;
   private boolean isValid;
   private boolean nagDisabled;
+  private boolean acceptToS;
 
   @SuppressWarnings("unused")
   public AdvisorGlobalConfiguration() {
@@ -61,9 +60,8 @@ public class AdvisorGlobalConfiguration
 
   @SuppressWarnings("unused")
   @DataBoundConstructor
-  public AdvisorGlobalConfiguration(String email, Secret password, Set<String> excludedComponents) {
+  public AdvisorGlobalConfiguration(String email, Set<String> excludedComponents) {
     this.email = email;
-    this.password = password;
     this.excludedComponents = excludedComponents;
   }
 
@@ -117,6 +115,17 @@ public class AdvisorGlobalConfiguration
     }
   }
 
+  public boolean isAcceptToS() {
+    return acceptToS;
+  }
+
+  @SuppressWarnings("unused")
+  public void setAcceptToS(boolean acceptToS) {
+    if (this.acceptToS != acceptToS) {
+      this.acceptToS = acceptToS;
+    }
+  }
+
   /**
    * Handles the form submission
    *
@@ -137,10 +146,12 @@ public class AdvisorGlobalConfiguration
     try {
       // For Pardot; only want to send on new email setup
       String oldEmail = email;
+      boolean oldAcceptToS = acceptToS;
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
-      String validPath = sendToPardot(req.getSubmittedForm(), oldEmail, req.getContextPath());
-      return HttpResponses.redirectTo(isValid ? validPath : req.getContextPath() + "/" + getUrlName());
+      return HttpResponses.redirectTo(isValid ? 
+        sendToPardot(req.getSubmittedForm(), oldEmail, oldAcceptToS, req.getContextPath()) : 
+        req.getContextPath() + "/" + getUrlName());
 
     } catch (Exception e) {
       isValid = false;
@@ -169,16 +180,23 @@ public class AdvisorGlobalConfiguration
    * requests with a non-null email, which isn't a guaranteed state for the
    * GlobalConfiguration.  Only forward the request onto Pardot if the email exists.
    */
-  private String sendToPardot(JSONObject json, String oldEmail, String contextPath) {
+  private String sendToPardot(JSONObject json, String oldEmail, boolean oldToS, String contextPath) {
     String url = contextPath + "/manage";
 
     try {
       String email = json.getString("email");
-      if(email != null && !email.isEmpty() && (oldEmail == null || !email.equals(oldEmail))) {
-        url = URLEncoder.encode(url, "UTF-8");
-        email = URLEncoder.encode(email, "UTF-8");
-        url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
+      boolean acceptToS = json.getBoolean("acceptToS");
+      
+      if(email != null && !email.isEmpty() && acceptToS) {
+        boolean diffEmail = (oldEmail == null || !email.equals(oldEmail));
+
+        if(diffEmail || (!diffEmail && !oldToS)) {
+          url = URLEncoder.encode(url, "UTF-8");
+          email = URLEncoder.encode(email, "UTF-8");
+          url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
+        }
       }
+
     } catch (UnsupportedEncodingException ex) {
       //Don't bother sending information to Pardot; continue on
     }
@@ -206,15 +224,6 @@ public class AdvisorGlobalConfiguration
   @SuppressWarnings("WeakerAccess")
   public @Nonnull String getEmail() {
     return email;
-  }
-
-  public @Nonnull Secret getPassword() {
-    return password;
-  }
-
-  @SuppressWarnings("unused")
-  public void setPassword(@CheckForNull Secret password) {
-    this.password = password;
   }
 
   public Set<String> getExcludedComponents() {
@@ -297,22 +306,16 @@ public class AdvisorGlobalConfiguration
       return FormValidation.ok();
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public FormValidation doCheckPassword(@QueryParameter String value) throws IOException, ServletException {
-      if (value == null || value.isEmpty()) {
-        return FormValidation.error("Password cannot be blank");
-      }
-      return FormValidation.ok();
-    }
-
     @SuppressWarnings("unused")
-    public FormValidation doTestConnection(@QueryParameter("email") final String email,
-                                           @QueryParameter("password") final Secret password)
+    public FormValidation doTestConnection(@QueryParameter("email") final String email)
       throws IOException, ServletException {
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim(), Secret.toString(password)));
+        if(email.isEmpty()){
+          return FormValidation.error("Missing email");
+        }
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
 
-        advisorClient.doAuthenticate().get();
+        advisorClient.doCheckHealth().get();
         return FormValidation.ok("Success");
       } catch (Exception e) {
         return FormValidation.error("Client error : "+e.getMessage());
@@ -322,9 +325,8 @@ public class AdvisorGlobalConfiguration
     @SuppressWarnings("unused")
     public String connectionTest(String credentials) {
       try {
-        String[] creds = credentials.split(",");
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(creds[0].trim(), creds[1]));
-        advisorClient.doAuthenticate().get();
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
+        advisorClient.doCheckHealth().get();
         return "You are connected to CloudBees Jenkins Advisor!";
       } catch(Exception e) {
         return "" + e.getMessage();
@@ -334,9 +336,14 @@ public class AdvisorGlobalConfiguration
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
       String email = json.getString("email");
-      String password = json.getString("password");
       Boolean nagDisabled = json.getBoolean("nagDisabled");
       JSONObject advanced = json.getJSONObject("advanced");
+      Boolean acceptToS = json.getBoolean("acceptToS");
+      
+      // Have to accept the Terms of Service to have a valid configuration
+      if(!acceptToS) {
+        return false;
+      }
 
       Set<String> remove = new HashSet<>();
       for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {
@@ -357,8 +364,7 @@ public class AdvisorGlobalConfiguration
 
       try {
         if(!nagDisabled) {
-          if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)
-            || doCheckPassword(password).kind.equals(FormValidation.Kind.ERROR)) {
+          if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)) {
             return false;
           }
         }

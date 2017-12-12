@@ -11,16 +11,13 @@
 		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
 		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>
 		<p>As issues are detected in your master, CloudBees Jenkins Advisor will send new reports to your email address.</p>
-    <a:validateOnLoad email="${it.email}" password="${it.password}"/>
+    <a:validateOnLoad email="${it.email}"/>
 		</div>
       <f:form name="config" method="POST" action="configure">
         <j:set var="instance" value="${it}"/>
         <j:set var="descriptor" value="${it.descriptor}"/>
         <f:entry title="${%Email}" field="email">
           <f:textbox/>
-        </f:entry>
-        <f:entry title="${%Password}" field="password">
-          <f:password/>
         </f:entry>
         <f:validateButton
           title="${%Test Connection}" progress="${%Testing...}"
@@ -56,13 +53,16 @@
             <f:entry title="${%Suppress register account reminder}" field="nagDisabled">
             	<f:checkbox/>
             </f:entry>
-            </table>
-    	</f:block>
+        </table>
+      </f:block>
+        
+      <f:entry field="acceptToS">
+        <p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
+        <f:checkbox title="${%Agree to Terms of Service}"/>
+      </f:entry>
+    
 		<f:entry>
-    	    <div>
-				<p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
-    	  <f:submit target='_signup' value="${%Connect account}"/>			</div>
-
+    	  <f:submit target='_signup' value="${%Connect account}"/>
    		</f:entry>
       </f:form>
     </l:main-panel>
