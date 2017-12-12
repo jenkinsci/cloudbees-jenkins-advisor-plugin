@@ -119,7 +119,7 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   @Test
   public void testConfigure() throws Exception {
-
+    
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     // Invalid email - send back to main page
     doConfigure.setUp("");
@@ -161,6 +161,10 @@ public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
 
   @Test
   public void testSaveExcludedComponents() throws Exception {
+    wireMockRule.resetAll();
+    stubFor(get(urlEqualTo("/api/health"))
+    .willReturn(aResponse()
+        .withStatus(200)));
     WebClient wc = j.createWebClient();
 
     String noComponentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": false, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": false\r\n, \"name\": \"BuildQueue\"}, {\"selected\": false, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": false, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": false, \"name\": \"LoadStats\"}, {\"selected\": false, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": false, \"name\": \"NetworkInterfaces\"}, {\"selected\": false, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": false, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": false\r\n, \"name\": \"ThreadDumps\"}]}";
