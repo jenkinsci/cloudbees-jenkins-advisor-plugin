@@ -5,9 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <!-- > 2.30 causes <ignoredScope>test</ignoredScope> to be ignored from maven-enforcer-plugin -->
-    <!-- > 2.29 causes JENKINS-45245 a.k.a IDEA-175538 -->
-    <version>2.29</version>
+    <version>2.34</version>
     <relativePath />
   </parent>
 
@@ -70,12 +68,18 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>support-core</artifactId>
-      <version>2.41</version>
+      <version>2.43</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>async-http-client</artifactId>
       <version>1.7.24.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.1</version> <!-- maven-enforcer-plugin:requireUpperBoundDeps fails on this every time, just import  -->
+      <scope>provided</scope>
     </dependency>
 
     <!-- test dependencies -->
@@ -99,8 +103,9 @@
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock</artifactId>
-      <version>2.8.0</version>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>2.12.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
