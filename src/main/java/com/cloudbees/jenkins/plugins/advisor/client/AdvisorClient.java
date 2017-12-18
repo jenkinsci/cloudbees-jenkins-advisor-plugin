@@ -3,7 +3,7 @@ package com.cloudbees.jenkins.plugins.advisor.client;
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.ning.http.client.*;
-import com.ning.http.multipart.FilePart;
+import com.ning.http.client.multipart.FilePart;
 import jenkins.plugins.asynchttpclient.AHCUtils;
 
 import java.io.FileNotFoundException;
@@ -21,9 +21,9 @@ public class AdvisorClient {
   public AdvisorClient(AccountCredentials accountCredentials) {
     this.httpClient = new AsyncHttpClient((
         new AsyncHttpClientConfig.Builder()
-            .setRequestTimeoutInMs(AdvisorClientConfig.insightsUploadTimeoutMilliseconds())
+            .setRequestTimeout(AdvisorClientConfig.insightsUploadTimeoutMilliseconds())
             .setProxyServer(AHCUtils.getProxyServer())
-            .setFollowRedirects(true)
+            .setFollowRedirect(true)
             .build()));
     this.credentials = accountCredentials;
   }
@@ -47,8 +47,8 @@ public class AdvisorClient {
               throw new InsightsAuthenticationException("Unable to check health. Message: " + t.getMessage());
             }
           });
-    } catch (IOException e) {
-      throw new InsightsAuthenticationException("IOException when attempting to check health. Message: " + e);
+    } catch (Exception e) {
+      throw new InsightsAuthenticationException("Exception when attempting to check health. Message: " + e);
     }
   }
 
@@ -83,10 +83,8 @@ public class AdvisorClient {
               throw new InsightsUploadFileException("Unable to upload support bundle. Message: " + t.getMessage());
             }
           });
-    } catch (FileNotFoundException e) {
-      throw new InsightsUploadFileException(String.format("Support bundle to upload: [%s] not found. Message: [%s]", r.getFile().getPath(), e));
-    } catch (IOException e) {
-      throw new InsightsUploadFileException("IOException trying to upload support bundle. Message: " + e.getMessage());
+    } catch (Exception e) {
+      throw new InsightsUploadFileException("Exception trying to upload support bundle. Message: " + e.getMessage());
     }
   }
 
