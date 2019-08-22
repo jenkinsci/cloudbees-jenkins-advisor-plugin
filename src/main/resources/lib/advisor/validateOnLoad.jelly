@@ -16,7 +16,7 @@
   </style>
 
   <div>
-    <j:if test="${email!=null}"> 
+    <j:if test="${email!=null}">
       <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email)}"/>
         <j:if test="${validationStatus.contains('connected')}">
           <div class="alert alert-success" role="alert">
@@ -25,7 +25,8 @@
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor</h4>
+            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor.  Check Advisor server status at 
+              <a href="https://www.cloudbeesstatus.com/">www.cloudbeesstatus.com</a>.</h4>
             <p>${validationStatus}</p>
           </div>
         </j:if>

@@ -14,6 +14,23 @@ To configure your Advisor uploads - *Manage Jenkins > CloudBees Jenkins Advisor*
 
 ## Configuration
 
+### Configure Programmatically
+
+```java
+import com.cloudbees.jenkins.plugins.advisor.*
+
+def config = AdvisorGlobalConfiguration.instance
+  
+config.email = "test@email.com"
+config.cc = "testCC@email.com" // optional
+config.isValid = true
+config.nagDisabled = true
+config.acceptToS = true
+
+config.save()
+```
+
+
 ### System Properties
 
 #### CloudBees Jenkins Advisor Upload Recurrence Period
@@ -27,6 +44,13 @@ Overriding with Java System Property:
 ```
 
 #### CloudBees Jenkins Advisor Upload Timeout
+
+Available properties:
+
+| Property                                                                                           | Default | Unit    | Description                                      |
+|----------------------------------------------------------------------------------------------------|---------|---------|--------------------------------------------------|
+| com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes       | 60      | minutes | The maximum time to wait for a response          |
+| com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes   | 60      | minutes | The maximum time an upload request can stay idle |
 
 Can be overridden dynamically at runtime, via Script Console:
 
@@ -43,3 +67,56 @@ Can be permanently added by amending Jenkins Java System Properties:
 ```
 
 Defaults to 60 (minutes)
+
+#### CloudBees Jenkins Advisor Upload Initial Delay
+
+Cannot be overridden at runtime. Requires restart to take effect. Defaults to 5mins.
+
+Overriding with Java System Property:
+
+```bash
+-Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.initialDelayMinutes=60
+```
+
+## Troubleshooting
+
+### Manual upload launch
+
+The following can be run from the Script Console to manually trigger an upload:
+
+```
+import hudson.model.*
+import hudson.triggers.*
+import jenkins.util.Timer;
+
+
+for(trigger in PeriodicWork.all()) {
+  if(trigger.class.name == "com.cloudbees.jenkins.plugins.advisor.BundleUpload"){
+    trigger.run()
+    return
+  }
+}
+```
+
+### Idle timeout
+
+Bundle uploads fail with:
+
+```
+SEVERE: Issue while uploading file to bundle upload service: java.util.concurrent.TimeoutException: Request reached idle time out of 120000 ms after 120483 ms
+```
+
+Try adjusting the idle timeout period.
+
+See the [CloudBees Jenkins Advisor Upload Timeout](#CloudBees-Jenkins-Advisor-Upload-Timeout) section for how to do that.
+
+### File is not a normal file.
+
+Bundle uploads fail with:
+
+```
+The CloudBees Jenkins Advisor upload failed: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
+Message: com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsUploadFileException: Exception trying to upload support bundle. Message: File is not a normal file.
+```
+
+Check the logs as the cause should be printed as  a `SEVERE` message along with the above message (`File is not a normal file.`) duplicated. 

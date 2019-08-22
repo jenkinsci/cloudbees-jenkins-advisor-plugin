@@ -9,7 +9,7 @@ import static java.lang.String.format;
 
 public class AdvisorClientConfig {
 
-  private final static class ResourceHolder {
+  private static final class ResourceHolder {
 
     private static final Properties INSTANCE = loadProperties();
 
@@ -37,24 +37,53 @@ public class AdvisorClientConfig {
     throw new IllegalAccessError("Utility class");
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static String advisorURL() {
     return removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL"), "/");
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static Integer advisorUploadTimeoutMinutes() {
     return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes"), "/"));
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static Integer insightsUploadTimeoutMilliseconds() {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadTimeoutMinutes());
   }
 
+  @SuppressWarnings("WeakerAccess")
+  public static Integer advisorUploadIdleTimeoutMinutes() {
+    return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes"), "/"));
+  }
+
+  @SuppressWarnings("WeakerAccess")
+  public static Integer insightsUploadIdleTimeoutMilliseconds() {
+    return (int) TimeUnit.MINUTES.toMillis(advisorUploadIdleTimeoutMinutes());
+  }
+
+  @SuppressWarnings("WeakerAccess")
   public static String healthURI() {
     return advisorURL() + "/api/health";
   }
 
+  @SuppressWarnings("WeakerAccess")
+  public static String testEmailURI(String email) {
+    return advisorURL() +format("/api/test/emails/%s", email);
+  }
+
+  @SuppressWarnings("WeakerAccess")
   public static String apiUploadURI(String username, String instanceId) {
     return advisorURL() + format("/api/users/%s/upload/%s", username, instanceId);
+  }
+
+  @SuppressWarnings("WeakerAccess")
+  public static String apiUploadURI(String username, String instanceId, String cc) {
+    if(cc != null) {
+      return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
+    } else {
+      return apiUploadURI(username, instanceId);
+    }
   }
 
   /**
@@ -71,10 +100,11 @@ public class AdvisorClientConfig {
     String value = System.getProperty(key, ResourceHolder.INSTANCE.getProperty(key));
 
     if (value == null) {
-      return value;
+      return null;
     }
 
-    int i1, i2;
+    int i1;
+    int i2;
 
     while ((i1 = value.indexOf("${")) >= 0) {
       // append prefix to result
@@ -88,17 +118,21 @@ public class AdvisorClientConfig {
         break;
       }
 
-      // strip out the key and resolve it
-      // resolve the key/value for the ${statement}
+      /*
+      strip out the key and resolve it
+      resolve the key/value for the ${statement}
+      */
       String tmpKey = value.substring(0, i2);
       value = value.substring(i2 + 1);
       String tmpValue = System.getProperty(tmpKey, ResourceHolder.INSTANCE.getProperty(tmpKey));
 
-      // if the key cannot be resolved,
-      // leave it alone ( and don't parse again )
-      // else prefix the original string with the
-      // resolved property ( so it can be parsed further )
-      // taking recursion into account.
+      /*
+      if the key cannot be resolved,
+      leave it alone ( and don't parse again )
+      else prefix the original string with the
+      resolved property ( so it can be parsed further )
+      taking recursion into account.
+      */
       if (tmpValue == null || tmpValue.equals(key) || key.equals(tmpKey)) {
         result.append("${").append(tmpKey).append("}");
       } else {
