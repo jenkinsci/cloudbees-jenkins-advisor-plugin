@@ -8,10 +8,13 @@
         ${it.actionTitle}
       </h1>
 		<div>
-		<p>Get free, daily reports on your Jenkins master's health by connecting your Jenkins instance to CloudBees Jenkins advisor.</p>
-		<p>To get started, sign in with your CloudBees Network account. Don't have an account? <a href='https://cloudbees.com/activate-cloudbees-jenkins-advisor' target='_signup'>Create one now.</a></p>
+		<p>${it.actionDisclaimer}</p>
 		<p>As issues are detected in your master, CloudBees Jenkins Advisor will send new reports to your email address.</p>
+    <j:if test="${it.lastBundleResult!=null}">
+      <p><strong>Last bundle upload information:</strong> ${it.lastBundleResult}</p>
+    </j:if>
     <a:validateOnLoad email="${it.email}"/>
+
 		</div>
       <f:form name="config" method="POST" action="configure">
         <j:set var="instance" value="${it}"/>
@@ -19,9 +22,12 @@
         <f:entry title="${%Email}" field="email">
           <f:textbox/>
         </f:entry>
+        <f:entry title="${%CC}" field="cc" description="You can optionally include a list of comma-separated emails to receive Advisor report.">
+          <f:textbox/>
+        </f:entry>
         <f:validateButton
-          title="${%Test Connection}" progress="${%Testing...}"
-          method="testConnection" with="email,password" />       
+          title="${%Send a test email}" progress="${%Testing...}"
+          method="testSendEmail" with="email,cc" />
         <f:block>
         	<table style="text-align:left">
             <f:section name="advanced" title="Configure data">
@@ -55,12 +61,12 @@
             </f:entry>
         </table>
       </f:block>
-        
+
       <f:entry field="acceptToS">
         <p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
         <f:checkbox title="${%Agree to Terms of Service}"/>
       </f:entry>
-    
+
 		<f:entry>
     	  <f:submit target='_signup' value="${%Connect account}"/>
    		</f:entry>

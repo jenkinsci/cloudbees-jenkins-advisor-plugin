@@ -13,39 +13,46 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Displays the reminder that the user needs to register.
+ * Displays a message whenever there is an issue during the bundle upload process.
+ * This message will match any of the error messages in the log file.
  */
+@SuppressWarnings("unused")
 @Extension
-public class Reminder extends AdministrativeMonitor {
+public class BundleUploadMonitor extends AdministrativeMonitor {
 
   @Override
   public boolean isActivated() {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     /*
-    no nag when registered
-    no nag when disabled
+    no nag when plugin is disabled
+    no nag when no error messages logged by BundleUpload
     */
-    return !config.isValid() && config.isPluginEnabled() && !config.isNagDisabled();
+    return config.isPluginEnabled()
+        && config.getLastBundleResult() != null
+        && (config.getLastBundleResult().contains("ERROR") || config.getLastBundleResult().contains("Bundle upload failed"));
   }
 
   @Override
   public String getDisplayName() {
-    return Messages.Reminder_DisplayName();
+    return Messages.BundleUploadMonitor_DisplayName();
   }
 
   @Restricted(NoExternalUse.class)
   @RequirePOST
-  @SuppressWarnings("unused")
-  public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes, @QueryParameter(fixEmpty = true) String no) {
+  public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes) {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    if (yes != null) {
-      return HttpResponses.redirectViaContextPath(config.getUrlName());
-    } else if (no != null) {
-      // should never return null if we get here
-      return HttpResponses.redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
-    } else { //remind later
-      return HttpResponses.forwardToPreviousPage();
-    }
+    return yes != null
+        ? HttpResponses.redirectViaContextPath(config.getUrlName())
+        : HttpResponses.forwardToPreviousPage();
+  }
+
+  /**
+   * Get the failure message from the last bundle upload.
+   *
+   * @return String     the error message that was saved as part of the last BundleUpload
+   */
+  public String getFailureMessage() {
+    return AdvisorGlobalConfiguration.getInstance().getLastBundleResult();
   }
 
   /**
@@ -54,7 +61,6 @@ public class Reminder extends AdministrativeMonitor {
    * @return If this version of the plugin is running on a Jenkins version where JENKINS-43786 is included.
    */
   @Restricted(DoNotUse.class)
-  @SuppressWarnings("unused")
   public boolean isTheNewDesignAvailable() {
     VersionNumber version = Jenkins.getVersion();
     return version != null && version.isNewerThan(new VersionNumber("2.103"));

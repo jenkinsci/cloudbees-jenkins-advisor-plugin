@@ -1,58 +1,65 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
-import com.ning.http.client.*;
-import com.ning.http.client.multipart.FilePart;
-import jenkins.plugins.asynchttpclient.AHCUtils;
+import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdvisorClient {
 
   private static final Logger LOG = Logger.getLogger(AdvisorClient.class.getName());
-  public static final String HEALTH_SUCCESS = "Successfully checked the service status";
 
-  private final AsyncHttpClient httpClient;
+  static final String HEALTH_SUCCESS = "Successfully checked the service status";
+  static final String EMAIL_SUCCESS = "Successfully sent a test email";
+
   private final AccountCredentials credentials;
 
   public AdvisorClient(AccountCredentials accountCredentials) {
-    this.httpClient = new AsyncHttpClient((
-        new AsyncHttpClientConfig.Builder()
-            .setRequestTimeout(AdvisorClientConfig.insightsUploadTimeoutMilliseconds())
-            .setProxyServer(AHCUtils.getProxyServer())
-            .setFollowRedirect(true)
-            .build()));
     this.credentials = accountCredentials;
   }
 
-  public ListenableFuture<String> doCheckHealth() {
+  public String doTestEmail() {
     try {
-      return httpClient.prepareGet(AdvisorClientConfig.healthURI())
-          .execute(new AsyncCompletionHandler<String>() {
-            @Override
-            public String onCompleted(Response response) throws Exception {
-              int status = response.getStatusCode();
-              if(status < 400) {
-                return HEALTH_SUCCESS;
-              } else {
-                throw new IOException("Unable to check response from the server: " + status);
-              }
-            }
+      HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getUsername()));
 
-            @Override
-            public void onThrowable(Throwable t) {
-              throw new InsightsAuthenticationException("Unable to check health. Message: " + t.getMessage());
-            }
-          });
+      int responseCode = con.getResponseCode();
+
+      if(responseCode == HttpURLConnection.HTTP_OK) {
+        return EMAIL_SUCCESS;
+      } else {
+        throw new IOException("Unable to check response from the server: " + responseCode);
+      }
+
+    } catch (Exception e) {
+      throw new InsightsAuthenticationException("Exception while attempting to send test email. Message: " + e);
+    }
+  }
+
+  public String doCheckHealth() {
+    try {
+      HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.healthURI());
+
+      int responseCode = con.getResponseCode();
+
+      if(responseCode == HttpURLConnection.HTTP_OK) {
+        return HEALTH_SUCCESS;
+      } else {
+        throw new IOException("Unable to check response from the server: " + responseCode);
+      }
+
     } catch (Exception e) {
       throw new InsightsAuthenticationException("Exception when attempting to check health. Message: " + e);
     }
   }
 
-  public ListenableFuture<Response> uploadFile(ClientUploadRequest uploadRequest) {
+  public ClientResponse uploadFile(ClientUploadRequest uploadRequest) {
     try {
       doCheckHealth();
       return doUploadFile(uploadRequest);
@@ -61,30 +68,42 @@ public class AdvisorClient {
     }
   }
 
-  private ListenableFuture<Response> doUploadFile(ClientUploadRequest r) {
-    try {
-      return httpClient.preparePost(AdvisorClientConfig.apiUploadURI(credentials.getUsername(), r.getInstanceId()))
-          .addBodyPart(new FilePart("file", r.getFile()))
-          .execute(new AsyncCompletionHandler<Response>() {
-            @Override
-            public Response onCompleted(Response response) throws Exception {
-              if (response.getStatusCode() == 200) {
-                LOG.info("Bundle successfully uploaded. Response code was: " + response.getStatusCode() + ". " +
-                    "Response status text: " + response.getStatusText());
-              } else {
-                LOG.severe("Bundle upload failed. Response code was: " + response.getStatusCode() + ". " +
-                    "Response status text: " + response.getStatusText() + ". Response body: " + response.getResponseBody());
-              }
-              return response;
-            }
+  private ClientResponse doUploadFile(final ClientUploadRequest r) {
+    File uploadFile = r.getFile();
+    String cc = EmailUtil.urlEncode(r.getCc());
 
-            @Override
-            public void onThrowable(Throwable t) {
-              throw new InsightsUploadFileException("Unable to upload support bundle. Message: " + t.getMessage());
-            }
-          });
+    String requestURL = AdvisorClientConfig.apiUploadURI(credentials.getUsername(), r.getInstanceId(), cc);
+
+    try {
+      MultipartConnection multipart = new MultipartConnection(requestURL, StandardCharsets.UTF_8);
+
+      multipart.addHeader("X-ADVISOR-PLUGIN-VERSION", r.getPluginVersion() != null ? r.getPluginVersion() : "N/A");
+      multipart.connect();
+
+      multipart.addFilePart("file", uploadFile);
+
+      ClientResponse clientResponse = multipart.finish();
+
+      if (clientResponse.getCode() == HttpURLConnection.HTTP_OK) {
+        if (LOG.isLoggable(Level.INFO)) {
+          LOG.info(String.format("Bundle successfully uploaded. Response code was: %s", clientResponse.getCode()));
+        }
+      } else {
+        if (LOG.isLoggable(Level.SEVERE)) {
+          LOG.severe(String.format("Bundle upload failed. Response code was: [%s]. Response message: [%s]",
+              clientResponse.getCode(), clientResponse.getMessage()));
+        }
+      }
+
+      return clientResponse;
     } catch (Exception e) {
-      throw new InsightsUploadFileException("Exception trying to upload support bundle. Message: " + e.getMessage());
+      String message = String.format(
+          "Exception trying to upload support bundle. Message: [%s], File: [%s], Metadata: [%s]",
+          e.getMessage(), r.getFile(), FileHelper.getFileMetadata(r.getFile()));
+
+      LOG.log(Level.SEVERE, message, e.getCause());
+
+      throw new InsightsUploadFileException(message);
     }
   }
 

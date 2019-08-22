@@ -2,56 +2,52 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import hudson.LocalPluginManager;
+import hudson.PluginWrapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.jvnet.hudson.test.recipes.WithPluginManager;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import javax.annotation.CheckForNull;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 public class BundleUploadTest {
 
-  private static final String TEST_EMAIL = "test";
-
-  private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
-  private static OutputStream logCapturingStream;
-  private static StreamHandler customLogHandler;
+  private static final String TEST_EMAIL = "test@acme.com";
 
   @Rule
   public JenkinsRule j = new JenkinsRule();
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(9999));
-
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig());
 
   @Before
-  public void attachLogCapture() {
-    logCapturingStream = new ByteArrayOutputStream();
-    Handler[] handlers = LOG.getParent().getHandlers();
-    customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
-    LOG.addHandler(customLogHandler);
-    LOG.setLevel(Level.FINEST);
+  public void resetWireMock() {
     wireMockRule.resetAll();
-  }
-
-  private static String getTestCapturedLog() throws IOException {
-    customLogHandler.flush();
-    return logCapturingStream.toString();
   }
 
   @WithTimeout(30)
@@ -62,6 +58,7 @@ public class BundleUploadTest {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setEmail(TEST_EMAIL);
     config.setValid(true);
+    config.setAcceptToS(true);
 
     stubFor(get(urlEqualTo("/api/health"))
         .willReturn(aResponse()
@@ -73,7 +70,7 @@ public class BundleUploadTest {
 
     subject.run();
 
-    // hack as wiremock doesn't seem to handle async requests
+    // wait for the AsyncPeriodicWork in BundleUpload to kick off
     while(wireMockRule.getAllServeEvents().size() < 2) {
       Thread.sleep(1000L);
     }
@@ -82,12 +79,15 @@ public class BundleUploadTest {
 
     verify(postRequestedFor(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
         .withHeader("Content-Type", WireMock.containing("multipart/form-data")));
+
+    // Refresh the configuration?
+    assertThat(config.getLastBundleResult(), containsString("Successfully uploaded a bundle"));
   }
 
   @Test
+  @WithPluginManager(DisabledPluginManager.class)
   public void execute_pluginDisabled() throws Exception {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
-    j.getPluginManager().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME).disable();
 
     stubFor(any(anyUrl()));
 
@@ -126,6 +126,28 @@ public class BundleUploadTest {
   @Test
   public void getRecurrencePeriod() throws Exception {
     assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
+  }
+
+  /**
+   * Work around issues where the PluginManager doesn't have permission to save files
+   */
+  public static class DisabledPluginManager extends LocalPluginManager {
+    public DisabledPluginManager(File rootDir) {
+      super(rootDir);
+    }
+
+    @Override
+    @CheckForNull
+    public PluginWrapper getPlugin(String shortName) {
+      PluginWrapper actual = super.getPlugin(shortName);
+      if(shortName.equals(AdvisorGlobalConfiguration.PLUGIN_NAME)) {
+        PluginWrapper pw = spy(actual);
+
+        doReturn(false).when(pw).isEnabled();
+        return pw;
+      }
+      return actual;
+    }
   }
 
 }

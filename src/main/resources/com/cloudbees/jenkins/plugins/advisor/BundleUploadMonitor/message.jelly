@@ -5,10 +5,9 @@
 <div class="warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
     <div style="float:right">
-      <f:submit name="yes" value="${%Connect Now}"/>
-      <f:submit name="no" value="${%Uninstall Plugin}"/>
+      <f:submit name="yes" value="${%Check Advisor Settings}"/>
     </div>
-    ${%Blurb}
+    ${%BundleIssue(it.getFailureMessage())}
   </form>
 </div>
 </j:if>
@@ -16,10 +15,9 @@
 <j:if test="${it.isTheNewDesignAvailable()}">
 <div class="alert alert-warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-    <f:submit name="yes" value="${%Connect Now}"/>
-    <f:submit name="no" value="${%Uninstall Plugin}"/>
+    <f:submit name="yes" value="${%Check Advisor Settings}"/>
   </form>
-  ${%Blurb}
+  ${%BundleIssue(it.getFailureMessage())}
 </div>
 </j:if>
 

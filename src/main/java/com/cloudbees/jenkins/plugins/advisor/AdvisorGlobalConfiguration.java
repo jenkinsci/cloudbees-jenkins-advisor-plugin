@@ -2,10 +2,18 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
+import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
+import com.cloudbees.jenkins.plugins.advisor.utils.FormValidationHelper;
 import com.cloudbees.jenkins.support.SupportAction;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import com.cloudbees.jenkins.support.api.Component;
-import hudson.*;
+import hudson.BulkChange;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.Functions;
+import hudson.PluginWrapper;
+import hudson.XmlFile;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -18,22 +26,23 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,10 +57,12 @@ public class AdvisorGlobalConfiguration
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
   private String email;
+  private String cc;
   private Set<String> excludedComponents;
   private boolean isValid;
   private boolean nagDisabled;
   private boolean acceptToS;
+  private String lastBundleResult;
 
   @SuppressWarnings("unused")
   public AdvisorGlobalConfiguration() {
@@ -60,9 +71,11 @@ public class AdvisorGlobalConfiguration
 
   @SuppressWarnings("unused")
   @DataBoundConstructor
-  public AdvisorGlobalConfiguration(String email, Set<String> excludedComponents) {
-    this.email = email;
+  public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
+    this.setEmail(email);
+    this.setCc(cc);
     this.excludedComponents = excludedComponents;
+    this.lastBundleResult = "";
   }
 
   @CheckForNull
@@ -95,7 +108,7 @@ public class AdvisorGlobalConfiguration
   }
 
   @SuppressWarnings("unused")
-  public String getActionBlurb() {
+  public String getActionDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
@@ -104,6 +117,7 @@ public class AdvisorGlobalConfiguration
     return Messages.Insights_Disclaimer();
   }
 
+  @SuppressWarnings("WeakerAccess")
   public boolean isNagDisabled() {
     return nagDisabled;
   }
@@ -115,15 +129,26 @@ public class AdvisorGlobalConfiguration
     }
   }
 
+  @SuppressWarnings("WeakerAccess")
   public boolean isAcceptToS() {
     return acceptToS;
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "WeakerAccess"})
   public void setAcceptToS(boolean acceptToS) {
     if (this.acceptToS != acceptToS) {
       this.acceptToS = acceptToS;
     }
+  }
+
+  @SuppressWarnings("WeakerAccess")
+  public String getLastBundleResult() {
+    return lastBundleResult;
+  }
+
+  @SuppressWarnings({"unused", "WeakerAccess"})
+  public void setLastBundleResult(String lastBundleResult) {
+    this.lastBundleResult = lastBundleResult;
   }
 
   /**
@@ -138,21 +163,18 @@ public class AdvisorGlobalConfiguration
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
-  @SuppressWarnings("unused") // stapler web method binding
+  @SuppressWarnings({"unused", "WeakerAccess"}) // stapler web method binding
   public HttpResponse doConfigure(@Nonnull StaplerRequest req) throws IOException, ServletException,
     FormException {
     Jenkins jenkins = Jenkins.getInstance();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
-      // For Pardot; only want to send on new email setup
-      String oldEmail = email;
-      boolean oldAcceptToS = acceptToS;
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
-      return HttpResponses.redirectTo(isValid ? 
-        sendToPardot(req.getSubmittedForm(), oldEmail, oldAcceptToS, req.getContextPath()) : 
-        req.getContextPath() + "/" + getUrlName());
 
+      return HttpResponses.redirectTo(isValid
+          ? req.getContextPath() + "/manage"
+          : req.getContextPath() + "/" + getUrlName());
     } catch (Exception e) {
       isValid = false;
       LOG.severe("Unable to save CloudBees Jenkins Advisor configuration: " + Functions.printThrowable(e));
@@ -169,38 +191,9 @@ public class AdvisorGlobalConfiguration
    * @return {@code false} to keep the client in the same config page.
    * @throws FormException if something goes wrong.
    */
-  private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws
-    FormException, ServletException {
+  private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
     req.bindJSON(this, json);
     return d.configure(req, json);
-  }
-
-  /**
-   * Determine if we should send the information onto Pardot.  Pardot will only process
-   * requests with a non-null email, which isn't a guaranteed state for the
-   * GlobalConfiguration.  Only forward the request onto Pardot if the email exists.
-   */
-  private String sendToPardot(JSONObject json, String oldEmail, boolean oldToS, String contextPath) {
-    String url = contextPath + "/manage";
-
-    try {
-      String email = json.getString("email");
-      boolean acceptToS = json.getBoolean("acceptToS");
-      
-      if(email != null && !email.isEmpty() && acceptToS) {
-        boolean diffEmail = (oldEmail == null || !email.equals(oldEmail));
-
-        if(diffEmail || (!diffEmail && !oldToS)) {
-          url = URLEncoder.encode(url, "UTF-8");
-          email = URLEncoder.encode(email, "UTF-8");
-          url = "https://go.pardot.com/l/272242/2017-07-27/47fs4?success_location=" + url + "&email=" + email;
-        }
-      }
-
-    } catch (UnsupportedEncodingException ex) {
-      //Don't bother sending information to Pardot; continue on
-    }
-    return url;
   }
 
   /**
@@ -214,26 +207,35 @@ public class AdvisorGlobalConfiguration
 
   @SuppressWarnings("unused")
   public void setEmail(@CheckForNull String email) {
-    String emailAddress = Util.nullify(email);
-    if(emailAddress != null && emailAddress.startsWith("\"") && emailAddress.endsWith("\"")) {
-      emailAddress = emailAddress.substring(1,emailAddress.length()-1);
-    }
-    this.email = emailAddress;
+    this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
   @SuppressWarnings("WeakerAccess")
-  public @Nonnull String getEmail() {
+  public String getEmail() {
     return email;
   }
 
-  public Set<String> getExcludedComponents() {
-    return excludedComponents != null ? excludedComponents : Collections.<String>emptySet();
+  @SuppressWarnings("unused")
+  public void setCc(@CheckForNull String cc) {
+    this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
   }
 
+  @SuppressWarnings("WeakerAccess")
+  public String getCc() {
+    return cc;
+  }
+
+  @SuppressWarnings("WeakerAccess")
+  public Set<String> getExcludedComponents() {
+    return excludedComponents != null ? excludedComponents : Collections.emptySet();
+  }
+
+  @SuppressWarnings("WeakerAccess")
   public void setExcludedComponents(Set<String> excludedComponents) {
     this.excludedComponents = excludedComponents;
   }
 
+  @SuppressWarnings("WeakerAccess")
   public List<Component> getIncludedComponents() {
     List<Component> included = new ArrayList<>();
     if (getExcludedComponents().isEmpty()) {
@@ -260,15 +262,17 @@ public class AdvisorGlobalConfiguration
     return !getExcludedComponents().contains(c.getId());
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "WeakerAccess"})
   public List<Component> getComponents() {
     return SupportPlugin.getComponents();
   }
 
+  @SuppressWarnings("WeakerAccess")
   public boolean isValid() {
     return isValid;
   }
 
+  @SuppressWarnings("WeakerAccess")
   public void setValid(boolean valid) {
     isValid = valid;
   }
@@ -278,7 +282,7 @@ public class AdvisorGlobalConfiguration
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
 
     public DescriptorImpl() {
-      load();
+      super.load();
     }
 
     /**
@@ -293,29 +297,61 @@ public class AdvisorGlobalConfiguration
 
 
     @SuppressWarnings("WeakerAccess")
-    public FormValidation doCheckEmail(@QueryParameter String value) throws IOException, ServletException {
-      if (value == null || value.isEmpty()) {
+    public FormValidation doCheckEmail(@QueryParameter String value) {
+      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+
+      if (emailAddress == null || emailAddress.isEmpty()) {
         return FormValidation.error("Email cannot be blank");
       }
 
-      try {
-        new InternetAddress(value).validate();
-      } catch (AddressException e) {
-        return FormValidation.error("Invalid email: " + e.getMessage());
+      if (emailAddress.contains(";") || emailAddress.contains(",")) {
+        return FormValidation.error("Email cannot contain illegal character ';' or ','. Consider using the CC field if multiple recipients are required");
       }
+
+      EmailValidator validator = EmailValidator.getInstance();
+      if (!validator.isValid(emailAddress)) {
+        return FormValidation.error("Invalid email");
+      }
+
       return FormValidation.ok();
     }
 
-    @SuppressWarnings("unused")
-    public FormValidation doTestConnection(@QueryParameter("email") final String email)
-      throws IOException, ServletException {
+    @SuppressWarnings("WeakerAccess")
+    public FormValidation doCheckCc(@QueryParameter String value) {
+      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+
+      if (emailAddress == null || emailAddress.isEmpty()) {
+        return FormValidation.ok();
+      }
+
+      if (emailAddress.contains(";")) {
+        return FormValidation.error("Email cannot contain illegal character ';'. Use ',' if multiple recipients are required.");
+      }
+
+      for (String cc : emailAddress.split(",")) {
+        EmailValidator validator = EmailValidator.getInstance();
+        if (!validator.isValid(cc)) {
+          return FormValidation.error(String.format("Invalid email [%s]", cc));
+        }
+      }
+
+      return FormValidation.ok();
+    }
+
+
+    @SuppressWarnings({"unused", "WeakerAccess"})
+    public FormValidation doTestConnection(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
       try {
         if(email.isEmpty()){
           return FormValidation.error("Missing email");
         }
+        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        if (ccErrors.isPresent()) {
+          return ccErrors.get();
+        }
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
 
-        advisorClient.doCheckHealth().get();
+        advisorClient.doCheckHealth();
         return FormValidation.ok("Success");
       } catch (Exception e) {
         return FormValidation.error("Client error : "+e.getMessage());
@@ -326,20 +362,40 @@ public class AdvisorGlobalConfiguration
     public String connectionTest(String credentials) {
       try {
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
-        advisorClient.doCheckHealth().get();
-        return "You are connected to CloudBees Jenkins Advisor!";
+        advisorClient.doCheckHealth();
+        return "  You are connected to CloudBees Jenkins Advisor!";
       } catch(Exception e) {
         return "" + e.getMessage();
+      }
+    }
+
+    @SuppressWarnings({"unused", "WeakerAccess"})
+    public FormValidation doTestSendEmail(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
+      try {
+        if(email.isEmpty()){
+          return FormValidation.error("Missing email");
+        }
+        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        if (ccErrors.isPresent()) {
+          return ccErrors.get();
+        }
+
+        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
+
+        advisorClient.doTestEmail();
+        return FormValidation.ok("Sending email.  Please check your inbox and filters.");
+      } catch (Exception e) {
+        return FormValidation.error("Client error : "+e.getMessage());
       }
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
       String email = json.getString("email");
-      Boolean nagDisabled = json.getBoolean("nagDisabled");
+      String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
       Boolean acceptToS = json.getBoolean("acceptToS");
-      
+
       // Have to accept the Terms of Service to have a valid configuration
       if(!acceptToS) {
         return false;
@@ -353,8 +409,8 @@ public class AdvisorGlobalConfiguration
         }
       }
       // Note that we're not excluding anything
-      if(remove.isEmpty()) { 
-        remove.add("SENDALL");  
+      if(remove.isEmpty()) {
+        remove.add("SENDALL");
       }
 
       final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
@@ -363,10 +419,8 @@ public class AdvisorGlobalConfiguration
       }
 
       try {
-        if(!nagDisabled) {
-          if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)) {
-            return false;
-          }
+        if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) || doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
+          return false;
         }
       } catch (Exception e) {
         LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
@@ -376,23 +430,18 @@ public class AdvisorGlobalConfiguration
     }
   }
 
-  private volatile long nextCheck = 0;
-  private volatile boolean lastEnabledState = false;
-
   boolean isPluginEnabled() {
-    if (System.currentTimeMillis() > nextCheck) {
-      try {
-        PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(PLUGIN_NAME);
+    boolean lastEnabledState;
+    try {
+      PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(PLUGIN_NAME);
 
-        if (plugin == null) {
-          LOG.severe("Expected to find plugin: [" + PLUGIN_NAME + "] but none found");
-          return false;
-        }
-        lastEnabledState = plugin.isEnabled();
-        nextCheck = System.currentTimeMillis() + 5000;
-      } catch (NullPointerException e) {
+      if (plugin == null) {
+        LOG.severe("Expected to find plugin: [" + PLUGIN_NAME + "] but none found");
         return false;
       }
+      lastEnabledState = plugin.isEnabled();
+    } catch (NullPointerException e) {
+      return false;
     }
     return lastEnabledState;
   }
@@ -408,6 +457,7 @@ public class AdvisorGlobalConfiguration
     }
   }
 
+  @SuppressWarnings("WeakerAccess")
   public synchronized void load() {
     XmlFile file = getConfigFile();
     if(!file.exists())
