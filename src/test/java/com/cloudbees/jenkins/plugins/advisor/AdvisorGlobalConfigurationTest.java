@@ -21,7 +21,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.testng.PowerMockTestCase;
 import org.powermock.reflect.Whitebox;
 
 import java.net.URL;
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.doReturn;
  * the CloudBees Jenkins Advisor connection.
  */
 @PowerMockIgnore({"org.apache.http.conn.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
-public class AdvisorGlobalConfigurationTest extends PowerMockTestCase {
+public class AdvisorGlobalConfigurationTest {
 
   @Rule
   public JenkinsRule j = new JenkinsRule();
