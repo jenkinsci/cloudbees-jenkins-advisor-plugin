@@ -128,6 +128,12 @@ public class BundleUploadTest {
     assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
   }
 
+    @WithoutJenkins
+    @Test
+    public void getInitialDelay() {
+        assertThat(new BundleUpload().getInitialDelay(), is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
+    }
+
   /**
    * Work around issues where the PluginManager doesn't have permission to save files
    */
