@@ -34,7 +34,7 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   @SuppressWarnings("WeakerAccess")
   public static final int INITIAL_DELAY_MINUTES = Integer.getInteger(
-          BundleUpload.class.getName()+".initialDelayMinutes", 5);
+          BundleUpload.class.getName()+".initialDelayMinutes", 30);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   private TaskListener task;
