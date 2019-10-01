@@ -81,7 +81,7 @@ public class AdvisorGlobalConfiguration
   @CheckForNull
   @Override
   public String getIconFileName() {
-    return "/plugin/cloudbees-jenkins-advisor/icons/heart.png";
+    return "/plugin/cloudbees-jenkins-advisor/icons/advisor.svg";
   }
 
   @CheckForNull
