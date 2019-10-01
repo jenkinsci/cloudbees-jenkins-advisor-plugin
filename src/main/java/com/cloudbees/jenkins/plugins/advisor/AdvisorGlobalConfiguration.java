@@ -177,7 +177,7 @@ public class AdvisorGlobalConfiguration
           : req.getContextPath() + "/" + getUrlName());
     } catch (Exception e) {
       isValid = false;
-      LOG.severe("Unable to save CloudBees Jenkins Advisor configuration: " + Functions.printThrowable(e));
+      LOG.severe("Unable to save Jenkins Health Advisor by CloudBees configuration: " + Functions.printThrowable(e));
       return FormValidation.error("Unable to save configuration: " + e.getMessage());
     }
   }
@@ -368,7 +368,7 @@ public class AdvisorGlobalConfiguration
       try {
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
         advisorClient.doCheckHealth();
-        return "  You are connected to CloudBees Jenkins Advisor!";
+        return "  You are connected to Jenkins Health Advisor by CloudBees!";
       } catch(Exception e) {
         return "" + e.getMessage();
       }

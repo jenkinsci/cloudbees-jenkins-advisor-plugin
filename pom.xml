@@ -20,7 +20,7 @@
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/cloudbees-jenkins-advisor-plugin/master/src/main/webapp/icons/advisor.svg</hpi.pluginLogoUrl>
   </properties>
 
-  <name>CloudBees Jenkins Advisor Plugin</name>
+  <name>Jenkins Health Advisor by CloudBees Plugin</name>
   <description>Get daily reports on security, performance, or stability issues found in your Jenkins master by connecting to CloudBees.</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/CloudBees+Jenkins+Advisor+Plugin</url>
 

@@ -9,7 +9,7 @@
       </h1>
 		<div>
 		<p>${it.actionDisclaimer}</p>
-		<p>As issues are detected in your master, CloudBees Jenkins Advisor will send new reports to your email address.</p>
+		<p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your email address.</p>
     <j:if test="${it.lastBundleResult!=null}">
       <p><strong>Last bundle upload information:</strong> ${it.lastBundleResult}</p>
     </j:if>
@@ -63,7 +63,7 @@
       </f:block>
 
       <f:entry field="acceptToS">
-        <p>By connecting to CloudBees Jenkins Advisor, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
+        <p>By connecting to Jenkins Health Advisor by CloudBees, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
         <f:checkbox title="${%Agree to Terms of Service}"/>
       </f:entry>
 

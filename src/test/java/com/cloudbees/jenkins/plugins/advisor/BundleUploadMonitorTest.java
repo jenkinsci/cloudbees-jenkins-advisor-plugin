@@ -25,7 +25,7 @@ public class BundleUploadMonitorTest {
   public WireMockRule wireMockRule = new WireMockRule(wireMockConfig());
 
   private static final String TEST_EMAIL = "test";
-  private final String textPrefix = "The CloudBees Jenkins Advisor upload failed";
+  private final String textPrefix = "The Jenkins Health Advisor by CloudBees upload failed";
 
   @Test
   public void testBundleUploadSuccess() throws Exception {
