@@ -115,7 +115,7 @@ See the [Upload Timeout](#Upload-Timeout) section for how to do that.
 Bundle uploads fail with:
 
 ```
-The Jenkins Health Advisor by CloudBees upload failed: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
+Jenkins Health Advisor by CloudBees failed to upload a bundle: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
 Message: com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsUploadFileException: Exception trying to upload support bundle. Message: File is not a normal file.
 ```
 
