@@ -1,12 +1,13 @@
-# Jenkins Health Advisor by CloudBees Plugin
+# Jenkins Health Advisor by CloudBees
 
-Periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by Jenkins Health Advisor by CloudBees.
+This jenkins plugin periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by Jenkins Health Advisor by CloudBees. 
+Jenkins Health Advisor by CloudBees analyse these bundles and send in return an email when it detects a new known issue referenced by the [CloudBees Support team](https://support.cloudbees.com).
 
-To configure your Advisor uploads - *Manage Jenkins > Jenkins Health Advisor by CloudBees*.
+To configure the plugin go into `Manage Jenkins` > `Manage Jenkins Health Advisor by CloudBees.
 
 ## Project Tracking
 
-* Jenkins JIRA
+* [Jenkins JIRA with component `cloudbees-jenkins-advisor-plugin`](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20component%20%3D%20cloudbees-jenkins-advisor-plugin)
 
 ## Build Job
 
@@ -29,7 +30,6 @@ config.acceptToS = true
 
 config.save()
 ```
-
 
 ### System Properties
 
