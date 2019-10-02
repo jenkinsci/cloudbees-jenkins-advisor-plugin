@@ -33,7 +33,7 @@ config.save()
 
 ### System Properties
 
-#### Jenkins Health Advisor by CloudBees Upload Recurrence Period
+#### Upload Recurrence Period
 
 Cannot be overridden at runtime. Requires restart to take effect. Defaults to 24hrs.
 
@@ -43,7 +43,7 @@ Overriding with Java System Property:
 -Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.recurrencePeriodHours=1
 ```
 
-#### Jenkins Health Advisor by CloudBees Upload Timeout
+#### Upload Timeout
 
 Available properties:
 
@@ -68,7 +68,7 @@ Can be permanently added by amending Jenkins Java System Properties:
 
 Defaults to 60 (minutes)
 
-#### Jenkins Health Advisor by CloudBees Upload Initial Delay
+#### Upload Initial Delay
 
 Cannot be overridden at runtime. Requires restart to take effect. Defaults to 5mins.
 
@@ -108,7 +108,7 @@ SEVERE: Issue while uploading file to bundle upload service: java.util.concurren
 
 Try adjusting the idle timeout period.
 
-See the [Jenkins Health Advisor by CloudBees Upload Timeout](#CloudBees-Jenkins-Advisor-Upload-Timeout) section for how to do that.
+See the [Upload Timeout](#Upload-Timeout) section for how to do that.
 
 ### File is not a normal file.
 
