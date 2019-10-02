@@ -56,7 +56,7 @@
                </j:forEach>
                </f:advanced>
             </f:section>
-            <f:entry title="${%Suppress register account reminder}" field="nagDisabled">
+            <f:entry title="${%Suppress connect instance reminder}" field="nagDisabled">
             	<f:checkbox/>
             </f:entry>
         </table>
@@ -68,7 +68,7 @@
       </f:entry>
 
 		<f:entry>
-    	  <f:submit target='_signup' value="${%Connect account}"/>
+    	  <f:submit target='_signup' value="${%Connect instance}"/>
    		</f:entry>
       </f:form>
     </l:main-panel>
