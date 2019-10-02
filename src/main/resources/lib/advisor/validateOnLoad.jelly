@@ -25,9 +25,14 @@
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor.  Check Advisor server status at 
+            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor.  Check Advisor server status at
               <a href="https://www.cloudbeesstatus.com/">www.cloudbeesstatus.com</a>.</h4>
             <p>${validationStatus}</p>
+          </div>
+        </j:if>
+        <j:if test="${validationStatus.contains('Terms of Service not accepted')}">
+          <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">${validationStatus}</h4>
           </div>
         </j:if>
     </j:if>

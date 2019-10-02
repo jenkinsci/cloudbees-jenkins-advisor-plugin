@@ -362,7 +362,7 @@ public class AdvisorGlobalConfiguration
     public String connectionTest(String credentials) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
-        return " Terms of conditions not accepted.";
+        return " Terms of Service not accepted.";
       }
 
       try {
