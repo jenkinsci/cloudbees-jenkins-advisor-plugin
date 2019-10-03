@@ -1,24 +1,11 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
-<j:if test="${!it.isTheNewDesignAvailable()}">
-<div class="warning">
-  <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-    <div style="float:right">
-      <f:submit name="yes" value="${%Check Advisor Settings}"/>
-    </div>
-    ${%BundleIssue(it.getFailureMessage())}
-  </form>
-</div>
-</j:if>
-
-<j:if test="${it.isTheNewDesignAvailable()}">
 <div class="alert alert-warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
     <f:submit name="yes" value="${%Check Advisor Settings}"/>
   </form>
   ${%BundleIssue(it.getFailureMessage())}
 </div>
-</j:if>
 
 </j:jelly>

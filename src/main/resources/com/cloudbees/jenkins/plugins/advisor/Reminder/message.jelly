@@ -1,19 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
-<j:if test="${!it.isTheNewDesignAvailable()}">
-<div class="warning">
-  <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-    <div style="float:right">
-      <f:submit name="yes" value="${%Connect Now}"/>
-      <f:submit name="no" value="${%Uninstall Plugin}"/>
-    </div>
-    ${%Blurb}
-  </form>
-</div>
-</j:if>
-
-<j:if test="${it.isTheNewDesignAvailable()}">
 <div class="alert alert-warning">
   <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
     <f:submit name="yes" value="${%Connect Now}"/>
@@ -21,6 +8,5 @@
   </form>
   ${%Blurb}
 </div>
-</j:if>
 
 </j:jelly>
