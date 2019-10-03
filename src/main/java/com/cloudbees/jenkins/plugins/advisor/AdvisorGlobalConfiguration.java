@@ -360,6 +360,11 @@ public class AdvisorGlobalConfiguration
 
     @SuppressWarnings("unused")
     public String connectionTest(String credentials) {
+      AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+      if (!config.isAcceptToS()) {
+        return " Terms of Service not accepted.";
+      }
+
       try {
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
         advisorClient.doCheckHealth();
