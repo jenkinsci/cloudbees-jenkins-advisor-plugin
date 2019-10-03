@@ -40,7 +40,7 @@ import static org.mockito.Mockito.doReturn;
 
 /**
  * Test the AdvisorGlobalConfiguration page; essentially the core of
- * the CloudBees Jenkins Advisor connection.
+ * the Jenkins Health Advisor by CloudBees connection.
  */
 @PowerMockIgnore({"org.apache.http.conn.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class AdvisorGlobalConfigurationTest {

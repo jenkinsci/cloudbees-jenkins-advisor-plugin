@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
-    Check if the current admin is connected to CloudBees Jenkins Advisor.
+    Check if the current admin is connected to Jenkins Health Advisor by CloudBees.
     <st:attribute name="email" use="required">
       Email of the admin.
     </st:attribute>
@@ -25,8 +25,8 @@
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">There was a connection failure to CloudBees Jenkins Advisor.  Check Advisor server status at
-              <a href="https://www.cloudbeesstatus.com/">www.cloudbeesstatus.com</a>.</h4>
+            <h4 class="alert-heading">There was a connection failure to Jenkins Health Advisor by CloudBees. Check Advisor Server status at
+              <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a>.</h4>
             <p>${validationStatus}</p>
           </div>
         </j:if>

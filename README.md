@@ -1,12 +1,13 @@
-# CloudBees Jenkins Advisor Plugin
+# Jenkins Health Advisor by CloudBees
 
-Periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by CloudBees Jenkins Advisor.
+This jenkins plugin periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by Jenkins Health Advisor by CloudBees. 
+Jenkins Health Advisor by CloudBees analyse these bundles and send in return an email when it detects a new known issue referenced by the [CloudBees Support team](https://support.cloudbees.com).
 
-To configure your Advisor uploads - *Manage Jenkins > CloudBees Jenkins Advisor*.
+To configure the plugin go into `Manage Jenkins` > `Manage Jenkins Health Advisor by CloudBees.
 
 ## Project Tracking
 
-* Jenkins JIRA
+* [Jenkins JIRA with component `cloudbees-jenkins-advisor-plugin`](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20component%20%3D%20cloudbees-jenkins-advisor-plugin)
 
 ## Build Job
 
@@ -30,10 +31,9 @@ config.acceptToS = true
 config.save()
 ```
 
-
 ### System Properties
 
-#### CloudBees Jenkins Advisor Upload Recurrence Period
+#### Upload Recurrence Period
 
 Cannot be overridden at runtime. Requires restart to take effect. Defaults to 24hrs.
 
@@ -43,7 +43,7 @@ Overriding with Java System Property:
 -Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.recurrencePeriodHours=1
 ```
 
-#### CloudBees Jenkins Advisor Upload Timeout
+#### Upload Timeout
 
 Available properties:
 
@@ -68,7 +68,7 @@ Can be permanently added by amending Jenkins Java System Properties:
 
 Defaults to 60 (minutes)
 
-#### CloudBees Jenkins Advisor Upload Initial Delay
+#### Upload Initial Delay
 
 Cannot be overridden at runtime. Requires restart to take effect. Defaults to 5mins.
 
@@ -108,14 +108,14 @@ SEVERE: Issue while uploading file to bundle upload service: java.util.concurren
 
 Try adjusting the idle timeout period.
 
-See the [CloudBees Jenkins Advisor Upload Timeout](#CloudBees-Jenkins-Advisor-Upload-Timeout) section for how to do that.
+See the [Upload Timeout](#Upload-Timeout) section for how to do that.
 
 ### File is not a normal file.
 
 Bundle uploads fail with:
 
 ```
-The CloudBees Jenkins Advisor upload failed: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
+Jenkins Health Advisor by CloudBees failed to upload a bundle: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
 Message: com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsUploadFileException: Exception trying to upload support bundle. Message: File is not a normal file.
 ```
 
