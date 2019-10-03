@@ -102,7 +102,7 @@ public class AdvisorGlobalConfigurationTest {
     managePage = wc.goTo("cloudbees-jenkins-advisor");
     String t = managePage.asText();
     System.out.println("\n\n\n\n\nT: " + t + "\n\n\n\n");
-    assertTrue(managePage.asText().contains("There was a connection failure"));
+    assertTrue(managePage.asText().contains("Connection failure"));
   }
 
   @Test
@@ -114,7 +114,7 @@ public class AdvisorGlobalConfigurationTest {
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertFalse(managePage.asText().contains("You are connected"));
+    assertFalse(managePage.asText().contains("successfully connected"));
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation = advisorDescriptor.doTestConnection(email, cc);
@@ -125,7 +125,7 @@ public class AdvisorGlobalConfigurationTest {
     doConfigure.setTerms(true);
     j.executeOnServer(doConfigure);
     managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asText().contains("You are connected"));
+    assertTrue(managePage.asText().contains("successfully connected"));
   }
 
   @Test

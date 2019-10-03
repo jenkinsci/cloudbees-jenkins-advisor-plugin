@@ -20,18 +20,18 @@
       <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email)}"/>
         <j:if test="${validationStatus.contains('service-operational')}">
           <div class="alert alert-success" role="alert">
-            <h4 class="alert-heading">Jenkins Health Advisor by CloudBees is operational!</h4>
+            <strong>Jenkins Healthy Advisor by CloudBees has been successfully connected.</strong>
           </div>
         </j:if>
         <j:if test="${validationStatus.contains('tos-not-accepted')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">Terms of Service not accepted.</h4>
-            <p>To use Jenkins Health Advisor by CloudBees, you have to validate our <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
+            <strong>Terms and Conditions not accepted.</strong>
+            <p>To use Jenkins Health Advisor, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
           </div>
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">There was a connection failure to Jenkins Health Advisor by CloudBees.</h4>
+            <strong>Connection failure to Jenkins Health Advisor by CloudBees.</strong>
             <p>Check Advisor Server status at <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a>.</p>
             <p>${validationStatus}</p>
           </div>
