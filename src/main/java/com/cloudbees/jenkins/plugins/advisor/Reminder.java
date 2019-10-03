@@ -2,10 +2,8 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -46,17 +44,5 @@ public class Reminder extends AdministrativeMonitor {
     } else { //remind later
       return HttpResponses.forwardToPreviousPage();
     }
-  }
-
-  /**
-   * This method can be removed when the baseline is updated to 2.103
-   *
-   * @return If this version of the plugin is running on a Jenkins version where JENKINS-43786 is included.
-   */
-  @Restricted(DoNotUse.class)
-  @SuppressWarnings("unused")
-  public boolean isTheNewDesignAvailable() {
-    VersionNumber version = Jenkins.getVersion();
-    return version != null && version.isNewerThan(new VersionNumber("2.103"));
   }
 }
