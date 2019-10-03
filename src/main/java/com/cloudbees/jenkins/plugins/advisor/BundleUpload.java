@@ -56,15 +56,15 @@ public class BundleUpload extends AsyncPeriodicWork {
     }
 
     if (!config.isPluginEnabled()) {
-      log(Level.FINEST, "Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload.");
+      log(Level.INFO, "Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload.");
       return;
     }
     if (!config.isValid()) {
-      log(Level.FINEST, "User not registered. Skipping bundle upload.");
+      log(Level.INFO, "User not registered. Skipping bundle upload.");
       return;
     }
     if (!config.isAcceptToS()) {
-      log(Level.FINEST, "Terms of conditions not accepted. Skipping bundle upload.");
+      log(Level.INFO, "Terms of conditions not accepted. Skipping bundle upload.");
       return;
     }
 
