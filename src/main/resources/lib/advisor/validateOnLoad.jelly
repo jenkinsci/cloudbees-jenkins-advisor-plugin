@@ -1,9 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
-    Check if the current admin is connected to Jenkins Health Advisor by CloudBees.
+    Check if Jenkins Health Advisor by CloudBees is correctly configured and the server is available.
     <st:attribute name="email" use="required">
-      Email of the admin.
+      A valid email must be configured.
     </st:attribute>
   </st:documentation>
 
@@ -18,21 +18,22 @@
   <div>
     <j:if test="${email!=null}">
       <j:set var="validationStatus" value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').connectionTest(email)}"/>
-        <j:if test="${validationStatus.contains('connected')}">
+        <j:if test="${validationStatus.contains('service-operational')}">
           <div class="alert alert-success" role="alert">
-            <h4 class="alert-heading">${validationStatus}</h4>
+            <h4 class="alert-heading">Jenkins Health Advisor by CloudBees is operational!</h4>
+          </div>
+        </j:if>
+        <j:if test="${validationStatus.contains('tos-not-accepted')}">
+          <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">Terms of Service not accepted.</h4>
+            <p>To use Jenkins Health Advisor by CloudBees, you have to validate our <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
           </div>
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">There was a connection failure to Jenkins Health Advisor by CloudBees. Check Advisor Server status at
-              <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a>.</h4>
+            <h4 class="alert-heading">There was a connection failure to Jenkins Health Advisor by CloudBees.</h4>
+            <p>Check Advisor Server status at <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a>.</p>
             <p>${validationStatus}</p>
-          </div>
-        </j:if>
-        <j:if test="${validationStatus.contains('Terms of Service not accepted')}">
-          <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">${validationStatus}</h4>
           </div>
         </j:if>
     </j:if>

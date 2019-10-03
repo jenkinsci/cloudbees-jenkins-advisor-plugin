@@ -60,7 +60,7 @@ public class BundleUpload extends AsyncPeriodicWork {
       return;
     }
     if (!config.isValid()) {
-      log(Level.INFO, "User not registered. Skipping bundle upload.");
+      log(Level.INFO, "Invalid configuration. Skipping bundle upload.");
       return;
     }
     if (!config.isAcceptToS()) {

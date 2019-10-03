@@ -362,13 +362,13 @@ public class AdvisorGlobalConfiguration
     public String connectionTest(String credentials) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
-        return " Terms of Service not accepted.";
+        return "tos-not-accepted";
       }
 
       try {
         AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
         advisorClient.doCheckHealth();
-        return "  You are connected to Jenkins Health Advisor by CloudBees!";
+        return "service-operational";
       } catch(Exception e) {
         return "" + e.getMessage();
       }

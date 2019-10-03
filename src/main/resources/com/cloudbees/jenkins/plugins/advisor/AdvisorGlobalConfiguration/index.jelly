@@ -11,7 +11,7 @@
 		<p>${it.actionDisclaimer}</p>
 		<p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your email address.</p>
     <j:if test="${it.lastBundleResult!=null}">
-      <p><strong>Last bundle upload information:</strong> ${it.lastBundleResult}</p>
+      <p><strong>Last bundle upload:</strong> ${it.lastBundleResult}</p>
     </j:if>
     <a:validateOnLoad email="${it.email}"/>
 
@@ -56,19 +56,19 @@
                </j:forEach>
                </f:advanced>
             </f:section>
-            <f:entry title="${%Suppress connect instance reminder}" field="nagDisabled">
+            <f:entry title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}" field="nagDisabled">
             	<f:checkbox/>
             </f:entry>
         </table>
       </f:block>
 
       <f:entry field="acceptToS">
-        <p>By connecting to Jenkins Health Advisor by CloudBees, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
+        <p>By using Jenkins Health Advisor by CloudBees, you agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms of Service.</a></p>
         <f:checkbox title="${%Agree to Terms of Service}"/>
       </f:entry>
 
 		<f:entry>
-    	  <f:submit target='_signup' value="${%Connect instance}"/>
+    	  <f:submit target='_signup' value="${%Save}"/>
    		</f:entry>
       </f:form>
     </l:main-panel>
