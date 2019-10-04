@@ -32,9 +32,10 @@
         <j:if test="${validationStatus.contains('xception')}">
           <div class="alert alert-warning" role="alert">
             <strong>Connection failure to Jenkins Health Advisor by CloudBees.</strong>
-            <p>Please check our <a href="https://support.cloudbees.com/hc/en-us/articles/115001213031" target="_blank">Troubleshooting Guide</a> to solve the issue.</p>
-            <p>Check Advisor Server status at <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a>.</p>
-            <p>${validationStatus}</p>
+            <p><pre><code>${validationStatus}</code></pre></p>
+            <p>Check Advisor Server status at <a href="https://www.cloudbeesstatus.com/">cloudbeesstatus.com</a> and
+              our <a href="https://support.cloudbees.com/hc/en-us/articles/115001213031" target="_blank">troubleshooting guide</a> to solve the issue.</p>
+            <p>If it doesn't help, contact us: <a href="mailto:advisor-support@cloudbees.com?subject=Issue%20with%20Jenkins%20Health%20Advisor%20by%20CloudBees">advisor-support AT cloudbees DOT com</a></p>
           </div>
         </j:if>
     </j:if>
