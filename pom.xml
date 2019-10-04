@@ -22,7 +22,7 @@
 
   <name>Jenkins Health Advisor by CloudBees Plugin</name>
   <description>Get daily reports on security, performance, and/or stability issues found in your Jenkins master by connecting to CloudBees.</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+Health+Advisor+by+CloudBees+Plugin</url>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+Health+Advisor+by+CloudBees</url>
 
   <licenses>
     <license>
