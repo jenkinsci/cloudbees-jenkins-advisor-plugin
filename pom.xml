@@ -42,6 +42,11 @@
       <name>Kristin Whetstone</name>
       <email>kwhetstone@cloudbees.com</email>
     </developer>
+    <developer>
+      <id>aheritier</id>
+      <name>Arnaud Héritier</name>
+      <email>aheritier@cloudbees.com</email>
+    </developer>
   </developers>
 
   <scm>
