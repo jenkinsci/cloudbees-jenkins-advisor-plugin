@@ -11,7 +11,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * Displays the reminder that the user needs to register.
+ * Displays the reminder that the configuration must be done.
  */
 @Extension
 public class Reminder extends AdministrativeMonitor {
@@ -20,7 +20,7 @@ public class Reminder extends AdministrativeMonitor {
   public boolean isActivated() {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     /*
-    no nag when registered
+    no nag when configured
     no nag when disabled
     */
     return !config.isValid() && config.isPluginEnabled() && !config.isNagDisabled();
