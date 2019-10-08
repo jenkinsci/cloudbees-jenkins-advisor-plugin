@@ -87,16 +87,12 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
 
         AdvisorGlobalConfiguration insights = getTargetComponent(configurationContext);
         AdvisorGlobalConfiguration.DescriptorImpl descriptor = (AdvisorGlobalConfiguration.DescriptorImpl) insights.getDescriptor();
-        boolean valid = true;
         if (descriptor.doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) || descriptor.doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
-            valid = false;
-        }
-        if (valid) {
-            updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
-        } else {
             // In UI, if the fields are invalid, the configuration is not applied, so here we throw an exception
             throw new ConfiguratorException(this, "Invalid configuration for CloudBees Jenkins Advisor. Please, review the content of email and cc fields in the yaml file.");
         }
+        updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
+
         return insights;
     }
 
