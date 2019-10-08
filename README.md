@@ -1,126 +1,34 @@
 # Jenkins Health Advisor by CloudBees
 
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/cloudbees-jenkins-advisor-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/cloudbees-jenkins-advisor-plugin/job/master/)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/cloudbees-jenkins-advisor.svg)](https://plugins.jenkins.io/cloudbees-jenkins-advisor)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/cloudbees-jenkins-advisor-plugin.svg?label=changelog)](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases/latest)
-[![Jenkins Plugin Installs](https://img.shields.io/badge/Supported%20by-CloudBees-blue?logo=cloudbees&logoColor=white)](https://www.cloudbees.com/products/cloudbees-jenkins-support)
+[![Supported by CloudBees](https://img.shields.io/badge/Supported%20by-CloudBees-blue?logo=cloudbees&logoColor=white)](https://www.cloudbees.com/products/cloudbees-jenkins-support)
 
-This jenkins plugin periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by Jenkins Health Advisor by CloudBees. 
-Jenkins Health Advisor by CloudBees analyse these bundles and send in return an email when it detects a new known issue referenced by the [CloudBees Support team](https://support.cloudbees.com).
+<img src="src/main/webapp/icons/advisor.svg" width="192">
 
-To configure the plugin go into `Manage Jenkins` > `Manage Jenkins Health Advisor by CloudBees.
+## Introduction
+
+Jenkins Health Advisor by CloudBees (formerly known as "CloudBees Jenkins Advisor") proactively notifies you of problems with your Jenkins-based environment. Jenkins Health Advisor by CloudBees identifies numerous issues before they affect your users, including security vulnerabilities, performance problems, and plugin version issues. Best of all, Jenkins Health Advisor by CloudBees is constantly being improved by the [CloudBees Support](https://www.cloudbees.com/products/cloudbees-jenkins-support) and Engineering teams to cover the most recent identified issues.
+
+By default, you’ll receive a summary email whenever a new problem is identified in your Jenkins instance, and whenever one or more of the problems affecting your instance has been resolved. You can configure the email address Jenkins Health Advisor by CloudBees uses in the Configuration section.
+
+Initially, Jenkins Health Advisor by CloudBees sends an initial report that lists everything it detects in your system. Subsequent reports will only report changes from the initial report. It’s important to note that Jenkins Health Advisor by CloudBees only emails you if it finds something wrong: if it doesn’t find any problem in your system, it won’t send you email.
+
+Jenkins Health Advisor by CloudBees identifies problems by scanning a Support Bundle generate by the [support-core](https://plugins.jenkins.io/support-core) plugin from your Jenkins master. The Support Bundle is generated on a daily basis and submitted to servers hosted by CloudBees by the Jenkins Health Advisor plugin. For instructions on defining the types and kinds of data to include in the Support Bundle, see the Optional Configuration section in the [documentation...](https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/)
+
+![](docs/images/configuration.png)
+
+## Documentation
+
+See [https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/](https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/)
+
+## Troubleshooting
+See [Jenkins Health Advisor by CloudBees - Troubleshooting Guide](https://support.cloudbees.com/hc/en-us/articles/115001213031)
+
+## Changelog
+See [https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases)
 
 ## Project Tracking
 
-* [Jenkins JIRA with component `cloudbees-jenkins-advisor-plugin`](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20component%20%3D%20cloudbees-jenkins-advisor-plugin)
-
-## Build Job
-
-* You can see the plugin's build status [here](https://ci.jenkins.io/job/Plugins/job/cloudbees-advisor-plugin/).
-
-## Configuration
-
-### Configure Programmatically
-
-```java
-import com.cloudbees.jenkins.plugins.advisor.*
-
-def config = AdvisorGlobalConfiguration.instance
-  
-config.email = "test@email.com"
-config.cc = "testCC@email.com" // optional
-config.isValid = true
-config.nagDisabled = true
-config.acceptToS = true
-
-config.save()
-```
-
-### System Properties
-
-#### Upload Recurrence Period
-
-Cannot be overridden at runtime. Requires restart to take effect. Defaults to 24hrs.
-
-Overriding with Java System Property:
-
-```bash
--Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.recurrencePeriodHours=1
-```
-
-#### Upload Timeout
-
-Available properties:
-
-| Property                                                                                           | Default | Unit    | Description                                      |
-|----------------------------------------------------------------------------------------------------|---------|---------|--------------------------------------------------|
-| com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes       | 60      | minutes | The maximum time to wait for a response          |
-| com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes   | 60      | minutes | The maximum time an upload request can stay idle |
-
-Can be overridden dynamically at runtime, via Script Console:
-
-```java
-System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes", "120");
-```
-
-Settings are lost after restart.
-
-Can be permanently added by amending Jenkins Java System Properties:
-
-```bash
--Dcom.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes=120
-```
-
-Defaults to 60 (minutes)
-
-#### Upload Initial Delay
-
-Cannot be overridden at runtime. Requires restart to take effect. Defaults to 5mins.
-
-Overriding with Java System Property:
-
-```bash
--Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.initialDelayMinutes=60
-```
-
-## Troubleshooting
-
-### Manual upload launch
-
-The following can be run from the Script Console to manually trigger an upload:
-
-```
-import hudson.model.*
-import hudson.triggers.*
-import jenkins.util.Timer;
-
-
-for(trigger in PeriodicWork.all()) {
-  if(trigger.class.name == "com.cloudbees.jenkins.plugins.advisor.BundleUpload"){
-    trigger.run()
-    return
-  }
-}
-```
-
-### Idle timeout
-
-Bundle uploads fail with:
-
-```
-SEVERE: Issue while uploading file to bundle upload service: java.util.concurrent.TimeoutException: Request reached idle time out of 120000 ms after 120483 ms
-```
-
-Try adjusting the idle timeout period.
-
-See the [Upload Timeout](#Upload-Timeout) section for how to do that.
-
-### File is not a normal file.
-
-Bundle uploads fail with:
-
-```
-Jenkins Health Advisor by CloudBees failed to upload a bundle: ERROR: Issue while uploading file to bundle upload service: An error occurred while checking server status during bundle upload. 
-Message: com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient$InsightsUploadFileException: Exception trying to upload support bundle. Message: File is not a normal file.
-```
-
-Check the logs as the cause should be printed as  a `SEVERE` message along with the above message (`File is not a normal file.`) duplicated. 
+[Jenkins JIRA with component `cloudbees-jenkins-advisor-plugin`](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20component%20%3D%20cloudbees-jenkins-advisor-plugin)
