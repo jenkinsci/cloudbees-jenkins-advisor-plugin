@@ -1,0 +1,8 @@
+advisor:
+  acceptToS: true
+  cc: "we@email.com,they@email.com"
+  email: "me@email.com"
+  excludedComponents:
+    - "ThreadDumps"
+    - "PipelineThreadDump"
+  nagDisabled: true

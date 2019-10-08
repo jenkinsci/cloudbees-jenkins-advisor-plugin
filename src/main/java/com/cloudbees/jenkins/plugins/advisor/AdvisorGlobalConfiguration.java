@@ -53,6 +53,7 @@ public class AdvisorGlobalConfiguration
   implements Describable<AdvisorGlobalConfiguration>, ExtensionPoint, Saveable, OnMaster {
 
   public static final String PLUGIN_NAME = "cloudbees-jenkins-advisor";
+  public static final String SEND_ALL_COMPONENTS = "SENDALL";
 
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
@@ -415,7 +416,7 @@ public class AdvisorGlobalConfiguration
       }
       // Note that we're not excluding anything
       if(remove.isEmpty()) {
-        remove.add("SENDALL");
+        remove.add(SEND_ALL_COMPONENTS);
       }
 
       final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
