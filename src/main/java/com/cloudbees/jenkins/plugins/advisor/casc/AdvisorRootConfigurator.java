@@ -72,7 +72,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
                     excludedComponents.add(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS);
                 }
             } else {
-                throw new ConfiguratorException(this, "Excluded components are expected to be a collection.");
+                throw new ConfiguratorException(this, "Excluded components are expected to be a list.");
             }
 
         } else {
@@ -91,7 +91,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
                 updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
             } else {
                 // In UI, if you don't accept the ToS, the configuration is not applied, so here we throw an exception
-                throw new ConfiguratorException(this, "Terms of Service for CloudBees Jenkins Advisor have to be accepted. Please, review the yaml file.");
+                throw new ConfiguratorException(this, "Terms of Service for CloudBees Jenkins Advisor have to be accepted. Please, review the acceptToS field in the yaml file.");
             }
         } else {
             // In UI, if the fields are invalid, the configuration is not applied, so here we throw an exception

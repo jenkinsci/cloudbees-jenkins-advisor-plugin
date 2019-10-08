@@ -38,7 +38,7 @@ public class AdvisorRootConfiguratorTest {
     @ClassRule
     public static JenkinsRule rule = new JenkinsRule();
     @Rule
-    public ExpectedException thrown= ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUpConfigurator() {
