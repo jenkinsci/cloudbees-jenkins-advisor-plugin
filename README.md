@@ -1,5 +1,9 @@
 # Jenkins Health Advisor by CloudBees
 
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/cloudbees-jenkins-advisor.svg)](https://plugins.jenkins.io/cloudbees-jenkins-advisor)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/cloudbees-jenkins-advisor-plugin.svg?label=changelog)](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/badge/Supported%20by-CloudBees-blue?logo=cloudbees&logoColor=white)](https://www.cloudbees.com/products/cloudbees-jenkins-support)
+
 This jenkins plugin periodically uploads [support bundles](https://wiki.jenkins.io/display/JENKINS/Support+Core+Plugin) for processing by Jenkins Health Advisor by CloudBees. 
 Jenkins Health Advisor by CloudBees analyse these bundles and send in return an email when it detects a new known issue referenced by the [CloudBees Support team](https://support.cloudbees.com).
 
