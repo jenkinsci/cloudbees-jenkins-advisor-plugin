@@ -80,6 +80,11 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         }
 
         // Check and apply configuration
+        if (!acceptToS) {
+            // In UI, if you don't accept the ToS, the configuration is not applied, so here we throw an exception
+            throw new ConfiguratorException(this, "Terms of Service for CloudBees Jenkins Advisor have to be accepted. Please, review the acceptToS field in the yaml file.");
+        }
+
         AdvisorGlobalConfiguration insights = getTargetComponent(configurationContext);
         AdvisorGlobalConfiguration.DescriptorImpl descriptor = (AdvisorGlobalConfiguration.DescriptorImpl) insights.getDescriptor();
         boolean valid = true;
@@ -87,12 +92,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
             valid = false;
         }
         if (valid) {
-            if (acceptToS) {
-                updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
-            } else {
-                // In UI, if you don't accept the ToS, the configuration is not applied, so here we throw an exception
-                throw new ConfiguratorException(this, "Terms of Service for CloudBees Jenkins Advisor have to be accepted. Please, review the acceptToS field in the yaml file.");
-            }
+            updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
         } else {
             // In UI, if the fields are invalid, the configuration is not applied, so here we throw an exception
             throw new ConfiguratorException(this, "Invalid configuration for CloudBees Jenkins Advisor. Please, review the content of email and cc fields in the yaml file.");
