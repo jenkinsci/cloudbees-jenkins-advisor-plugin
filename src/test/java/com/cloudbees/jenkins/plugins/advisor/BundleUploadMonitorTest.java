@@ -2,6 +2,7 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -22,10 +23,17 @@ public class BundleUploadMonitorTest {
   @Rule
   public JenkinsRule j = new JenkinsRule();
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig());
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   private static final String TEST_EMAIL = "test";
   private final String textPrefix = "Jenkins Health Advisor by CloudBees failed to upload a bundle";
+
+  @Before
+  public void setup() {
+    // Dynamically configure the Advisor Server URL to reach WireMock server
+    System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
+            wireMockRule.url("/"));
+  }
 
   @Test
   public void testBundleUploadSuccess() throws Exception {

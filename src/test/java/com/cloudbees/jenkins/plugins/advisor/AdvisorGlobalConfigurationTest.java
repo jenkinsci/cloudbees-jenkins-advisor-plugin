@@ -30,6 +30,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,16 +50,18 @@ public class AdvisorGlobalConfigurationTest {
   public JenkinsRule j = new JenkinsRule();
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.wireMockConfig());
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
   private final String cc = "";
 
-
   @Before
   public void setup() {
     advisor = AdvisorGlobalConfiguration.getInstance();
+    // Dynamically configure the Advisor Server URL to reach WireMock server
+    System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
+            wireMockRule.url("/"));
   }
 
 

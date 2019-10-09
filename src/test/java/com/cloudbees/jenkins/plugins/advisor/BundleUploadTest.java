@@ -43,11 +43,14 @@ public class BundleUploadTest {
   @Rule
   public JenkinsRule j = new JenkinsRule();
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig());
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Before
-  public void resetWireMock() {
+  public void setup() {
     wireMockRule.resetAll();
+    // Dynamically configure the Advisor Server URL to reach WireMock server
+    System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
+            wireMockRule.url("/"));
   }
 
   @WithTimeout(30)
