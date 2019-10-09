@@ -5,6 +5,7 @@ import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -31,7 +32,14 @@ public class AdvisorClientTest {
   private final AdvisorClient subject = new AdvisorClient(accountCredentials);
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig());
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+
+  @Before
+  public void setup() {
+    // Dynamically configure the Advisor Server URL to reach WireMock server
+    System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
+            wireMockRule.url("/"));
+  }
 
   @Test
   public void testDoCheckHealth() throws Exception {
