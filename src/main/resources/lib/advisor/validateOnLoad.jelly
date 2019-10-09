@@ -26,7 +26,7 @@
         <j:if test="${validationStatus.contains('tos-not-accepted')}">
           <div class="alert alert-warning" role="alert">
             <strong>Terms and Conditions not accepted.</strong>
-            <p>To use Jenkins Health Advisor, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
+            <p>To use Jenkins Health Advisor by CloudBees, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
           </div>
         </j:if>
         <j:if test="${validationStatus.contains('xception')}">
