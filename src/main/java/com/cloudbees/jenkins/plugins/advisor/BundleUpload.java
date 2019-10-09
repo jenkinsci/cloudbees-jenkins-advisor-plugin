@@ -11,6 +11,7 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jenkinsci.Symbol;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Extension
+@Extension(dynamicLoadable = YesNoMaybe.YES)
 @Symbol("bundleUpload")
 public class BundleUpload extends AsyncPeriodicWork {
 

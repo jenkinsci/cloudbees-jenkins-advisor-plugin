@@ -21,6 +21,7 @@ import hudson.model.ManagementLink;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormValidation;
+import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -47,7 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Extension
+@Extension(dynamicLoadable = YesNoMaybe.YES)
 public class AdvisorGlobalConfiguration
   extends ManagementLink
   implements Describable<AdvisorGlobalConfiguration>, ExtensionPoint, Saveable, OnMaster {
@@ -278,7 +279,7 @@ public class AdvisorGlobalConfiguration
   }
 
   @SuppressWarnings("unused")
-  @Extension
+  @Extension(dynamicLoadable = YesNoMaybe.YES)
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
 
     public DescriptorImpl() {

@@ -2,6 +2,7 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import jenkins.YesNoMaybe;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -14,7 +15,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * This message will match any of the error messages in the log file.
  */
 @SuppressWarnings("unused")
-@Extension
+@Extension(dynamicLoadable = YesNoMaybe.YES)
 public class BundleUploadMonitor extends AdministrativeMonitor {
 
   @Override

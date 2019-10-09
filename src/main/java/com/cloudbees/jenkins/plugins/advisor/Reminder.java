@@ -2,6 +2,7 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -13,7 +14,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * Displays the reminder that the configuration must be done.
  */
-@Extension
+@Extension(dynamicLoadable = YesNoMaybe.YES)
 public class Reminder extends AdministrativeMonitor {
 
   @Override
