@@ -9,7 +9,7 @@
              src="${rootURL}${h.resourcePath}/plugin/cloudbees-jenkins-advisor/icons/advisor.svg"/>
         ${it.actionTitle}
       </h1>
-      <p><a href="https://plugins.jenkins.io/cloudbees-jenkins-advisor" target="_blank">Jenkins Health Advisor</a> automatically analyzes your Jenkins environment and proactively alerts you of components needing attention with detailed email reports.</p>
+      <p><a href="https://plugins.jenkins.io/cloudbees-jenkins-advisor" target="_blank">Jenkins Health Advisor by CloudBees</a> automatically analyzes your Jenkins environment and proactively alerts you of components needing attention with detailed email reports.</p>
       <p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your
         email address.
       </p>
@@ -27,7 +27,7 @@
 
         <f:block>
           <div class="section-header">${%Terms and Conditions}</div>
-          <p>To use Jenkins Health Advisor, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
+          <p>To use Jenkins Health Advisor by CloudBees, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
         </f:block>
         <f:entry field="acceptToS">
           <f:checkbox title="${%I agree with these Terms and Conditions}"
@@ -53,7 +53,7 @@
 
           <f:block>
             <strong>${%Configure data}</strong>
-            <p>By default, Jenkins Health Advisor will not scan your agent logs, configurations or global configurations.
+            <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global configurations.
               You can choose to filter out other data from being analyzed by configuring the options below.</p>
           </f:block>
 
