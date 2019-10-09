@@ -27,7 +27,7 @@
 
         <f:block>
           <div class="section-header">${%Terms and Conditions}</div>
-          <p>To use Jenkins Health Advisor by CloudBees, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service'>our Terms and Conditions</a>.</p>
+          <p>To use Jenkins Health Advisor by CloudBees, please agree to <a href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>our Terms and Conditions</a>.</p>
         </f:block>
         <f:entry field="acceptToS">
           <f:checkbox title="${%I agree with these Terms and Conditions}"
