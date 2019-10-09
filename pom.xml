@@ -18,7 +18,6 @@
     <java.level>8</java.level>
     <hpi.pluginChagelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChagelogUrl>
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/cloudbees-jenkins-advisor-plugin/master/src/main/webapp/icons/advisor.svg</hpi.pluginLogoUrl>
-    <jcasc.version>1.30</jcasc.version>
   </properties>
 
   <name>Jenkins Health Advisor by CloudBees Plugin</name>
@@ -92,7 +91,6 @@
     <dependency>
       <groupId>io.jenkins</groupId>
       <artifactId>configuration-as-code</artifactId>
-      <version>${jcasc.version}</version>
       <optional>true</optional>
     </dependency>
 
@@ -100,7 +98,6 @@
     <dependency>
       <groupId>io.jenkins</groupId>
       <artifactId>configuration-as-code</artifactId>
-      <version>${jcasc.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
