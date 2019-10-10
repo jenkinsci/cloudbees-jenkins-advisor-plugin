@@ -167,7 +167,7 @@ public class AdvisorGlobalConfiguration
   @SuppressWarnings({"unused", "WeakerAccess"}) // stapler web method binding
   public HttpResponse doConfigure(@Nonnull StaplerRequest req) throws IOException, ServletException,
     FormException {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
@@ -203,7 +203,7 @@ public class AdvisorGlobalConfiguration
   @SuppressWarnings("unchecked")
   @Override
   public Descriptor<AdvisorGlobalConfiguration> getDescriptor() {
-    return Jenkins.getInstance().getDescriptorOrDie(getClass());
+    return Jenkins.get().getDescriptorOrDie(getClass());
   }
 
   @SuppressWarnings("unused")
@@ -439,7 +439,7 @@ public class AdvisorGlobalConfiguration
   boolean isPluginEnabled() {
     boolean lastEnabledState;
     try {
-      PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(PLUGIN_NAME);
+      PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(PLUGIN_NAME);
 
       if (plugin == null) {
         LOG.severe("Expected to find plugin: [" + PLUGIN_NAME + "] but none found");
@@ -477,10 +477,10 @@ public class AdvisorGlobalConfiguration
   }
 
   private XmlFile getConfigFile() {
-    return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getClass().getName()+".xml"));
+    return new XmlFile(new File(Jenkins.get().getRootDir(),getClass().getName()+".xml"));
   }
 
   public static AdvisorGlobalConfiguration getInstance() {
-    return Jenkins.getInstance().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
+    return Jenkins.get().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
   }
 }

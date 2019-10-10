@@ -17,7 +17,7 @@ public final class PluginHelper {
 
   public static String getPluginVersion() {
     try {
-      Plugin plugin = Jenkins.getInstance().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME);
+      Plugin plugin = Jenkins.get().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME);
       if (plugin != null) {
         return plugin.getWrapper().getVersion();
       }

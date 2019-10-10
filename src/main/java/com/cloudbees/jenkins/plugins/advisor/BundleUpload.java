@@ -108,7 +108,7 @@ public class BundleUpload extends AsyncPeriodicWork {
     try {
       AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email));
 
-      ClientResponse response = advisorClient.uploadFile(new ClientUploadRequest(Jenkins.getInstance().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
+      ClientResponse response = advisorClient.uploadFile(new ClientUploadRequest(Jenkins.get().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
       if (response.getCode() == 200) {
         config.setLastBundleResult("Successfully uploaded a bundle at " +
           new SimpleDateFormat("yyyy MM dd HH:mm:ss").format(Calendar.getInstance().getTime()));

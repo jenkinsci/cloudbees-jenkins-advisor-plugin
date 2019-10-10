@@ -40,7 +40,7 @@ public class Reminder extends AdministrativeMonitor {
       return HttpResponses.redirectViaContextPath(config.getUrlName());
     } else if (no != null) {
       // should never return null if we get here
-      return HttpResponses.redirectViaContextPath(Jenkins.getInstance().getPluginManager().getSearchUrl() + "/installed");
+      return HttpResponses.redirectViaContextPath(Jenkins.get().getPluginManager().getSearchUrl() + "/installed");
     } else { //remind later
       return HttpResponses.forwardToPreviousPage();
     }
