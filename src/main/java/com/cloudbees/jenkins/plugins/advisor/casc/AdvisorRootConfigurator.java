@@ -55,8 +55,10 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         // Scalar values
         final String email = (mapping.get("email") != null ? mapping.getScalarValue("email") : StringUtils.EMPTY);
         final String cc = (mapping.get("cc") != null ? mapping.getScalarValue("cc") : StringUtils.EMPTY);
-        final boolean nagDisabled = (mapping.get("nagDisabled") != null ? BooleanUtils.toBoolean(mapping.getScalarValue("nagDisabled")) : false);
-        final boolean acceptToS = (mapping.get("acceptToS") != null ? BooleanUtils.toBoolean(mapping.getScalarValue("acceptToS")) : false);
+        final boolean nagDisabled = (mapping.get("nagDisabled") != null &&
+                BooleanUtils.toBoolean(mapping.getScalarValue("nagDisabled")));
+        final boolean acceptToS = (mapping.get("acceptToS") != null &&
+                BooleanUtils.toBoolean(mapping.getScalarValue("acceptToS")));
 
         // List values
         final Set<String> excludedComponents = new HashSet<>();
