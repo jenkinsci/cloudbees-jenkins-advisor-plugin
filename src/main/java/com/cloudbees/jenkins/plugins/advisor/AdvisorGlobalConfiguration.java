@@ -380,14 +380,14 @@ public class AdvisorGlobalConfiguration
     }
     
     // Used from validateOnLoad.jelly
-    public String connectionTest(String credentials) {
+    public String connectionTest(String email) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
         return "tos-not-accepted";
       }
 
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(credentials));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch (Exception e) {

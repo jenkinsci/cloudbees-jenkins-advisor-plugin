@@ -17,16 +17,16 @@ public class AdvisorClient {
   static final String HEALTH_SUCCESS = "Successfully checked the service status";
   static final String EMAIL_SUCCESS = "Successfully sent a test email";
   private static final Logger LOG = Logger.getLogger(AdvisorClient.class.getName());
-  private final Recipient credentials;
+  private final Recipient recipient;
 
   public AdvisorClient(Recipient recipient) {
-    this.credentials = recipient;
+    this.recipient = recipient;
   }
 
   public String doTestEmail() {
     try {
       HttpURLConnection con =
-        HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getEmail()));
+        HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(recipient.getEmail()));
 
       int responseCode = con.getResponseCode();
 
@@ -72,7 +72,7 @@ public class AdvisorClient {
     File uploadFile = r.getFile();
     String cc = EmailUtil.urlEncode(r.getCc());
 
-    String requestURL = AdvisorClientConfig.apiUploadURI(credentials.getEmail(), r.getInstanceId(), cc);
+    String requestURL = AdvisorClientConfig.apiUploadURI(recipient.getEmail(), r.getInstanceId(), cc);
 
     try {
       MultipartConnection multipart = new MultipartConnection(requestURL, StandardCharsets.UTF_8);
