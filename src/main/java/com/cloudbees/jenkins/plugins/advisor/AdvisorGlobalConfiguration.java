@@ -396,7 +396,7 @@ public class AdvisorGlobalConfiguration
       String email = json.getString("email");
       String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
-      Boolean acceptToS = json.getBoolean("acceptToS");
+      boolean acceptToS = json.getBoolean("acceptToS");
 
       // Have to accept the Terms of Service to have a valid configuration
       if(!acceptToS) {
