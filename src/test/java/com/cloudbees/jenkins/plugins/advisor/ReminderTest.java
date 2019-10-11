@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class ReminderTest {
 
   @Rule
-  public JenkinsRule j = new JenkinsRule();
+  public final JenkinsRule j = new JenkinsRule();
 
   private String blurb;
 
@@ -77,7 +77,7 @@ public class ReminderTest {
   }
 
   private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms, String ccEmail) throws Exception {
-      HtmlForm form = (HtmlForm) (wc.goTo(part).getFirstByXPath("//form[@action='configure']"));
+      HtmlForm form = wc.goTo(part).getFirstByXPath("//form[@action='configure']");
       form.getInputByName("_.email").setValueAttribute(userEmail);
     form.getInputByName("_.cc").setValueAttribute(ccEmail);
       form.getInputByName("_.nagDisabled").setChecked(nagOff);

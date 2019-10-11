@@ -1,7 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
 import com.cloudbees.jenkins.plugins.advisor.utils.FormValidationHelper;
@@ -35,7 +35,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,12 +64,11 @@ public class AdvisorGlobalConfiguration
   private boolean acceptToS;
   private String lastBundleResult;
 
-  @SuppressWarnings("unused")
+
   public AdvisorGlobalConfiguration() {
     load();
   }
-
-  @SuppressWarnings("unused")
+  
   @DataBoundConstructor
   public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
     this.setEmail(email);
@@ -103,51 +101,51 @@ public class AdvisorGlobalConfiguration
     return Messages.Insights_Description();
   }
 
-  @SuppressWarnings("unused")
+
   public String getActionTitle() {
     return Messages.Insights_Title();
   }
 
-  @SuppressWarnings("unused")
+
   public String getActionDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-  @SuppressWarnings("unused")
+
   public String getDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public boolean isNagDisabled() {
     return nagDisabled;
   }
 
-  @SuppressWarnings("unused")
+
   public void setNagDisabled(boolean nagDisabled) {
     if (this.nagDisabled != nagDisabled) {
       this.nagDisabled = nagDisabled;
     }
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public boolean isAcceptToS() {
     return acceptToS;
   }
 
-  @SuppressWarnings({"unused", "WeakerAccess"})
+
   public void setAcceptToS(boolean acceptToS) {
     if (this.acceptToS != acceptToS) {
       this.acceptToS = acceptToS;
     }
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getLastBundleResult() {
     return lastBundleResult;
   }
 
-  @SuppressWarnings({"unused", "WeakerAccess"})
+
   public void setLastBundleResult(String lastBundleResult) {
     this.lastBundleResult = lastBundleResult;
   }
@@ -157,17 +155,13 @@ public class AdvisorGlobalConfiguration
    *
    * @param req the request.
    * @return the response.
-   * @throws IOException if something goes wrong.
-   * @throws ServletException if something goes wrong.
-   * @throws FormException if something goes wrong.
    */
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
-  @SuppressWarnings({"unused", "WeakerAccess"}) // stapler web method binding
-  public HttpResponse doConfigure(@Nonnull StaplerRequest req) throws IOException, ServletException,
-    FormException {
-    Jenkins jenkins = Jenkins.getInstance();
+
+  public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
+    Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
@@ -200,43 +194,43 @@ public class AdvisorGlobalConfiguration
   /**
    * {@inheritDoc}
    */
-  @SuppressWarnings("unchecked")
+
   @Override
   public Descriptor<AdvisorGlobalConfiguration> getDescriptor() {
-    return Jenkins.getInstance().getDescriptorOrDie(getClass());
+    return Jenkins.get().getDescriptorOrDie(getClass());
   }
 
-  @SuppressWarnings("unused")
+
   public void setEmail(@CheckForNull String email) {
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getEmail() {
     return email;
   }
 
-  @SuppressWarnings("unused")
+
   public void setCc(@CheckForNull String cc) {
     this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getCc() {
     return cc;
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public Set<String> getExcludedComponents() {
     return excludedComponents != null ? excludedComponents : Collections.emptySet();
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public void setExcludedComponents(Set<String> excludedComponents) {
     this.excludedComponents = excludedComponents;
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public List<Component> getIncludedComponents() {
     List<Component> included = new ArrayList<>();
     if (getExcludedComponents().isEmpty()) {
@@ -255,30 +249,26 @@ public class AdvisorGlobalConfiguration
     return included;
   }
 
-  @SuppressWarnings("unused")
+
   public boolean selectedByDefault(Component c) {
     if (getExcludedComponents().isEmpty()) {
       return c.isSelectedByDefault();
     }
     return !getExcludedComponents().contains(c.getId());
   }
-
-  @SuppressWarnings({"unused", "WeakerAccess"})
+  
   public List<Component> getComponents() {
     return SupportPlugin.getComponents();
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public boolean isValid() {
     return isValid;
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public void setValid(boolean valid) {
     isValid = valid;
   }
-
-  @SuppressWarnings("unused")
+  
   @Extension
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
 
@@ -294,10 +284,7 @@ public class AdvisorGlobalConfiguration
     public String getDisplayName() {
       return Messages.Insights_DisplayName();
     }
-
-
-
-    @SuppressWarnings("WeakerAccess")
+    
     public FormValidation doCheckEmail(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -316,8 +303,7 @@ public class AdvisorGlobalConfiguration
 
       return FormValidation.ok();
     }
-
-    @SuppressWarnings("WeakerAccess")
+  
     public FormValidation doCheckCc(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -338,9 +324,7 @@ public class AdvisorGlobalConfiguration
 
       return FormValidation.ok();
     }
-
-
-    @SuppressWarnings({"unused", "WeakerAccess"})
+    
     public FormValidation doTestConnection(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
       try {
         if(email.isEmpty()){
@@ -350,7 +334,7 @@ public class AdvisorGlobalConfiguration
         if (ccErrors.isPresent()) {
           return ccErrors.get();
         }
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doCheckHealth();
         return FormValidation.ok("Success");
@@ -358,8 +342,7 @@ public class AdvisorGlobalConfiguration
         return FormValidation.error("Client error : "+e.getMessage());
       }
     }
-
-    @SuppressWarnings("unused")
+    
     public String connectionTest(String credentials) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
@@ -367,15 +350,14 @@ public class AdvisorGlobalConfiguration
       }
 
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(credentials));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch(Exception e) {
         return "" + e.getMessage();
       }
     }
-
-    @SuppressWarnings({"unused", "WeakerAccess"})
+  
     public FormValidation doTestSendEmail(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
       try {
         if(email.isEmpty()){
@@ -386,7 +368,7 @@ public class AdvisorGlobalConfiguration
           return ccErrors.get();
         }
 
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doTestEmail();
         return FormValidation.ok("Sending email.  Please check your inbox and filters.");
@@ -396,11 +378,11 @@ public class AdvisorGlobalConfiguration
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) {
       String email = json.getString("email");
       String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
-      Boolean acceptToS = json.getBoolean("acceptToS");
+      boolean acceptToS = json.getBoolean("acceptToS");
 
       // Have to accept the Terms of Service to have a valid configuration
       if(!acceptToS) {
@@ -439,7 +421,7 @@ public class AdvisorGlobalConfiguration
   boolean isPluginEnabled() {
     boolean lastEnabledState;
     try {
-      PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(PLUGIN_NAME);
+      PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(PLUGIN_NAME);
 
       if (plugin == null) {
         LOG.severe("Expected to find plugin: [" + PLUGIN_NAME + "] but none found");
@@ -462,8 +444,7 @@ public class AdvisorGlobalConfiguration
       LOG.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
     }
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public synchronized void load() {
     XmlFile file = getConfigFile();
     if(!file.exists())
@@ -477,10 +458,10 @@ public class AdvisorGlobalConfiguration
   }
 
   private XmlFile getConfigFile() {
-    return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getClass().getName()+".xml"));
+    return new XmlFile(new File(Jenkins.get().getRootDir(),getClass().getName()+".xml"));
   }
 
   public static AdvisorGlobalConfiguration getInstance() {
-    return Jenkins.getInstance().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
+    return Jenkins.get().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
   }
 }

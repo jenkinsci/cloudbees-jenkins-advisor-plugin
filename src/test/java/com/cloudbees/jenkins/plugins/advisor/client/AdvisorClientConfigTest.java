@@ -14,7 +14,7 @@ public class AdvisorClientConfigTest {
     private static final int DEFAULT_UPLOAD_IDLE_TIMEOUT_MINUTES = 60;
 
     @Test
-    public void advisorUploadTimeoutMinutes() throws Exception {
+    public void advisorUploadTimeoutMinutes() {
         int newAdvisorUploadTimeoutMinutes = 1;
 
         assertThat(AdvisorClientConfig.insightsUploadTimeoutMilliseconds(), is(equalTo((int)TimeUnit.MINUTES.toMillis(DEFAULT_UPLOAD_TIMEOUT_MINUTES))));
@@ -27,7 +27,7 @@ public class AdvisorClientConfigTest {
     }
 
     @Test
-    public void advisorUploadIdleTimeoutMinutes() throws Exception {
+    public void advisorUploadIdleTimeoutMinutes() {
         int newAdvisorUploadIdleTimeoutMinutes = 1;
 
         assertThat(AdvisorClientConfig.insightsUploadIdleTimeoutMilliseconds(), is(equalTo((int)TimeUnit.MINUTES.toMillis(DEFAULT_UPLOAD_IDLE_TIMEOUT_MINUTES))));

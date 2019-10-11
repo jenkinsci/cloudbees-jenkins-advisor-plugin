@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 public class BundleUploadMonitorTest {
 
   @Rule
-  public JenkinsRule j = new JenkinsRule();
+  public final JenkinsRule j = new JenkinsRule();
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   private static final String TEST_EMAIL = "test";
   private final String textPrefix = "Jenkins Health Advisor by CloudBees failed to upload a bundle";

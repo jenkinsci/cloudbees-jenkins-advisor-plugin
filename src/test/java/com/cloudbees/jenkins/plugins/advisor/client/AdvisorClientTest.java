@@ -1,6 +1,6 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
@@ -27,12 +27,12 @@ public class AdvisorClientTest {
   private static final String TEST_INSTANCE_ID = "12345";
   private static final String TEST_PLUGIN_VERSION = "2.9";
 
-  private final AccountCredentials accountCredentials = new AccountCredentials(TEST_EMAIL);
+  private final Recipient recipient = new Recipient(TEST_EMAIL);
 
-  private final AdvisorClient subject = new AdvisorClient(accountCredentials);
+  private final AdvisorClient subject = new AdvisorClient(recipient);
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Before
   public void setup() {
@@ -42,7 +42,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void testDoCheckHealth() throws Exception {
+  public void testDoCheckHealth() {
     stubHealth();
     String token = subject.doCheckHealth();
 
@@ -50,7 +50,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void testDoTestEmail() throws Exception {
+  public void testDoTestEmail() {
     stubFor(get(urlEqualTo(format("/api/test/emails/%s", TEST_EMAIL)))
         .willReturn(aResponse()
             .withStatus(200)));
@@ -60,7 +60,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFile() throws Exception {
+  public void uploadFile() {
     stubHealth();
     stubUpload();
 
@@ -71,7 +71,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFileWithCC() throws Exception {
+  public void uploadFileWithCC() {
     stubHealth();
     stubUploadCc(TEST_EMAIL);
 
@@ -82,7 +82,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFileWithCCMultipleRecipients() throws Exception {
+  public void uploadFileWithCCMultipleRecipients() {
     String cc = TEST_EMAIL + "," + TEST_EMAIL;
     stubHealth();
     stubUploadCc(cc);

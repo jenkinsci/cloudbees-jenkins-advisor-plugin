@@ -13,7 +13,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * Displays a message whenever there is an issue during the bundle upload process.
  * This message will match any of the error messages in the log file.
  */
-@SuppressWarnings("unused")
 @Extension
 public class BundleUploadMonitor extends AdministrativeMonitor {
 

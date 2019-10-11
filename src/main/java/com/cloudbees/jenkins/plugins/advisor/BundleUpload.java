@@ -2,9 +2,9 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.PluginHelper;
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
@@ -17,7 +17,6 @@ import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -27,19 +26,17 @@ import java.util.logging.Logger;
 @Extension
 @Symbol("bundleUpload")
 public class BundleUpload extends AsyncPeriodicWork {
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static final int RECURRENCE_PERIOD_HOURS = Integer.getInteger(
     BundleUpload.class.getName()+".recurrencePeriodHours", 24);
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static final int INITIAL_DELAY_MINUTES = Integer.getInteger(
           BundleUpload.class.getName()+".initialDelayMinutes", 30);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   private TaskListener task;
 
-  @SuppressWarnings("unused")
+
   public BundleUpload() {
     super("Bundle Upload");
   }
@@ -47,7 +44,7 @@ public class BundleUpload extends AsyncPeriodicWork {
   private static final String UNABLE_TO_GENERATE_SUPPORT_BUNDLE = "ERROR: Unable to generate support bundle";
 
   @Override
-  protected void execute(TaskListener listener) throws IOException, InterruptedException {
+  protected void execute(TaskListener listener) {
     task = listener;
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
@@ -106,9 +103,9 @@ public class BundleUpload extends AsyncPeriodicWork {
   private void executeInternal(String email, File file, String pluginVersion) {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     try {
-      AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email));
+      AdvisorClient advisorClient = new AdvisorClient(new Recipient(email));
 
-      ClientResponse response = advisorClient.uploadFile(new ClientUploadRequest(Jenkins.getInstance().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
+      ClientResponse response = advisorClient.uploadFile(new ClientUploadRequest(Jenkins.get().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
       if (response.getCode() == 200) {
         config.setLastBundleResult("Successfully uploaded a bundle at " +
           new SimpleDateFormat("yyyy MM dd HH:mm:ss").format(Calendar.getInstance().getTime()));

@@ -37,47 +37,38 @@ public class AdvisorClientConfig {
     throw new IllegalAccessError("Utility class");
   }
 
-  @SuppressWarnings("WeakerAccess")
   public static String advisorURL() {
     return removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL"), "/");
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static Integer advisorUploadTimeoutMinutes() {
     return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes"), "/"));
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static Integer insightsUploadTimeoutMilliseconds() {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadTimeoutMinutes());
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static Integer advisorUploadIdleTimeoutMinutes() {
     return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes"), "/"));
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static Integer insightsUploadIdleTimeoutMilliseconds() {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadIdleTimeoutMinutes());
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static String healthURI() {
     return advisorURL() + "/api/health";
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static String testEmailURI(String email) {
     return advisorURL() +format("/api/test/emails/%s", email);
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static String apiUploadURI(String username, String instanceId) {
     return advisorURL() + format("/api/users/%s/upload/%s", username, instanceId);
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static String apiUploadURI(String username, String instanceId, String cc) {
     if(cc != null) {
       return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
@@ -108,7 +99,7 @@ public class AdvisorClientConfig {
 
     while ((i1 = value.indexOf("${")) >= 0) {
       // append prefix to result
-      result.append(value.substring(0, i1));
+      result.append(value, 0, i1);
 
       // strip prefix from original
       value = value.substring(i1 + 2);

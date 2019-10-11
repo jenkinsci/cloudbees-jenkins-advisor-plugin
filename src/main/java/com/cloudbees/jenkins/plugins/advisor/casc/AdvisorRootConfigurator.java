@@ -55,8 +55,10 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         // Scalar values
         final String email = (mapping.get("email") != null ? mapping.getScalarValue("email") : StringUtils.EMPTY);
         final String cc = (mapping.get("cc") != null ? mapping.getScalarValue("cc") : StringUtils.EMPTY);
-        final boolean nagDisabled = (mapping.get("nagDisabled") != null ? BooleanUtils.toBoolean(mapping.getScalarValue("nagDisabled")) : false);
-        final boolean acceptToS = (mapping.get("acceptToS") != null ? BooleanUtils.toBoolean(mapping.getScalarValue("acceptToS")) : false);
+        final boolean nagDisabled = (mapping.get("nagDisabled") != null &&
+                BooleanUtils.toBoolean(mapping.getScalarValue("nagDisabled")));
+        final boolean acceptToS = (mapping.get("acceptToS") != null &&
+                BooleanUtils.toBoolean(mapping.getScalarValue("acceptToS")));
 
         // List values
         final Set<String> excludedComponents = new HashSet<>();
@@ -121,7 +123,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         Mapping mapping = new Mapping();
         // In UI, email is mandatory. If the email is empty, the Advisor is not configured, so nothing should be exported
         if (StringUtils.isNotBlank(instance.getEmail())) {
-            for (Attribute attribute : describe()) {
+            for (Attribute<AdvisorGlobalConfiguration, ?> attribute : describe()) {
                 final String attributeName = attribute.getName();
                 if (!excludedAttributesInConf.contains(attributeName)) {
                     mapping.put(attributeName, attribute.describe(instance, context));
