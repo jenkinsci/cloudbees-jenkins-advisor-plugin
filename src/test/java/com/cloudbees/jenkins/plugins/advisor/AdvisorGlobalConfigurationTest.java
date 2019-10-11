@@ -152,14 +152,14 @@ public class AdvisorGlobalConfigurationTest {
     doConfigure.setUp("", "");
     HttpRedirect hr1 = (HttpRedirect) j.executeOnServer(doConfigure);
     String url1 = Whitebox.getInternalState(hr1, "url");
-    assertEquals("Rerouted back to configuration", "/jenkins/cloudbees-jenkins-advisor", url1);
+    assertEquals("Rerouted back to configuration", ".", url1);
 
     // Didn't accept Terms of Service - send back to main page
     doConfigure.setUp(email, email);
     doConfigure.setTerms(false);
     HttpRedirect hr2 = (HttpRedirect) j.executeOnServer(doConfigure);
     String url2 = Whitebox.getInternalState(hr2, "url");
-    assertEquals("Rerouted back to configuration", "/jenkins/cloudbees-jenkins-advisor", url2);
+    assertEquals("Rerouted back to configuration", ".", url2);
 
     // Redirect to main page
     doConfigure.setTerms(true);

@@ -103,6 +103,7 @@
 
         <f:bottomButtonBar>
           <f:submit name="save" value="${%Save}"/>
+          <input name="advisor:apply" type="submit" value="Apply" class="submit-button"/>
         </f:bottomButtonBar>
 
       </f:form>

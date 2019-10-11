@@ -24,6 +24,7 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -154,17 +155,18 @@ public class AdvisorGlobalConfiguration
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
-
   public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
     Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
-
-      return HttpResponses.redirectTo(isValid
-        ? req.getContextPath() + "/manage"
-        : req.getContextPath() + "/" + getUrlName());
+      // We want to refresh the page to reload the status even when we click on "Apply"
+      if (!isValid || StringUtils.isNotBlank(req.getParameter("advisor:apply"))) {
+        return HttpResponses.redirectToDot();
+      } else {
+        return HttpResponses.redirectTo(req.getContextPath() + "/manage");
+      }
     } catch (Exception e) {
       isValid = false;
       LOG.severe("Unable to save Jenkins Health Advisor by CloudBees configuration: " + Functions.printThrowable(e));
@@ -378,7 +380,7 @@ public class AdvisorGlobalConfiguration
         return FormValidation.error("Client error : " + e.getMessage());
       }
     }
-    
+
     // Used from validateOnLoad.jelly
     public String connectionTest(String email) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
