@@ -378,7 +378,8 @@ public class AdvisorGlobalConfiguration
         return FormValidation.error("Client error : " + e.getMessage());
       }
     }
-
+    
+    // Used from validateOnLoad.jelly
     public String connectionTest(String credentials) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
