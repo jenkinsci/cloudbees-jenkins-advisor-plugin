@@ -73,7 +73,7 @@
         <f:section name="advanced" title="Advanced Settings">
 
           <f:block>
-            <strong>${%Configure data}</strong>
+            <strong>${%Configure Data}</strong>
             <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
               configurations.
               You can choose to filter out other data from being analyzed by configuring the options below.
