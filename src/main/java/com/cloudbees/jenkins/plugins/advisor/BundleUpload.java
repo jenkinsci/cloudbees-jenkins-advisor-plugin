@@ -2,9 +2,9 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.PluginHelper;
-import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
@@ -26,19 +26,17 @@ import java.util.logging.Logger;
 @Extension
 @Symbol("bundleUpload")
 public class BundleUpload extends AsyncPeriodicWork {
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static final int RECURRENCE_PERIOD_HOURS = Integer.getInteger(
     BundleUpload.class.getName()+".recurrencePeriodHours", 24);
-
-  @SuppressWarnings("WeakerAccess")
+  
   public static final int INITIAL_DELAY_MINUTES = Integer.getInteger(
           BundleUpload.class.getName()+".initialDelayMinutes", 30);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   private TaskListener task;
 
-  @SuppressWarnings("unused")
+
   public BundleUpload() {
     super("Bundle Upload");
   }

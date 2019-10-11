@@ -64,12 +64,11 @@ public class AdvisorGlobalConfiguration
   private boolean acceptToS;
   private String lastBundleResult;
 
-  @SuppressWarnings("unused")
+
   public AdvisorGlobalConfiguration() {
     load();
   }
-
-  @SuppressWarnings("unused")
+  
   @DataBoundConstructor
   public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
     this.setEmail(email);
@@ -102,51 +101,51 @@ public class AdvisorGlobalConfiguration
     return Messages.Insights_Description();
   }
 
-  @SuppressWarnings("unused")
+
   public String getActionTitle() {
     return Messages.Insights_Title();
   }
 
-  @SuppressWarnings("unused")
+
   public String getActionDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-  @SuppressWarnings("unused")
+
   public String getDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public boolean isNagDisabled() {
     return nagDisabled;
   }
 
-  @SuppressWarnings("unused")
+
   public void setNagDisabled(boolean nagDisabled) {
     if (this.nagDisabled != nagDisabled) {
       this.nagDisabled = nagDisabled;
     }
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public boolean isAcceptToS() {
     return acceptToS;
   }
 
-  @SuppressWarnings({"unused", "WeakerAccess"})
+
   public void setAcceptToS(boolean acceptToS) {
     if (this.acceptToS != acceptToS) {
       this.acceptToS = acceptToS;
     }
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getLastBundleResult() {
     return lastBundleResult;
   }
 
-  @SuppressWarnings({"unused", "WeakerAccess"})
+
   public void setLastBundleResult(String lastBundleResult) {
     this.lastBundleResult = lastBundleResult;
   }
@@ -160,7 +159,7 @@ public class AdvisorGlobalConfiguration
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
-  @SuppressWarnings({"unused", "WeakerAccess"}) // stapler web method binding
+
   public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
     Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
@@ -195,43 +194,43 @@ public class AdvisorGlobalConfiguration
   /**
    * {@inheritDoc}
    */
-  @SuppressWarnings("unchecked")
+
   @Override
   public Descriptor<AdvisorGlobalConfiguration> getDescriptor() {
     return Jenkins.get().getDescriptorOrDie(getClass());
   }
 
-  @SuppressWarnings("unused")
+
   public void setEmail(@CheckForNull String email) {
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getEmail() {
     return email;
   }
 
-  @SuppressWarnings("unused")
+
   public void setCc(@CheckForNull String cc) {
     this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public String getCc() {
     return cc;
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public Set<String> getExcludedComponents() {
     return excludedComponents != null ? excludedComponents : Collections.emptySet();
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public void setExcludedComponents(Set<String> excludedComponents) {
     this.excludedComponents = excludedComponents;
   }
 
-  @SuppressWarnings("WeakerAccess")
+
   public List<Component> getIncludedComponents() {
     List<Component> included = new ArrayList<>();
     if (getExcludedComponents().isEmpty()) {
@@ -250,30 +249,26 @@ public class AdvisorGlobalConfiguration
     return included;
   }
 
-  @SuppressWarnings("unused")
+
   public boolean selectedByDefault(Component c) {
     if (getExcludedComponents().isEmpty()) {
       return c.isSelectedByDefault();
     }
     return !getExcludedComponents().contains(c.getId());
   }
-
-  @SuppressWarnings({"unused", "WeakerAccess"})
+  
   public List<Component> getComponents() {
     return SupportPlugin.getComponents();
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public boolean isValid() {
     return isValid;
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public void setValid(boolean valid) {
     isValid = valid;
   }
-
-  @SuppressWarnings("unused")
+  
   @Extension
   public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
 
@@ -289,10 +284,7 @@ public class AdvisorGlobalConfiguration
     public String getDisplayName() {
       return Messages.Insights_DisplayName();
     }
-
-
-
-    @SuppressWarnings("WeakerAccess")
+    
     public FormValidation doCheckEmail(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -311,8 +303,7 @@ public class AdvisorGlobalConfiguration
 
       return FormValidation.ok();
     }
-
-    @SuppressWarnings("WeakerAccess")
+  
     public FormValidation doCheckCc(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -333,9 +324,7 @@ public class AdvisorGlobalConfiguration
 
       return FormValidation.ok();
     }
-
-
-    @SuppressWarnings({"unused", "WeakerAccess"})
+    
     public FormValidation doTestConnection(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
       try {
         if(email.isEmpty()){
@@ -353,8 +342,7 @@ public class AdvisorGlobalConfiguration
         return FormValidation.error("Client error : "+e.getMessage());
       }
     }
-
-    @SuppressWarnings("unused")
+    
     public String connectionTest(String credentials) {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
       if (!config.isAcceptToS()) {
@@ -369,8 +357,7 @@ public class AdvisorGlobalConfiguration
         return "" + e.getMessage();
       }
     }
-
-    @SuppressWarnings({"unused", "WeakerAccess"})
+  
     public FormValidation doTestSendEmail(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
       try {
         if(email.isEmpty()){
@@ -457,8 +444,7 @@ public class AdvisorGlobalConfiguration
       LOG.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
     }
   }
-
-  @SuppressWarnings("WeakerAccess")
+  
   public synchronized void load() {
     XmlFile file = getConfigFile();
     if(!file.exists())

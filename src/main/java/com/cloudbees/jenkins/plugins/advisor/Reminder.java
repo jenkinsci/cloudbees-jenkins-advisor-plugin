@@ -33,7 +33,6 @@ public class Reminder extends AdministrativeMonitor {
 
   @Restricted(NoExternalUse.class)
   @RequirePOST
-  @SuppressWarnings("unused")
   public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes, @QueryParameter(fixEmpty = true) String no) {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     if (yes != null) {

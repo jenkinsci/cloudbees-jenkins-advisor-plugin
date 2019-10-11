@@ -1,9 +1,0 @@
-<FindBugsFilter>
-  <Match>
-    <Class name="com.cloudbees.jenkins.plugins.advisor.Reminder"/>
-    <Or>
-      <Method name="doAct"/>
-    </Or>
-    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
-  </Match>
-</FindBugsFilter>
