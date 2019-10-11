@@ -123,7 +123,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         Mapping mapping = new Mapping();
         // In UI, email is mandatory. If the email is empty, the Advisor is not configured, so nothing should be exported
         if (StringUtils.isNotBlank(instance.getEmail())) {
-            for (Attribute attribute : describe()) {
+            for (Attribute<AdvisorGlobalConfiguration, ?> attribute : describe()) {
                 final String attributeName = attribute.getName();
                 if (!excludedAttributesInConf.contains(attributeName)) {
                     mapping.put(attributeName, attribute.describe(instance, context));
