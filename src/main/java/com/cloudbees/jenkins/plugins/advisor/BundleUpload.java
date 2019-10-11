@@ -17,7 +17,6 @@ import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -38,6 +37,7 @@ public class BundleUpload extends AsyncPeriodicWork {
   private static final String COULD_NOT_SAVE_SUPPORT_BUNDLE = "ERROR: Could not save support bundle";
   private static final String BUNDLE_DIR_DOES_NOT_EXIST =
     "Bundle root directory does not exist and could not be created";
+  protected static final String BUNDLE_SUCCESSFULLY_UPLOADED = "Bundle uploaded";
   private TaskListener task;
 
   public BundleUpload() {
@@ -55,14 +55,16 @@ public class BundleUpload extends AsyncPeriodicWork {
 
     if (!config.isPluginEnabled()) {
       log(Level.INFO, "Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload.");
+      updateLastBundleResult(
+        config,
+        createTimestampedWarnMessage("Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload."));
       return;
     }
     if (!config.isValid()) {
       log(Level.INFO, "Invalid configuration. Skipping bundle upload.");
-      return;
-    }
-    if (!config.isAcceptToS()) {
-      log(Level.INFO, "Terms of conditions not accepted. Skipping bundle upload.");
+      updateLastBundleResult(
+        config,
+        createTimestampedWarnMessage("Invalid configuration. Skipping bundle upload."));
       return;
     }
 
@@ -72,7 +74,7 @@ public class BundleUpload extends AsyncPeriodicWork {
       executeInternal(config.getEmail(), bundle, pluginVersion);
     } else {
       log(Level.SEVERE, UNABLE_TO_GENERATE_SUPPORT_BUNDLE);
-      config.setLastBundleResult(UNABLE_TO_GENERATE_SUPPORT_BUNDLE);
+      updateLastBundleResult(config, createTimestampedErrorMessage(UNABLE_TO_GENERATE_SUPPORT_BUNDLE));
     }
   }
 
@@ -82,7 +84,8 @@ public class BundleUpload extends AsyncPeriodicWork {
       File bundleDir = SupportPlugin.getRootDirectory();
       if (!bundleDir.exists() && !bundleDir.mkdirs()) {
         log(Level.SEVERE, String.format("%s %s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
-        config.setLastBundleResult(String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
+        updateLastBundleResult(config, createTimestampedErrorMessage(
+          String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST)));
         return null;
       }
 
@@ -93,7 +96,8 @@ public class BundleUpload extends AsyncPeriodicWork {
       }
     } catch (Exception e) {
       logError(COULD_NOT_SAVE_SUPPORT_BUNDLE, e);
-      config.setLastBundleResult(String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, e));
+      updateLastBundleResult(config,
+        createTimestampedErrorMessage(String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, e)));
     }
     return null;
   }
@@ -106,17 +110,17 @@ public class BundleUpload extends AsyncPeriodicWork {
       ClientResponse response = advisorClient
         .uploadFile(new ClientUploadRequest(Jenkins.get().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
       if (response.getCode() == 200) {
-        config.setLastBundleResult("Successfully uploaded a bundle at " +
-          new SimpleDateFormat("yyyy MM dd HH:mm:ss").format(Calendar.getInstance().getTime()));
+        updateLastBundleResult(config, createTimestampedMessage(BUNDLE_SUCCESSFULLY_UPLOADED));
       } else {
-        config.setLastBundleResult("Bundle upload failed. Response code was: " + response.getCode() + ". " +
-          "Response message: " + response.getMessage());
+        updateLastBundleResult(config,
+          createTimestampedErrorMessage("Bundle upload failed. Response code was: " + response.getCode() + ". " +
+            "Response message: " + response.getMessage()));
       }
     } catch (Exception e) {
       log(Level.SEVERE, "Issue while uploading file to bundle upload service: " + e.getMessage());
       log(Level.FINEST,
         "Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
-      config.setLastBundleResult("ERROR: Issue while uploading file to bundle upload service: " + e.getMessage());
+      updateLastBundleResult(config, createTimestampedErrorMessage("Bundle upload failed: " + e.getMessage()));
     }
   }
 
@@ -145,6 +149,25 @@ public class BundleUpload extends AsyncPeriodicWork {
       task.error(message, t);
     }
     LOG.log(Level.SEVERE, message, t);
+  }
+
+  private String createTimestampedWarnMessage(String message) {
+    return "[WARN] " + createTimestampedMessage(message);
+  }
+
+  private String createTimestampedErrorMessage(String message) {
+    return "[ERROR] " + createTimestampedMessage(message);
+  }
+
+  private String createTimestampedMessage(String message) {
+    return String.format("%1$tF %1$tT - %2$s",
+      Calendar.getInstance().getTime(),
+      message);
+  }
+
+  private void updateLastBundleResult(AdvisorGlobalConfiguration config, String message) {
+    config.setLastBundleResult(message);
+    config.save();
   }
 
   /**

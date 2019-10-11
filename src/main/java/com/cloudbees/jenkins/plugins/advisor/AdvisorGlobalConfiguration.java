@@ -320,6 +320,13 @@ public class AdvisorGlobalConfiguration
       return Messages.Insights_DisplayName();
     }
 
+    public FormValidation doCheckAcceptToS(@QueryParameter boolean value) {
+      if (!value) {
+        return FormValidation.error("Accepting our Terms and Conditions is mandatory to use this service.");
+      }
+      return FormValidation.ok();
+    }
+
     public FormValidation doCheckEmail(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -382,14 +389,13 @@ public class AdvisorGlobalConfiguration
     }
 
     // Used from validateOnLoad.jelly
-    public String connectionTest(String email) {
+    public String validateServerConnection() {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-      if (!config.isAcceptToS()) {
-        return "tos-not-accepted";
+      if(!config.isValid()){
+        return "invalid-configuration";
       }
-
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(config.email));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch (Exception e) {
@@ -411,7 +417,7 @@ public class AdvisorGlobalConfiguration
         AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doTestEmail();
-        return FormValidation.ok("Sending email.  Please check your inbox and filters.");
+        return FormValidation.ok("A request to send a test email from the server was done. Please check your inbox and filters.");
       } catch (Exception e) {
         return FormValidation.error("Client error : " + e.getMessage());
       }
@@ -419,15 +425,10 @@ public class AdvisorGlobalConfiguration
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
+      boolean acceptToS = json.getBoolean("acceptToS");
       String email = json.getString("email");
       String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
-      boolean acceptToS = json.getBoolean("acceptToS");
-
-      // Have to accept the Terms of Service to have a valid configuration
-      if (!acceptToS) {
-        return false;
-      }
 
       Set<String> remove = new HashSet<>();
       for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {
@@ -447,15 +448,17 @@ public class AdvisorGlobalConfiguration
       }
 
       try {
-        if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) ||
-          doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
-          return false;
-        }
+        return validate(acceptToS, email, cc);
       } catch (Exception e) {
         LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
         return false;
       }
-      return true;
+    }
+
+    public boolean validate(boolean acceptToS, String email, String cc) {
+      return !doCheckAcceptToS(acceptToS).kind.equals(FormValidation.Kind.ERROR)
+        && !doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)
+        && !doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR);
     }
   }
 }
