@@ -77,6 +77,7 @@
             <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
               configurations.
               You can choose to filter out other data from being analyzed by configuring the options below.
+              Click "Advanced" to configure these options.
             </p>
           </f:block>
 
