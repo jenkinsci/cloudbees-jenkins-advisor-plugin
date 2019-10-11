@@ -50,7 +50,7 @@ public class BundleUploadTest {
     wireMockRule.resetAll();
     // Dynamically configure the Advisor Server URL to reach WireMock server
     System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
-            wireMockRule.url("/"));
+      wireMockRule.url("/"));
   }
 
   @WithTimeout(30)
@@ -64,23 +64,24 @@ public class BundleUploadTest {
     config.setAcceptToS(true);
 
     stubFor(get(urlEqualTo("/api/health"))
-        .willReturn(aResponse()
-            .withStatus(200)));
+      .willReturn(aResponse()
+        .withStatus(200)));
 
     stubFor(post(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
-        .willReturn(aResponse()
-            .withStatus(200)));
+      .willReturn(aResponse()
+        .withStatus(200)));
 
     subject.run();
 
     // wait for the AsyncPeriodicWork in BundleUpload to kick off
-    while(wireMockRule.getAllServeEvents().size() < 2) {
+    while (wireMockRule.getAllServeEvents().size() < 2) {
       Thread.sleep(1000L);
     }
 
     verify(getRequestedFor(urlEqualTo("/api/health")));
 
-    verify(postRequestedFor(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
+    verify(
+      postRequestedFor(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
         .withHeader("Content-Type", WireMock.containing("multipart/form-data")));
 
     // Refresh the configuration?
@@ -128,14 +129,16 @@ public class BundleUploadTest {
   @WithoutJenkins
   @Test
   public void getRecurrencePeriod() {
-    assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
+    assertThat(new BundleUpload().getRecurrencePeriod(),
+      is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
   }
 
-    @WithoutJenkins
-    @Test
-    public void getInitialDelay() {
-        assertThat(new BundleUpload().getInitialDelay(), is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
-    }
+  @WithoutJenkins
+  @Test
+  public void getInitialDelay() {
+    assertThat(new BundleUpload().getInitialDelay(),
+      is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
+  }
 
   /**
    * Work around issues where the PluginManager doesn't have permission to save files
@@ -149,7 +152,7 @@ public class BundleUploadTest {
     @CheckForNull
     public PluginWrapper getPlugin(String shortName) {
       PluginWrapper actual = super.getPlugin(shortName);
-      if(shortName.equals(AdvisorGlobalConfiguration.PLUGIN_NAME)) {
+      if (shortName.equals(AdvisorGlobalConfiguration.PLUGIN_NAME)) {
         PluginWrapper pw = spy(actual);
 
         doReturn(false).when(pw).isEnabled();

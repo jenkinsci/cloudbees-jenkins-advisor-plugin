@@ -10,8 +10,8 @@ public final class EmailUtil {
 
   public static String fixEmptyAndTrimAllSpaces(String value) {
     String emailAddress = Util.fixEmptyAndTrim(value);
-    if(emailAddress != null) {
-      emailAddress = emailAddress.replaceAll(" ","");
+    if (emailAddress != null) {
+      emailAddress = emailAddress.replaceAll(" ", "");
     }
     return emailAddress;
   }

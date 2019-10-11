@@ -1,8 +1,8 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 
 import java.io.File;
@@ -14,11 +14,9 @@ import java.util.logging.Logger;
 
 public class AdvisorClient {
 
-  private static final Logger LOG = Logger.getLogger(AdvisorClient.class.getName());
-
   static final String HEALTH_SUCCESS = "Successfully checked the service status";
   static final String EMAIL_SUCCESS = "Successfully sent a test email";
-
+  private static final Logger LOG = Logger.getLogger(AdvisorClient.class.getName());
   private final Recipient credentials;
 
   public AdvisorClient(Recipient recipient) {
@@ -27,11 +25,12 @@ public class AdvisorClient {
 
   public String doTestEmail() {
     try {
-      HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getEmail()));
+      HttpURLConnection con =
+        HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getEmail()));
 
       int responseCode = con.getResponseCode();
 
-      if(responseCode == HttpURLConnection.HTTP_OK) {
+      if (responseCode == HttpURLConnection.HTTP_OK) {
         return EMAIL_SUCCESS;
       } else {
         throw new IOException("Unable to check response from the server: " + responseCode);
@@ -48,7 +47,7 @@ public class AdvisorClient {
 
       int responseCode = con.getResponseCode();
 
-      if(responseCode == HttpURLConnection.HTTP_OK) {
+      if (responseCode == HttpURLConnection.HTTP_OK) {
         return HEALTH_SUCCESS;
       } else {
         throw new IOException("Unable to check response from the server: " + responseCode);
@@ -63,8 +62,9 @@ public class AdvisorClient {
     try {
       doCheckHealth();
       return doUploadFile(uploadRequest);
-    } catch(Exception e) {
-      throw new InsightsAuthenticationException("An error occurred while checking server status during bundle upload. Message: " + e);
+    } catch (Exception e) {
+      throw new InsightsAuthenticationException(
+        "An error occurred while checking server status during bundle upload. Message: " + e);
     }
   }
 
@@ -91,15 +91,15 @@ public class AdvisorClient {
       } else {
         if (LOG.isLoggable(Level.SEVERE)) {
           LOG.severe(String.format("Bundle upload failed. Response code was: [%s]. Response message: [%s]",
-              clientResponse.getCode(), clientResponse.getMessage()));
+            clientResponse.getCode(), clientResponse.getMessage()));
         }
       }
 
       return clientResponse;
     } catch (Exception e) {
       String message = String.format(
-          "Exception trying to upload support bundle. Message: [%s], File: [%s], Metadata: [%s]",
-          e.getMessage(), r.getFile(), FileHelper.getFileMetadata(r.getFile()));
+        "Exception trying to upload support bundle. Message: [%s], File: [%s], Metadata: [%s]",
+        e.getMessage(), r.getFile(), FileHelper.getFileMetadata(r.getFile()));
 
       LOG.log(Level.SEVERE, message, e.getCause());
 

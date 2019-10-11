@@ -12,11 +12,11 @@ public final class EmailValidator {
 
   private static final EmailValidator EMAIL_VALIDATOR = new EmailValidator();
 
-  public static EmailValidator getInstance() {
-    return EMAIL_VALIDATOR;
+  private EmailValidator() {
   }
 
-  private EmailValidator() {
+  public static EmailValidator getInstance() {
+    return EMAIL_VALIDATOR;
   }
 
   public boolean isValid(@NonNull String email) {

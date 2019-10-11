@@ -20,19 +20,18 @@ import static org.junit.Assert.assertTrue;
 
 public class BundleUploadMonitorTest {
 
+  private static final String TEST_EMAIL = "test";
   @Rule
   public final JenkinsRule j = new JenkinsRule();
   @Rule
   public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-
-  private static final String TEST_EMAIL = "test";
   private final String textPrefix = "Jenkins Health Advisor by CloudBees failed to upload a bundle";
 
   @Before
   public void setup() {
     // Dynamically configure the Advisor Server URL to reach WireMock server
     System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
-            wireMockRule.url("/"));
+      wireMockRule.url("/"));
   }
 
   @Test
@@ -49,17 +48,17 @@ public class BundleUploadMonitorTest {
     config.setAcceptToS(true);
 
     stubFor(get(urlEqualTo("/api/health"))
-        .willReturn(aResponse()
-            .withStatus(200)));
+      .willReturn(aResponse()
+        .withStatus(200)));
 
     stubFor(post(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
-        .willReturn(aResponse()
-            .withStatus(200)));
+      .willReturn(aResponse()
+        .withStatus(200)));
 
     subject.run();
 
     // hack as wiremock doesn't seem to handle async requests
-    while(wireMockRule.getAllServeEvents().size() < 2) {
+    while (wireMockRule.getAllServeEvents().size() < 2) {
       Thread.sleep(1000L);
     }
 
@@ -82,17 +81,17 @@ public class BundleUploadMonitorTest {
     config.setAcceptToS(true);
 
     stubFor(get(urlEqualTo("/api/health"))
-        .willReturn(aResponse()
-            .withStatus(200)));
+      .willReturn(aResponse()
+        .withStatus(200)));
 
     stubFor(post(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId())))
-        .willReturn(aResponse()
-            .withStatus(500)));
+      .willReturn(aResponse()
+        .withStatus(500)));
 
     subject.run();
 
     // hack as wiremock doesn't seem to handle async requests
-    while(wireMockRule.getAllServeEvents().size() < 2) {
+    while (wireMockRule.getAllServeEvents().size() < 2) {
       Thread.sleep(1000L);
     }
 

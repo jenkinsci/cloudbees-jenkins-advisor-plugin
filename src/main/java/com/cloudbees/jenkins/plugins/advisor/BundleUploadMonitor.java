@@ -23,9 +23,9 @@ public class BundleUploadMonitor extends AdministrativeMonitor {
     no nag when plugin is disabled
     no nag when no error messages logged by BundleUpload
     */
-    return config.isPluginEnabled()
-        && config.getLastBundleResult() != null
-        && (config.getLastBundleResult().contains("ERROR") || config.getLastBundleResult().contains("Bundle upload failed"));
+    return config.isPluginEnabled() && config.getLastBundleResult() != null &&
+      (config.getLastBundleResult().contains("ERROR") ||
+        config.getLastBundleResult().contains("Bundle upload failed"));
   }
 
   @Override
@@ -38,8 +38,8 @@ public class BundleUploadMonitor extends AdministrativeMonitor {
   public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes) {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     return yes != null
-        ? HttpResponses.redirectViaContextPath(config.getUrlName())
-        : HttpResponses.forwardToPreviousPage();
+      ? HttpResponses.redirectViaContextPath(config.getUrlName())
+      : HttpResponses.forwardToPreviousPage();
   }
 
   /**

@@ -24,8 +24,9 @@ public final class FileHelper {
       boolean isSymbolicLink = Files.isSymbolicLink(path);
       boolean isWritable = Files.isWritable(path);
 
-      return String.format("isDirectory: [%s], isHidden: [%s], isReadable: [%s], isRegularFile: [%s], isSymbolicLink: [%s], isWritable: [%s]",
-          isDirectory, isHidden, isReadable, isRegularFile, isSymbolicLink, isWritable);
+      return String.format(
+        "isDirectory: [%s], isHidden: [%s], isReadable: [%s], isRegularFile: [%s], isSymbolicLink: [%s], isWritable: [%s]",
+        isDirectory, isHidden, isReadable, isRegularFile, isSymbolicLink, isWritable);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Unable to retrieve file metadata", e.getCause());
       return "File metadata unavailable";

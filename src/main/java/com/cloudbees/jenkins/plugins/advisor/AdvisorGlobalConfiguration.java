@@ -68,13 +68,17 @@ public class AdvisorGlobalConfiguration
   public AdvisorGlobalConfiguration() {
     load();
   }
-  
+
   @DataBoundConstructor
   public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
     this.setEmail(email);
     this.setCc(cc);
     this.excludedComponents = excludedComponents;
     this.lastBundleResult = "";
+  }
+
+  public static AdvisorGlobalConfiguration getInstance() {
+    return Jenkins.get().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
   }
 
   @CheckForNull
@@ -101,26 +105,21 @@ public class AdvisorGlobalConfiguration
     return Messages.Insights_Description();
   }
 
-
   public String getActionTitle() {
     return Messages.Insights_Title();
   }
-
 
   public String getActionDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-
   public String getDisclaimer() {
     return Messages.Insights_Disclaimer();
   }
 
-
   public boolean isNagDisabled() {
     return nagDisabled;
   }
-
 
   public void setNagDisabled(boolean nagDisabled) {
     if (this.nagDisabled != nagDisabled) {
@@ -128,11 +127,9 @@ public class AdvisorGlobalConfiguration
     }
   }
 
-
   public boolean isAcceptToS() {
     return acceptToS;
   }
-
 
   public void setAcceptToS(boolean acceptToS) {
     if (this.acceptToS != acceptToS) {
@@ -140,11 +137,9 @@ public class AdvisorGlobalConfiguration
     }
   }
 
-
   public String getLastBundleResult() {
     return lastBundleResult;
   }
-
 
   public void setLastBundleResult(String lastBundleResult) {
     this.lastBundleResult = lastBundleResult;
@@ -168,8 +163,8 @@ public class AdvisorGlobalConfiguration
       save();
 
       return HttpResponses.redirectTo(isValid
-          ? req.getContextPath() + "/manage"
-          : req.getContextPath() + "/" + getUrlName());
+        ? req.getContextPath() + "/manage"
+        : req.getContextPath() + "/" + getUrlName());
     } catch (Exception e) {
       isValid = false;
       LOG.severe("Unable to save Jenkins Health Advisor by CloudBees configuration: " + Functions.printThrowable(e));
@@ -200,48 +195,41 @@ public class AdvisorGlobalConfiguration
     return Jenkins.get().getDescriptorOrDie(getClass());
   }
 
+  public String getEmail() {
+    return email;
+  }
 
   public void setEmail(@CheckForNull String email) {
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
-
-  public String getEmail() {
-    return email;
+  public String getCc() {
+    return cc;
   }
-
 
   public void setCc(@CheckForNull String cc) {
     this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
   }
 
-
-  public String getCc() {
-    return cc;
-  }
-
-
   public Set<String> getExcludedComponents() {
     return excludedComponents != null ? excludedComponents : Collections.emptySet();
   }
-
 
   public void setExcludedComponents(Set<String> excludedComponents) {
     this.excludedComponents = excludedComponents;
   }
 
-
   public List<Component> getIncludedComponents() {
     List<Component> included = new ArrayList<>();
     if (getExcludedComponents().isEmpty()) {
-      for(Component c : getComponents()) {
-        if(c.isSelectedByDefault()) {
+      for (Component c : getComponents()) {
+        if (c.isSelectedByDefault()) {
           included.add(c);
         }
       }
     } else {
-      for(Component c : getComponents()) {
-        if(!getExcludedComponents().contains(c.getId())) {
+      for (Component c : getComponents()) {
+        if (!getExcludedComponents().contains(c.getId())) {
           included.add(c);
         }
       }
@@ -249,173 +237,23 @@ public class AdvisorGlobalConfiguration
     return included;
   }
 
-
   public boolean selectedByDefault(Component c) {
     if (getExcludedComponents().isEmpty()) {
       return c.isSelectedByDefault();
     }
     return !getExcludedComponents().contains(c.getId());
   }
-  
+
   public List<Component> getComponents() {
     return SupportPlugin.getComponents();
   }
-  
+
   public boolean isValid() {
     return isValid;
   }
-  
+
   public void setValid(boolean valid) {
     isValid = valid;
-  }
-  
-  @Extension
-  public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
-
-    public DescriptorImpl() {
-      super.load();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
-    @Override
-    public String getDisplayName() {
-      return Messages.Insights_DisplayName();
-    }
-    
-    public FormValidation doCheckEmail(@QueryParameter String value) {
-      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-
-      if (emailAddress == null || emailAddress.isEmpty()) {
-        return FormValidation.error("Email cannot be blank");
-      }
-
-      if (emailAddress.contains(";") || emailAddress.contains(",")) {
-        return FormValidation.error("Email cannot contain illegal character ';' or ','. Consider using the CC field if multiple recipients are required");
-      }
-
-      EmailValidator validator = EmailValidator.getInstance();
-      if (!validator.isValid(emailAddress)) {
-        return FormValidation.error("Invalid email");
-      }
-
-      return FormValidation.ok();
-    }
-  
-    public FormValidation doCheckCc(@QueryParameter String value) {
-      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-
-      if (emailAddress == null || emailAddress.isEmpty()) {
-        return FormValidation.ok();
-      }
-
-      if (emailAddress.contains(";")) {
-        return FormValidation.error("Email cannot contain illegal character ';'. Use ',' if multiple recipients are required.");
-      }
-
-      for (String cc : emailAddress.split(",")) {
-        EmailValidator validator = EmailValidator.getInstance();
-        if (!validator.isValid(cc)) {
-          return FormValidation.error(String.format("Invalid email [%s]", cc));
-        }
-      }
-
-      return FormValidation.ok();
-    }
-    
-    public FormValidation doTestConnection(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
-      try {
-        if(email.isEmpty()){
-          return FormValidation.error("Missing email");
-        }
-        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
-        if (ccErrors.isPresent()) {
-          return ccErrors.get();
-        }
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
-
-        advisorClient.doCheckHealth();
-        return FormValidation.ok("Success");
-      } catch (Exception e) {
-        return FormValidation.error("Client error : "+e.getMessage());
-      }
-    }
-    
-    public String connectionTest(String credentials) {
-      AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-      if (!config.isAcceptToS()) {
-        return "tos-not-accepted";
-      }
-
-      try {
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(credentials));
-        advisorClient.doCheckHealth();
-        return "service-operational";
-      } catch(Exception e) {
-        return "" + e.getMessage();
-      }
-    }
-  
-    public FormValidation doTestSendEmail(@QueryParameter("email") final String email, @QueryParameter("cc") final String cc) {
-      try {
-        if(email.isEmpty()){
-          return FormValidation.error("Missing email");
-        }
-        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
-        if (ccErrors.isPresent()) {
-          return ccErrors.get();
-        }
-
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
-
-        advisorClient.doTestEmail();
-        return FormValidation.ok("Sending email.  Please check your inbox and filters.");
-      } catch (Exception e) {
-        return FormValidation.error("Client error : "+e.getMessage());
-      }
-    }
-
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) {
-      String email = json.getString("email");
-      String cc = json.getString("cc");
-      JSONObject advanced = json.getJSONObject("advanced");
-      boolean acceptToS = json.getBoolean("acceptToS");
-
-      // Have to accept the Terms of Service to have a valid configuration
-      if(!acceptToS) {
-        return false;
-      }
-
-      Set<String> remove = new HashSet<>();
-      for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {
-        if (!s.isSelected()) {
-          LOG.log(Level.FINER, "Excluding ''{0}'' from list of components to include", s.getName());
-          remove.add(s.getName());
-        }
-      }
-      // Note that we're not excluding anything
-      if(remove.isEmpty()) {
-        remove.add(SEND_ALL_COMPONENTS);
-      }
-
-      final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
-      if (insights != null) {
-        insights.setExcludedComponents(remove);
-      }
-
-      try {
-        if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) || doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
-          return false;
-        }
-      } catch (Exception e) {
-        LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
-        return false;
-      }
-      return true;
-    }
   }
 
   boolean isPluginEnabled() {
@@ -436,32 +274,185 @@ public class AdvisorGlobalConfiguration
 
   @Override
   public synchronized void save() {
-    if(BulkChange.contains(this))   return;
+    if (BulkChange.contains(this)) {
+      return;
+    }
     try {
       getConfigFile().write(this);
       SaveableListener.fireOnChange(this, getConfigFile());
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Failed to save "+getConfigFile(),e);
+      LOG.log(Level.WARNING, "Failed to save " + getConfigFile(), e);
     }
   }
-  
+
   public synchronized void load() {
     XmlFile file = getConfigFile();
-    if(!file.exists())
+    if (!file.exists()) {
       return;
+    }
 
     try {
       file.unmarshal(this);
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Failed to load "+file, e);
+      LOG.log(Level.WARNING, "Failed to load " + file, e);
     }
   }
 
   private XmlFile getConfigFile() {
-    return new XmlFile(new File(Jenkins.get().getRootDir(),getClass().getName()+".xml"));
+    return new XmlFile(new File(Jenkins.get().getRootDir(), getClass().getName() + ".xml"));
   }
 
-  public static AdvisorGlobalConfiguration getInstance() {
-    return Jenkins.get().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
+  @Extension
+  public static final class DescriptorImpl extends Descriptor<AdvisorGlobalConfiguration> {
+
+    public DescriptorImpl() {
+      super.load();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    public String getDisplayName() {
+      return Messages.Insights_DisplayName();
+    }
+
+    public FormValidation doCheckEmail(@QueryParameter String value) {
+      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+
+      if (emailAddress == null || emailAddress.isEmpty()) {
+        return FormValidation.error("Email cannot be blank");
+      }
+
+      if (emailAddress.contains(";") || emailAddress.contains(",")) {
+        return FormValidation.error(
+          "Email cannot contain illegal character ';' or ','. Consider using the CC field if multiple recipients are required");
+      }
+
+      EmailValidator validator = EmailValidator.getInstance();
+      if (!validator.isValid(emailAddress)) {
+        return FormValidation.error("Invalid email");
+      }
+
+      return FormValidation.ok();
+    }
+
+    public FormValidation doCheckCc(@QueryParameter String value) {
+      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+
+      if (emailAddress == null || emailAddress.isEmpty()) {
+        return FormValidation.ok();
+      }
+
+      if (emailAddress.contains(";")) {
+        return FormValidation
+          .error("Email cannot contain illegal character ';'. Use ',' if multiple recipients are required.");
+      }
+
+      for (String cc : emailAddress.split(",")) {
+        EmailValidator validator = EmailValidator.getInstance();
+        if (!validator.isValid(cc)) {
+          return FormValidation.error(String.format("Invalid email [%s]", cc));
+        }
+      }
+
+      return FormValidation.ok();
+    }
+
+    public FormValidation doTestConnection(@QueryParameter("email") final String email,
+                                           @QueryParameter("cc") final String cc) {
+      try {
+        if (email.isEmpty()) {
+          return FormValidation.error("Missing email");
+        }
+        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        if (ccErrors.isPresent()) {
+          return ccErrors.get();
+        }
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
+
+        advisorClient.doCheckHealth();
+        return FormValidation.ok("Success");
+      } catch (Exception e) {
+        return FormValidation.error("Client error : " + e.getMessage());
+      }
+    }
+
+    public String connectionTest(String credentials) {
+      AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+      if (!config.isAcceptToS()) {
+        return "tos-not-accepted";
+      }
+
+      try {
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(credentials));
+        advisorClient.doCheckHealth();
+        return "service-operational";
+      } catch (Exception e) {
+        return "" + e.getMessage();
+      }
+    }
+
+    public FormValidation doTestSendEmail(@QueryParameter("email") final String email,
+                                          @QueryParameter("cc") final String cc) {
+      try {
+        if (email.isEmpty()) {
+          return FormValidation.error("Missing email");
+        }
+        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        if (ccErrors.isPresent()) {
+          return ccErrors.get();
+        }
+
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
+
+        advisorClient.doTestEmail();
+        return FormValidation.ok("Sending email.  Please check your inbox and filters.");
+      } catch (Exception e) {
+        return FormValidation.error("Client error : " + e.getMessage());
+      }
+    }
+
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) {
+      String email = json.getString("email");
+      String cc = json.getString("cc");
+      JSONObject advanced = json.getJSONObject("advanced");
+      boolean acceptToS = json.getBoolean("acceptToS");
+
+      // Have to accept the Terms of Service to have a valid configuration
+      if (!acceptToS) {
+        return false;
+      }
+
+      Set<String> remove = new HashSet<>();
+      for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {
+        if (!s.isSelected()) {
+          LOG.log(Level.FINER, "Excluding ''{0}'' from list of components to include", s.getName());
+          remove.add(s.getName());
+        }
+      }
+      // Note that we're not excluding anything
+      if (remove.isEmpty()) {
+        remove.add(SEND_ALL_COMPONENTS);
+      }
+
+      final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
+      if (insights != null) {
+        insights.setExcludedComponents(remove);
+      }
+
+      try {
+        if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) ||
+          doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
+          return false;
+        }
+      } catch (Exception e) {
+        LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
+        return false;
+      }
+      return true;
+    }
   }
 }

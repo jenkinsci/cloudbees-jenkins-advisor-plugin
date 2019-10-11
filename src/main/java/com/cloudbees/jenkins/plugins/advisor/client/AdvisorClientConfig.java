@@ -9,68 +9,48 @@ import static java.lang.String.format;
 
 public class AdvisorClientConfig {
 
-  private static final class ResourceHolder {
-
-    private static final Properties INSTANCE = loadProperties();
-
-    private static Properties loadProperties() {
-      Properties properties = new Properties();
-      InputStream inputStream = AdvisorClientConfig.class.getResourceAsStream("/" + AdvisorClientConfig.class.getName().replace('.', '/') + ".properties");
-      if (inputStream != null) {
-        try {
-          properties.load(inputStream);
-        } catch (IOException e) {
-          // ignore
-        } finally {
-          try {
-            inputStream.close();
-          } catch (IOException e) {
-            // ignore
-          }
-        }
-      }
-      return properties;
-    }
-  }
-
   private AdvisorClientConfig() {
     throw new IllegalAccessError("Utility class");
   }
 
   public static String advisorURL() {
-    return removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL"), "/");
+    return removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL"),
+      "/");
   }
-  
+
   public static Integer advisorUploadTimeoutMinutes() {
-    return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes"), "/"));
+    return Integer.valueOf(removeEnd(
+      resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadTimeoutMinutes"),
+      "/"));
   }
-  
+
   public static Integer insightsUploadTimeoutMilliseconds() {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadTimeoutMinutes());
   }
-  
+
   public static Integer advisorUploadIdleTimeoutMinutes() {
-    return Integer.valueOf(removeEnd(resolveProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes"), "/"));
+    return Integer.valueOf(removeEnd(resolveProperty(
+      "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorUploadIdleTimeoutMinutes"), "/"));
   }
-  
+
   public static Integer insightsUploadIdleTimeoutMilliseconds() {
     return (int) TimeUnit.MINUTES.toMillis(advisorUploadIdleTimeoutMinutes());
   }
-  
+
   public static String healthURI() {
     return advisorURL() + "/api/health";
   }
-  
+
   public static String testEmailURI(String email) {
-    return advisorURL() +format("/api/test/emails/%s", email);
+    return advisorURL() + format("/api/test/emails/%s", email);
   }
-  
+
   public static String apiUploadURI(String username, String instanceId) {
     return advisorURL() + format("/api/users/%s/upload/%s", username, instanceId);
   }
-  
+
   public static String apiUploadURI(String username, String instanceId, String cc) {
-    if(cc != null) {
+    if (cc != null) {
       return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
     } else {
       return apiUploadURI(username, instanceId);
@@ -141,7 +121,7 @@ public class AdvisorClientConfig {
    * @param str    the source String to search, may be null
    * @param remove the String to search for and remove, may be null
    * @return the substring with the string removed if found,
-   *         <code>null</code> if null String input
+   * <code>null</code> if null String input
    */
   private static String removeEnd(String str, String remove) {
     if (isEmpty(str) || isEmpty(remove)) {
@@ -161,5 +141,30 @@ public class AdvisorClientConfig {
    */
   private static boolean isEmpty(String str) {
     return str == null || str.length() == 0;
+  }
+
+  private static final class ResourceHolder {
+
+    private static final Properties INSTANCE = loadProperties();
+
+    private static Properties loadProperties() {
+      Properties properties = new Properties();
+      InputStream inputStream = AdvisorClientConfig.class
+        .getResourceAsStream("/" + AdvisorClientConfig.class.getName().replace('.', '/') + ".properties");
+      if (inputStream != null) {
+        try {
+          properties.load(inputStream);
+        } catch (IOException e) {
+          // ignore
+        } finally {
+          try {
+            inputStream.close();
+          } catch (IOException e) {
+            // ignore
+          }
+        }
+      }
+      return properties;
+    }
   }
 }

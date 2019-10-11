@@ -42,7 +42,7 @@ import static org.mockito.Mockito.doReturn;
  * Test the AdvisorGlobalConfiguration page; essentially the core of
  * the Jenkins Health Advisor by CloudBees connection.
  */
-@PowerMockIgnore({"org.apache.http.conn.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
+@PowerMockIgnore({"org.apache.http.conn.ssl.*", "javax.net.ssl.*", "javax.crypto.*"})
 public class AdvisorGlobalConfigurationTest {
 
   @Rule
@@ -50,17 +50,16 @@ public class AdvisorGlobalConfigurationTest {
 
   @Rule
   public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-
-  private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
   private final String cc = "";
+  private AdvisorGlobalConfiguration advisor;
 
   @Before
   public void setup() {
     advisor = AdvisorGlobalConfiguration.getInstance();
     // Dynamically configure the Advisor Server URL to reach WireMock server
     System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
-            wireMockRule.url("/"));
+      wireMockRule.url("/"));
   }
 
 
@@ -69,8 +68,8 @@ public class AdvisorGlobalConfigurationTest {
     WebClient wc = j.createWebClient();
     wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
     WebRequest req = new WebRequest(
-        new URL(j.jenkins.getRootUrl() + advisor.getUrlName()),
-        HttpMethod.GET
+      new URL(j.jenkins.getRootUrl() + advisor.getUrlName()),
+      HttpMethod.GET
     );
 
     Page page = wc.getPage(wc.addCrumb(req));
@@ -80,7 +79,7 @@ public class AdvisorGlobalConfigurationTest {
 
   @Test
   public void testHelpOnPage() throws Exception {
-      j.assertHelpExists(AdvisorGlobalConfiguration.class, "-nagDisabled");
+    j.assertHelpExists(AdvisorGlobalConfiguration.class, "-nagDisabled");
   }
 
   @Test
@@ -88,13 +87,14 @@ public class AdvisorGlobalConfigurationTest {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
-          .withStatus(404)));
+        .withStatus(404)));
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertFalse(managePage.asText().contains("There was a connection failure"));
 
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
+      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation = advisorDescriptor.doTestConnection(email, cc);
     assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
 
@@ -111,14 +111,15 @@ public class AdvisorGlobalConfigurationTest {
   public void testConnectionPass() throws Exception {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/health"))
-    .willReturn(aResponse()
+      .willReturn(aResponse()
         .withStatus(200)));
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertFalse(managePage.asText().contains("successfully connected"));
 
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
+      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation = advisorDescriptor.doTestConnection(email, cc);
     assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
 
@@ -134,10 +135,11 @@ public class AdvisorGlobalConfigurationTest {
   public void testSendEmail() {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/test/emails/test@cloudbees.com"))
-    .willReturn(aResponse()
+      .willReturn(aResponse()
         .withStatus(200)));
 
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
+      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation = advisorDescriptor.doTestSendEmail(email, cc);
     assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
   }
@@ -148,20 +150,20 @@ public class AdvisorGlobalConfigurationTest {
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     // Invalid email - send back to main page
     doConfigure.setUp("", "");
-    HttpRedirect hr1 = (HttpRedirect)j.executeOnServer(doConfigure);
+    HttpRedirect hr1 = (HttpRedirect) j.executeOnServer(doConfigure);
     String url1 = Whitebox.getInternalState(hr1, "url");
     assertEquals("Rerouted back to configuration", "/jenkins/cloudbees-jenkins-advisor", url1);
 
     // Didn't accept Terms of Service - send back to main page
     doConfigure.setUp(email, email);
     doConfigure.setTerms(false);
-    HttpRedirect hr2 = (HttpRedirect)j.executeOnServer(doConfigure);
+    HttpRedirect hr2 = (HttpRedirect) j.executeOnServer(doConfigure);
     String url2 = Whitebox.getInternalState(hr2, "url");
     assertEquals("Rerouted back to configuration", "/jenkins/cloudbees-jenkins-advisor", url2);
 
     // Redirect to main page
     doConfigure.setTerms(true);
-    HttpRedirect hr4 = (HttpRedirect)j.executeOnServer(doConfigure);
+    HttpRedirect hr4 = (HttpRedirect) j.executeOnServer(doConfigure);
     String url4 = Whitebox.getInternalState(hr4, "url");
     assertEquals("Rerouted back to main mpage", "/jenkins/manage", url4);
   }
@@ -191,11 +193,12 @@ public class AdvisorGlobalConfigurationTest {
   public void testSaveExcludedComponents() throws Exception {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/health"))
-    .willReturn(aResponse()
+      .willReturn(aResponse()
         .withStatus(200)));
     WebClient wc = j.createWebClient();
 
-    String noComponentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": false, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": false\r\n, \"name\": \"BuildQueue\"}, {\"selected\": false, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": false, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": false, \"name\": \"LoadStats\"}, {\"selected\": false, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": false, \"name\": \"NetworkInterfaces\"}, {\"selected\": false, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": false, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": false\r\n, \"name\": \"ThreadDumps\"}]}";
+    String noComponentsSelected =
+      "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": false, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": false\r\n, \"name\": \"BuildQueue\"}, {\"selected\": false, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": false, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": false, \"name\": \"LoadStats\"}, {\"selected\": false, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": false, \"name\": \"NetworkInterfaces\"}, {\"selected\": false, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": false, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": false\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure = new DoConfigureInfo();
     doConfigure.setUpComponents(noComponentsSelected);
     j.executeOnServer(doConfigure);
@@ -204,7 +207,8 @@ public class AdvisorGlobalConfigurationTest {
     assertTrue(managePage.asText().contains("uncheckedJenkinsLogs"));
     assertTrue(managePage.asText().contains("uncheckedSlaveLogs"));
 
-    String allComponentsSelected = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": true, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
+    String allComponentsSelected =
+      "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": true, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure2 = new DoConfigureInfo();
     doConfigure2.setUpComponents(allComponentsSelected);
     j.executeOnServer(doConfigure2);
@@ -214,7 +218,8 @@ public class AdvisorGlobalConfigurationTest {
     assertTrue(managePage.asText().contains("checkedJenkinsLogs"));
     assertTrue(managePage.asText().contains("checkedSlaveLogs"));
 
-    String mixCompoentsSelected = "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
+    String mixCompoentsSelected =
+      "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
     DoConfigureInfo doConfigure3 = new DoConfigureInfo();
     doConfigure3.setUpComponents(mixCompoentsSelected);
     j.executeOnServer(doConfigure3);
@@ -259,7 +264,8 @@ public class AdvisorGlobalConfigurationTest {
 
   @Test
   public void testDoCheckEmail() {
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
+      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation;
 
     formValidation = advisorDescriptor.doCheckEmail(null);
@@ -313,7 +319,8 @@ public class AdvisorGlobalConfigurationTest {
 
   @Test
   public void testDoCheckCc() {
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
+    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
+      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation;
 
     formValidation = advisorDescriptor.doCheckCc(null);
@@ -366,22 +373,23 @@ public class AdvisorGlobalConfigurationTest {
     private String testEmail = "";
     private String testCc = "";
     private Boolean testAcceptToS = true;
-    private String allToEnable = "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
+    private String allToEnable =
+      "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": false, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": false, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": false, \"name\": \"ConfigFileComponent\"}, {\"selected\": false, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
 
     public void setUp(String testEmail) {
-        this.testEmail = testEmail;
+      this.testEmail = testEmail;
     }
 
     public void setUp(String testEmail, String testCc) {
       this.testEmail = testEmail;
       this.testCc = testCc;
-  }
+    }
 
     /**
      * Because this is more painful than it should be, just accept a string
      * that should already be formatted.  It's the burden of the test case
      * to make sure the components are formatted correctly.
-     *
+     * <p>
      * This call is designed to run successfully.
      */
     public void setUpComponents(String allToEnable) {
@@ -393,18 +401,19 @@ public class AdvisorGlobalConfigurationTest {
       testAcceptToS = terms;
     }
 
-    @Override public HttpResponse call() throws Exception {
-        StaplerRequest spyRequest = PowerMockito.spy(Stapler.getCurrentRequest());
+    @Override
+    public HttpResponse call() throws Exception {
+      StaplerRequest spyRequest = PowerMockito.spy(Stapler.getCurrentRequest());
 
-        JSONObject json1 = new JSONObject();
-        json1.element("email", testEmail);
-        json1.element("cc", testCc);
-        json1.element("nagDisabled", false);
-        json1.element("acceptToS", testAcceptToS);
-        json1.element("advanced", new Gson().fromJson(allToEnable, JSONObject.class));
-        doReturn(json1)
-            .when(spyRequest).getSubmittedForm();
-        return advisor.doConfigure(spyRequest);
+      JSONObject json1 = new JSONObject();
+      json1.element("email", testEmail);
+      json1.element("cc", testCc);
+      json1.element("nagDisabled", false);
+      json1.element("acceptToS", testAcceptToS);
+      json1.element("advanced", new Gson().fromJson(allToEnable, JSONObject.class));
+      doReturn(json1)
+        .when(spyRequest).getSubmittedForm();
+      return advisor.doConfigure(spyRequest);
     }
   }
 
