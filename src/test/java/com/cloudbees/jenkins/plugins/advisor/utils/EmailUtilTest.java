@@ -17,7 +17,7 @@ public class EmailUtilTest {
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(" "), is(nullValue()));
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(EMAIL + " "), is(EMAIL));
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(" " + EMAIL), is(EMAIL));
-    assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(EMAIL.substring(0, 4) + " " + EMAIL.substring(4, EMAIL.length())), is(EMAIL));
+    assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(EMAIL.substring(0, 4) + " " + EMAIL.substring(4)), is(EMAIL));
   }
 
   @Test

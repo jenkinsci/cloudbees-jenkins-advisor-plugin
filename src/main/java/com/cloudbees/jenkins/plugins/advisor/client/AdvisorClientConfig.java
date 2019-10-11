@@ -108,7 +108,7 @@ public class AdvisorClientConfig {
 
     while ((i1 = value.indexOf("${")) >= 0) {
       // append prefix to result
-      result.append(value.substring(0, i1));
+      result.append(value, 0, i1);
 
       // strip prefix from original
       value = value.substring(i1 + 2);
