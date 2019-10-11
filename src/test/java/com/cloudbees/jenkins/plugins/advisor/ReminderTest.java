@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class ReminderTest {
 
   @Rule
-  public JenkinsRule j = new JenkinsRule();
+  public final JenkinsRule j = new JenkinsRule();
 
   private String blurb;
 

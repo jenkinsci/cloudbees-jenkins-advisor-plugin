@@ -32,7 +32,7 @@ public class AdvisorClientTest {
   private final AdvisorClient subject = new AdvisorClient(accountCredentials);
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Before
   public void setup() {

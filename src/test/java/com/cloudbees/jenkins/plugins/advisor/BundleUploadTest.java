@@ -41,9 +41,9 @@ public class BundleUploadTest {
   private static final String TEST_EMAIL = "test@acme.com";
 
   @Rule
-  public JenkinsRule j = new JenkinsRule();
+  public final JenkinsRule j = new JenkinsRule();
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Before
   public void setup() {

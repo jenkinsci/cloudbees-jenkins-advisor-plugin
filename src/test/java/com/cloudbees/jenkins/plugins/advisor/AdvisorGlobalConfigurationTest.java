@@ -46,10 +46,10 @@ import static org.mockito.Mockito.doReturn;
 public class AdvisorGlobalConfigurationTest {
 
   @Rule
-  public JenkinsRule j = new JenkinsRule();
+  public final JenkinsRule j = new JenkinsRule();
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   private AdvisorGlobalConfiguration advisor;
   private final String email = "test@cloudbees.com";
