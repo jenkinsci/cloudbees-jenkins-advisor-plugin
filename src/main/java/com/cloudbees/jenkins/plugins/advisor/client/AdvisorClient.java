@@ -1,6 +1,6 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
@@ -19,15 +19,15 @@ public class AdvisorClient {
   static final String HEALTH_SUCCESS = "Successfully checked the service status";
   static final String EMAIL_SUCCESS = "Successfully sent a test email";
 
-  private final AccountCredentials credentials;
+  private final Recipient credentials;
 
-  public AdvisorClient(AccountCredentials accountCredentials) {
-    this.credentials = accountCredentials;
+  public AdvisorClient(Recipient recipient) {
+    this.credentials = recipient;
   }
 
   public String doTestEmail() {
     try {
-      HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getUsername()));
+      HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(credentials.getEmail()));
 
       int responseCode = con.getResponseCode();
 
@@ -72,7 +72,7 @@ public class AdvisorClient {
     File uploadFile = r.getFile();
     String cc = EmailUtil.urlEncode(r.getCc());
 
-    String requestURL = AdvisorClientConfig.apiUploadURI(credentials.getUsername(), r.getInstanceId(), cc);
+    String requestURL = AdvisorClientConfig.apiUploadURI(credentials.getEmail(), r.getInstanceId(), cc);
 
     try {
       MultipartConnection multipart = new MultipartConnection(requestURL, StandardCharsets.UTF_8);

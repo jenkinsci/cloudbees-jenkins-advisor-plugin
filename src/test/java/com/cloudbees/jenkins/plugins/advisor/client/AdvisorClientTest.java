@@ -1,6 +1,6 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
@@ -27,9 +27,9 @@ public class AdvisorClientTest {
   private static final String TEST_INSTANCE_ID = "12345";
   private static final String TEST_PLUGIN_VERSION = "2.9";
 
-  private final AccountCredentials accountCredentials = new AccountCredentials(TEST_EMAIL);
+  private final Recipient recipient = new Recipient(TEST_EMAIL);
 
-  private final AdvisorClient subject = new AdvisorClient(accountCredentials);
+  private final AdvisorClient subject = new AdvisorClient(recipient);
 
   @Rule
   public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());

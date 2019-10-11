@@ -1,7 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
 import com.cloudbees.jenkins.plugins.advisor.utils.FormValidationHelper;
@@ -35,7 +35,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -346,7 +345,7 @@ public class AdvisorGlobalConfiguration
         if (ccErrors.isPresent()) {
           return ccErrors.get();
         }
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doCheckHealth();
         return FormValidation.ok("Success");
@@ -363,7 +362,7 @@ public class AdvisorGlobalConfiguration
       }
 
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(credentials));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(credentials));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch(Exception e) {
@@ -382,7 +381,7 @@ public class AdvisorGlobalConfiguration
           return ccErrors.get();
         }
 
-        AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email.trim()));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doTestEmail();
         return FormValidation.ok("Sending email.  Please check your inbox and filters.");

@@ -2,7 +2,7 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.PluginHelper;
-import com.cloudbees.jenkins.plugins.advisor.client.model.AccountCredentials;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.support.SupportPlugin;
@@ -17,7 +17,6 @@ import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -106,7 +105,7 @@ public class BundleUpload extends AsyncPeriodicWork {
   private void executeInternal(String email, File file, String pluginVersion) {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     try {
-      AdvisorClient advisorClient = new AdvisorClient(new AccountCredentials(email));
+      AdvisorClient advisorClient = new AdvisorClient(new Recipient(email));
 
       ClientResponse response = advisorClient.uploadFile(new ClientUploadRequest(Jenkins.get().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
       if (response.getCode() == 200) {
