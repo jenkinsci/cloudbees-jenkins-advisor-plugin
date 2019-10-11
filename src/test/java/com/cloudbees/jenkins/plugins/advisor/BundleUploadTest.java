@@ -89,7 +89,7 @@ public class BundleUploadTest {
 
   @Test
   @WithPluginManager(DisabledPluginManager.class)
-  public void execute_pluginDisabled() throws Exception {
+  public void execute_pluginDisabled() {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     stubFor(any(anyUrl()));
@@ -100,7 +100,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_isNotValid() throws Exception {
+  public void execute_isNotValid() {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setValid(false);
@@ -113,7 +113,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_noConnection() throws Exception {
+  public void execute_noConnection() {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
@@ -127,7 +127,7 @@ public class BundleUploadTest {
 
   @WithoutJenkins
   @Test
-  public void getRecurrencePeriod() throws Exception {
+  public void getRecurrencePeriod() {
     assertThat(new BundleUpload().getRecurrencePeriod(), is(equalTo(TimeUnit.HOURS.toMillis(BundleUpload.RECURRENCE_PERIOD_HOURS))));
   }
 

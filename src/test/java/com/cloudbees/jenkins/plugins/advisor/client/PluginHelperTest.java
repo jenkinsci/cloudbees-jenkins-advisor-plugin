@@ -14,7 +14,7 @@ public class PluginHelperTest {
   public JenkinsRule j = new JenkinsRule();
 
   @Test
-  public void getPluginVersion() throws Exception {
+  public void getPluginVersion() {
     assertThat(PluginHelper.getPluginVersion(), is(notNullValue()));
   }
 }

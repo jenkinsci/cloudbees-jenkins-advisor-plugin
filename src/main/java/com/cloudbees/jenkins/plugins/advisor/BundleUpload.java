@@ -47,7 +47,7 @@ public class BundleUpload extends AsyncPeriodicWork {
   private static final String UNABLE_TO_GENERATE_SUPPORT_BUNDLE = "ERROR: Unable to generate support bundle";
 
   @Override
-  protected void execute(TaskListener listener) throws IOException, InterruptedException {
+  protected void execute(TaskListener listener) {
     task = listener;
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();

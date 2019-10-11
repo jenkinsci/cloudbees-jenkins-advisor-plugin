@@ -42,7 +42,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void testDoCheckHealth() throws Exception {
+  public void testDoCheckHealth() {
     stubHealth();
     String token = subject.doCheckHealth();
 
@@ -50,7 +50,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void testDoTestEmail() throws Exception {
+  public void testDoTestEmail() {
     stubFor(get(urlEqualTo(format("/api/test/emails/%s", TEST_EMAIL)))
         .willReturn(aResponse()
             .withStatus(200)));
@@ -60,7 +60,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFile() throws Exception {
+  public void uploadFile() {
     stubHealth();
     stubUpload();
 
@@ -71,7 +71,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFileWithCC() throws Exception {
+  public void uploadFileWithCC() {
     stubHealth();
     stubUploadCc(TEST_EMAIL);
 
@@ -82,7 +82,7 @@ public class AdvisorClientTest {
   }
 
   @Test
-  public void uploadFileWithCCMultipleRecipients() throws Exception {
+  public void uploadFileWithCCMultipleRecipients() {
     String cc = TEST_EMAIL + "," + TEST_EMAIL;
     stubHealth();
     stubUploadCc(cc);

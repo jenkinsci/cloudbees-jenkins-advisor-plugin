@@ -11,7 +11,7 @@ public class EmailUtilTest {
   private static final String EMAIL = "test@acme.com";
 
   @Test
-  public void fixEmptyAndTrimAllSpaces() throws Exception {
+  public void fixEmptyAndTrimAllSpaces() {
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(null), is(nullValue()));
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(""), is(nullValue()));
     assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(" "), is(nullValue()));
@@ -21,7 +21,7 @@ public class EmailUtilTest {
   }
 
   @Test
-  public void urlEncode() throws Exception {
+  public void urlEncode() {
     assertThat(EmailUtil.urlEncode(EMAIL), is(EMAIL));
     assertThat(EmailUtil.urlEncode(EMAIL + "," + EMAIL), is(EMAIL + "%2C" + EMAIL));
     assertThat(EmailUtil.urlEncode(null), is(nullValue()));

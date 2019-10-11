@@ -132,7 +132,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testSendEmail() throws Exception {
+  public void testSendEmail() {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/test/emails/test@cloudbees.com"))
     .willReturn(aResponse()
@@ -226,7 +226,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testSetEmail() throws Exception {
+  public void testSetEmail() {
     advisor.setEmail(null);
     assertNull(advisor.getEmail());
 
@@ -241,7 +241,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testSetCc() throws Exception {
+  public void testSetCc() {
     advisor.setCc(null);
     assertNull(advisor.getCc());
 
@@ -259,7 +259,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testDoCheckEmail() throws Exception {
+  public void testDoCheckEmail() {
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation;
 
@@ -313,7 +313,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testDoCheckCc() throws Exception {
+  public void testDoCheckCc() {
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor = (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
     FormValidation formValidation;
 

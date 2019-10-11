@@ -157,16 +157,12 @@ public class AdvisorGlobalConfiguration
    *
    * @param req the request.
    * @return the response.
-   * @throws IOException if something goes wrong.
-   * @throws ServletException if something goes wrong.
-   * @throws FormException if something goes wrong.
    */
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
   @SuppressWarnings({"unused", "WeakerAccess"}) // stapler web method binding
-  public HttpResponse doConfigure(@Nonnull StaplerRequest req) throws IOException, ServletException,
-    FormException {
+  public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
     Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
@@ -396,7 +392,7 @@ public class AdvisorGlobalConfiguration
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) {
       String email = json.getString("email");
       String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
