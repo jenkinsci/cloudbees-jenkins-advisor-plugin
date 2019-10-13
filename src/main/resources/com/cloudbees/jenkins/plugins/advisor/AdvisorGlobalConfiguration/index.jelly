@@ -120,46 +120,7 @@
 
       </f:form>
 
-      <j:if test="${it.lastBundleResult!=null &amp;&amp; it.lastBundleResult.contains('ERROR')}">
-        <div class="alert alert-danger" role="alert">
-          <strong>
-            <i class="fa fa-minus-circle"/>
-            Last upload failed!
-          </strong>
-          <p>
-            <pre>
-              <code>${it.lastBundleResult}</code>
-            </pre>
-          </p>
-        </div>
-      </j:if>
-      <j:if test="${it.lastBundleResult!=null &amp;&amp; it.lastBundleResult.contains('WARN')}">
-        <div class="alert alert-warning" role="alert">
-          <strong>
-            <i class="fa fa-exclamation-triangle"/>
-            Last upload skipped!
-          </strong>
-          <p>
-            <pre>
-              <code>${it.lastBundleResult}</code>
-            </pre>
-          </p>
-        </div>
-      </j:if>
-      <j:if
-        test="${it.lastBundleResult!=null &amp;&amp; !it.lastBundleResult.contains('ERROR') &amp;&amp; !it.lastBundleResult.contains('WARN')}">
-        <div class="alert alert-success" role="alert">
-          <strong>
-            <i class="fa fa-check-circle"/>
-            Last upload succeeded!
-          </strong>
-          <p>
-            <pre>
-              <code>${it.lastBundleResult}</code>
-            </pre>
-          </p>
-        </div>
-      </j:if>
+      <a:lastResult result="${it.lastBundleResult}"/>
 
     </l:main-panel>
   </l:layout>

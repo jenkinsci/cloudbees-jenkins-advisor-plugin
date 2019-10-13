@@ -1,0 +1,53 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Check if Jenkins Health Advisor by CloudBees the server is available.
+    <st:attribute name="result" use="required">
+      The result of the previous upload.
+    </st:attribute>
+  </st:documentation>
+
+  <j:if test="${result!=null}">
+    <j:if test="${result!=null &amp;&amp; result.contains('ERROR')}">
+      <div class="alert alert-danger" role="alert">
+        <strong>
+          <i class="fa fa-minus-circle"/>
+          Last upload failed!
+        </strong>
+        <p>
+          <pre>
+            <code>${result}</code>
+          </pre>
+        </p>
+      </div>
+    </j:if>
+    <j:if test="${result!=null &amp;&amp; result.contains('WARN')}">
+      <div class="alert alert-warning" role="alert">
+        <strong>
+          <i class="fa fa-exclamation-triangle"/>
+          Last upload skipped!
+        </strong>
+        <p>
+          <pre>
+            <code>${result}</code>
+          </pre>
+        </p>
+      </div>
+    </j:if>
+    <j:if
+      test="${result!=null &amp;&amp; !result.contains('ERROR') &amp;&amp; !result.contains('WARN')}">
+      <div class="alert alert-success" role="alert">
+        <strong>
+          <i class="fa fa-check-circle"/>
+          Last upload succeeded!
+        </strong>
+        <p>
+          <pre>
+            <code>${result}</code>
+          </pre>
+        </p>
+      </div>
+    </j:if>
+  </j:if>
+
+</j:jelly>
