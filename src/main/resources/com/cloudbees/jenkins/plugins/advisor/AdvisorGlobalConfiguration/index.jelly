@@ -148,7 +148,7 @@
       </j:if>
       <j:if
         test="${it.lastBundleResult!=null &amp;&amp; !it.lastBundleResult.contains('ERROR') &amp;&amp; !it.lastBundleResult.contains('WARN')}">
-        <div class="alert alert-info" role="alert">
+        <div class="alert alert-success" role="alert">
           <strong>
             <i class="fa fa-check-circle"/>
             Last upload succeeded!
