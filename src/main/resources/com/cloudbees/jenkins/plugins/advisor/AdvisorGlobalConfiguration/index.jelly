@@ -2,10 +2,23 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
          xmlns:f="/lib/form" xmlns:a="/lib/advisor">
   <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
+
+    <l:header>
+      <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css"/>
+      <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css"/>
+      <style type="text/css">
+        table {
+        border-collapse: separate;
+        border-spacing: 5px;
+        }
+      </style>
+    </l:header>
+
     <st:include page="sidepanel.jelly" it="${app}"/>
+
     <l:main-panel>
       <h1>
-        <img width="48" height="48" style="margin: 2px;" alt="Jenkins Health Advisor by CloudBees Icon"
+        <img width="48" height="48" alt="Jenkins Health Advisor by CloudBees Icon"
              src="${rootURL}${h.resourcePath}/plugin/cloudbees-jenkins-advisor/icons/advisor.svg"/>
         ${it.actionTitle}
       </h1>
@@ -19,13 +32,9 @@
       <p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your
         email address.
       </p>
-      <a:validateOnLoad email="${it.email}"/>
-      <j:if test="${it.lastBundleResult!=null}">
-        <p>
-          <strong>Last bundle upload:</strong>
-          ${it.lastBundleResult}
-        </p>
-      </j:if>
+
+      <a:validateOnLoad/>
+
       <f:form name="config" method="POST" action="configure">
 
         <j:set var="instance" value="${it}"/>
@@ -38,9 +47,10 @@
             our Terms and Conditions</a>.
           </p>
         </f:block>
-        <f:entry field="acceptToS">
-          <f:checkbox title="${%I agree with these Terms and Conditions}"
-                      tooltip="No data will be sent to CloudBees if you don't accept these Terms and Conditions."/>
+
+        <f:entry field="acceptToS"
+                 description="No data will be sent to CloudBees if you don't accept these Terms and Conditions.">
+          <f:checkbox title="${%I agree with these Terms and Conditions}"/>
         </f:entry>
 
         <f:block>
@@ -50,10 +60,12 @@
         <f:entry title="${%Email}" field="email">
           <f:textbox/>
         </f:entry>
+
         <f:entry title="${%CC}" field="cc"
-                 description="You can optionally include a list of comma-separated emails to receive Advisor report.">
+                 description="You can optionally include a list of comma-separated emails to receive the report.">
           <f:textbox/>
         </f:entry>
+
         <f:validateButton
           title="${%Send a test email}" progress="${%Testing...}"
           method="testSendEmail" with="email,cc"/>
@@ -61,10 +73,11 @@
         <f:section name="advanced" title="Advanced Settings">
 
           <f:block>
-            <strong>${%Configure data}</strong>
+            <strong>${%Configure Data}</strong>
             <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
               configurations.
               You can choose to filter out other data from being analyzed by configuring the options below.
+              Click "Advanced" to configure these options.
             </p>
           </f:block>
 
@@ -96,16 +109,58 @@
           <strong>${%Reminder}</strong>
         </f:block>
 
-        <f:entry title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"
-                 field="nagDisabled">
-          <f:checkbox/>
+        <f:entry field="nagDisabled">
+          <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
         </f:entry>
 
         <f:bottomButtonBar>
           <f:submit name="save" value="${%Save}"/>
+          <input name="advisor:apply" type="submit" value="Apply" class="submit-button"/>
         </f:bottomButtonBar>
 
       </f:form>
+
+      <j:if test="${it.lastBundleResult!=null &amp;&amp; it.lastBundleResult.contains('ERROR')}">
+        <div class="alert alert-danger" role="alert">
+          <strong>
+            <i class="fa fa-minus-circle"/>
+            Last upload failed!
+          </strong>
+          <p>
+            <pre>
+              <code>${it.lastBundleResult}</code>
+            </pre>
+          </p>
+        </div>
+      </j:if>
+      <j:if test="${it.lastBundleResult!=null &amp;&amp; it.lastBundleResult.contains('WARN')}">
+        <div class="alert alert-warning" role="alert">
+          <strong>
+            <i class="fa fa-exclamation-triangle"/>
+            Last upload skipped!
+          </strong>
+          <p>
+            <pre>
+              <code>${it.lastBundleResult}</code>
+            </pre>
+          </p>
+        </div>
+      </j:if>
+      <j:if
+        test="${it.lastBundleResult!=null &amp;&amp; !it.lastBundleResult.contains('ERROR') &amp;&amp; !it.lastBundleResult.contains('WARN')}">
+        <div class="alert alert-info" role="alert">
+          <strong>
+            <i class="fa fa-check-circle"/>
+            Last upload succeeded!
+          </strong>
+          <p>
+            <pre>
+              <code>${it.lastBundleResult}</code>
+            </pre>
+          </p>
+        </div>
+      </j:if>
+
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -24,6 +24,7 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -154,17 +155,18 @@ public class AdvisorGlobalConfiguration
   @RequirePOST
   @Nonnull
   @Restricted(NoExternalUse.class)
-
   public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
     Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
       isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
-
-      return HttpResponses.redirectTo(isValid
-        ? req.getContextPath() + "/manage"
-        : req.getContextPath() + "/" + getUrlName());
+      // We want to refresh the page to reload the status even when we click on "Apply"
+      if (!isValid || StringUtils.isNotBlank(req.getParameter("advisor:apply"))) {
+        return HttpResponses.redirectToDot();
+      } else {
+        return HttpResponses.redirectTo(req.getContextPath() + "/manage");
+      }
     } catch (Exception e) {
       isValid = false;
       LOG.severe("Unable to save Jenkins Health Advisor by CloudBees configuration: " + Functions.printThrowable(e));
@@ -318,6 +320,13 @@ public class AdvisorGlobalConfiguration
       return Messages.Insights_DisplayName();
     }
 
+    public FormValidation doCheckAcceptToS(@QueryParameter boolean value) {
+      if (!value) {
+        return FormValidation.error("Accepting our Terms and Conditions is mandatory to use this service.");
+      }
+      return FormValidation.ok();
+    }
+
     public FormValidation doCheckEmail(@QueryParameter String value) {
       String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
 
@@ -378,16 +387,15 @@ public class AdvisorGlobalConfiguration
         return FormValidation.error("Client error : " + e.getMessage());
       }
     }
-    
-    // Used from validateOnLoad.jelly
-    public String connectionTest(String email) {
-      AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-      if (!config.isAcceptToS()) {
-        return "tos-not-accepted";
-      }
 
+    // Used from validateOnLoad.jelly
+    public String validateServerConnection() {
+      AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+      if(!config.isValid()){
+        return "invalid-configuration";
+      }
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(config.email));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch (Exception e) {
@@ -409,7 +417,7 @@ public class AdvisorGlobalConfiguration
         AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
 
         advisorClient.doTestEmail();
-        return FormValidation.ok("Sending email.  Please check your inbox and filters.");
+        return FormValidation.ok("A request to send a test email from the server was done. Please check your inbox and filters.");
       } catch (Exception e) {
         return FormValidation.error("Client error : " + e.getMessage());
       }
@@ -417,15 +425,10 @@ public class AdvisorGlobalConfiguration
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
+      boolean acceptToS = json.getBoolean("acceptToS");
       String email = json.getString("email");
       String cc = json.getString("cc");
       JSONObject advanced = json.getJSONObject("advanced");
-      boolean acceptToS = json.getBoolean("acceptToS");
-
-      // Have to accept the Terms of Service to have a valid configuration
-      if (!acceptToS) {
-        return false;
-      }
 
       Set<String> remove = new HashSet<>();
       for (SupportAction.Selection s : req.bindJSONToList(SupportAction.Selection.class, advanced.get("components"))) {
@@ -445,15 +448,17 @@ public class AdvisorGlobalConfiguration
       }
 
       try {
-        if (doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) ||
-          doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
-          return false;
-        }
+        return validate(acceptToS, email, cc);
       } catch (Exception e) {
         LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
         return false;
       }
-      return true;
+    }
+
+    public boolean validate(boolean acceptToS, String email, String cc) {
+      return !doCheckAcceptToS(acceptToS).kind.equals(FormValidation.Kind.ERROR)
+        && !doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)
+        && !doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR);
     }
   }
 }

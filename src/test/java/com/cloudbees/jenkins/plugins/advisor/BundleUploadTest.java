@@ -16,6 +16,7 @@ import javax.annotation.CheckForNull;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import static com.cloudbees.jenkins.plugins.advisor.BundleUpload.BUNDLE_SUCCESSFULLY_UPLOADED;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
@@ -85,7 +86,7 @@ public class BundleUploadTest {
         .withHeader("Content-Type", WireMock.containing("multipart/form-data")));
 
     // Refresh the configuration?
-    assertThat(config.getLastBundleResult(), containsString("Successfully uploaded a bundle"));
+    assertThat(config.getLastBundleResult(), containsString(BUNDLE_SUCCESSFULLY_UPLOADED));
   }
 
   @Test
