@@ -40,48 +40,50 @@
         <j:set var="instance" value="${it}"/>
         <j:set var="descriptor" value="${it.descriptor}"/>
 
-        <f:block>
-          <div class="section-header">${%Terms and Conditions}</div>
-          <p>To use Jenkins Health Advisor by CloudBees, please agree to <a
-            href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
-            our Terms and Conditions</a>.
-          </p>
-        </f:block>
-
-        <f:entry field="acceptToS"
-                 description="No data will be sent to CloudBees if you don't accept these Terms and Conditions.">
-          <f:checkbox title="${%I agree with these Terms and Conditions}"/>
-        </f:entry>
-
-        <f:block>
-          <div class="section-header">${%Recipient}</div>
-        </f:block>
-
-        <f:entry title="${%Email}" field="email">
-          <f:textbox/>
-        </f:entry>
-
-        <f:entry title="${%CC}" field="cc"
-                 description="You can optionally include a list of comma-separated emails to receive the report.">
-          <f:textbox/>
-        </f:entry>
-
-        <f:validateButton
-          title="${%Send a test email}" progress="${%Testing...}"
-          method="testSendEmail" with="email,cc"/>
-
-        <f:section name="advanced" title="Advanced Settings">
-
+        <f:section title="${%Terms and Conditions}">
           <f:block>
-            <strong>${%Configure Data}</strong>
-            <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
-              configurations.
-              You can choose to filter out other data from being analyzed by configuring the options below.
-              Click "Advanced" to configure these options.
+            <p>To use Jenkins Health Advisor by CloudBees, please agree to <a
+              href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
+              our Terms and Conditions</a>.
             </p>
           </f:block>
 
-          <f:advanced>
+          <f:entry field="acceptToS"
+                   description="No data will be sent to CloudBees if you don't accept these Terms and Conditions.">
+            <f:checkbox title="${%I agree with these Terms and Conditions}"/>
+          </f:entry>
+        </f:section>
+
+        <f:section title="${%Recipient}">
+          <f:entry title="${%Email}" field="email">
+            <f:textbox/>
+          </f:entry>
+
+          <f:entry title="${%CC}" field="cc"
+                   description="You can optionally include a list of comma-separated emails to receive the report.">
+            <f:textbox/>
+          </f:entry>
+
+          <f:validateButton
+            title="${%Send a test email}" progress="${%Testing...}"
+            method="testSendEmail" with="email,cc"/>
+        </f:section>
+
+        <f:advanced align="left" title="${%Advanced Settings}">
+
+          <f:section title="${%Reminder}">
+            <f:entry field="nagDisabled">
+              <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
+            </f:entry>
+          </f:section>
+
+          <f:section name="advanced" title="${%Configure Data}">
+            <f:block>
+              <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
+                configurations.
+                You can choose to filter out other data from being analyzed by configuring the options below.
+              </p>
+            </f:block>
             <j:forEach var="component" items="${it.components}">
               <f:entry field="component">
                 <div name="components" style="margin-left:0">
@@ -102,16 +104,9 @@
                 </div>
               </f:entry>
             </j:forEach>
-          </f:advanced>
-        </f:section>
+          </f:section>
 
-        <f:block>
-          <strong>${%Reminder}</strong>
-        </f:block>
-
-        <f:entry field="nagDisabled">
-          <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
-        </f:entry>
+        </f:advanced>
 
         <f:bottomButtonBar>
           <f:submit name="save" value="${%Save}"/>
