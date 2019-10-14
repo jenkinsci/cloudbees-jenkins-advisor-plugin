@@ -34,8 +34,6 @@ import java.util.logging.Logger;
 public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfiguration>
   implements RootElementConfigurator<AdvisorGlobalConfiguration> {
 
-  private static final Logger LOG = Logger.getLogger(AdvisorRootConfigurator.class.getName());
-
   // Ignoring lastBundleResult since it is not configured in the plugin. It only informs about the last bundle generation
   // Ignoring isValid since it is something auto-calculated during the configuration
   private final Collection<String> excludedAttributesInConf = Arrays.asList("lastBundleResult", "valid");
