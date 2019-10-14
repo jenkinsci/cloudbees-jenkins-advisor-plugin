@@ -17,7 +17,7 @@
       <div class="alert alert-warning" role="alert">
         <strong>
           <i class="fa fa-exclamation-triangle"/> Invalid configuration.</strong>
-        <p>Please fix it to start to use Jenkins Health Advisor by CloudBees.</p>
+        <p>Please fix it to start using Jenkins Health Advisor by CloudBees.</p>
       </div>
     </j:if>
     <j:if test="${validationStatus.contains('xception')}">
