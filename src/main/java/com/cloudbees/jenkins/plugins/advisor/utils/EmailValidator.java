@@ -20,9 +20,30 @@ public final class EmailValidator {
     throw new UnsupportedOperationException("Cannot instantiate utility class");
   }
 
-  public static boolean isValid(@NonNull String email) {
+  static boolean isValid(@NonNull String email) {
     Matcher matcher = PATTERN.matcher(email);
     return matcher.matches();
+  }
+
+  public static boolean isValidEmail(String value) {
+    String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+    return StringUtils.isNotBlank(emailAddress) && isValid(emailAddress);
+  }
+
+  public static boolean isValidCC(String value) {
+    String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+    if (emailAddress == null || emailAddress.isEmpty()) {
+      return true;
+    }
+    if (emailAddress.contains(";")) {
+      return false;
+    }
+    for (String cc : emailAddress.split(",")) {
+      if (!EmailValidator.isValid(cc)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static FormValidation validateEmail(String value) {
@@ -75,4 +96,5 @@ public final class EmailValidator {
     }
     return FormValidation.ok();
   }
+  
 }

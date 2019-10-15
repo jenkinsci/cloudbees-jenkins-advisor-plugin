@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import hudson.LocalPluginManager;
 import hudson.PluginWrapper;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +34,9 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -61,8 +64,8 @@ public class BundleUploadTest {
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setEmail(TEST_EMAIL);
-    config.setValid(true);
     config.setAcceptToS(true);
+    assertTrue("The configuration must be valid", config.isValid());
 
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
@@ -105,8 +108,8 @@ public class BundleUploadTest {
   public void execute_isNotValid() {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    config.setValid(false);
-
+    assertFalse("The configuration must be valid", config.isValid());
+    
     stubFor(any(anyUrl()));
 
     subject.run();
@@ -119,8 +122,9 @@ public class BundleUploadTest {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+    config.setAcceptToS(true);
     config.setEmail(TEST_EMAIL);
-    config.setValid(true);
+    assertTrue("The configuration must be valid", config.isValid());    
 
     wireMockRule.shutdownServer();
 

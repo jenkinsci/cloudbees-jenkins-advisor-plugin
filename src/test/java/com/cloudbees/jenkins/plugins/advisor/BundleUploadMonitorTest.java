@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 public class BundleUploadMonitorTest {
 
-  private static final String TEST_EMAIL = "test";
+  private static final String TEST_EMAIL = "test@cloudbees.com";
   @Rule
   public final JenkinsRule j = new JenkinsRule();
   @Rule
@@ -43,9 +43,9 @@ public class BundleUploadMonitorTest {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    config.setEmail(TEST_EMAIL);
-    config.setValid(true);
     config.setAcceptToS(true);
+    config.setEmail(TEST_EMAIL);
+    assertTrue("The configuration must be valid", config.isValid());
 
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
@@ -76,9 +76,9 @@ public class BundleUploadMonitorTest {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    config.setEmail(TEST_EMAIL);
-    config.setValid(true);
     config.setAcceptToS(true);
+    config.setEmail(TEST_EMAIL);
+    assertTrue("The configuration must be valid", config.isValid());
 
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()

@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static hudson.util.FormValidation.Kind.OK;
 
@@ -63,7 +64,6 @@ public class AdvisorGlobalConfiguration
   private String email;
   private String cc;
   private Set<String> excludedComponents;
-  private boolean isValid;
   private boolean nagDisabled;
   private boolean acceptToS;
   private String lastBundleResult;
@@ -162,16 +162,15 @@ public class AdvisorGlobalConfiguration
     Jenkins jenkins = Jenkins.get();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     try {
-      isValid = configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
+      configureDescriptor(req, req.getSubmittedForm(), getDescriptor());
       save();
       // We want to refresh the page to reload the status even when we click on "Apply"
-      if (!isValid || StringUtils.isNotBlank(req.getParameter("advisor:apply"))) {
+      if (!isValid() || StringUtils.isNotBlank(req.getParameter("advisor:apply"))) {
         return HttpResponses.redirectToDot();
       } else {
         return HttpResponses.redirectTo(req.getContextPath() + "/manage");
       }
     } catch (Exception e) {
-      isValid = false;
       LOG.severe("Unable to save Jenkins Health Advisor by CloudBees configuration: " + Functions.printThrowable(e));
       return FormValidation.error("Unable to save configuration: " + e.getMessage());
     }
@@ -254,11 +253,31 @@ public class AdvisorGlobalConfiguration
   }
 
   public boolean isValid() {
-    return isValid;
+    return isValid(false, isAcceptToS(), getEmail(), getCc());
   }
 
-  public void setValid(boolean valid) {
-    isValid = valid;
+  public static boolean isValid(boolean logErrors, boolean acceptToS, String email, String cc) {
+    if (!acceptToS) {
+      if (logErrors) {
+        LOG.warning("acceptToS is invalid, it must be set to true");
+      }
+      return false;
+    }
+    if (!EmailValidator.isValidEmail(email)) {
+      if (logErrors) {
+        LOG.warning(() -> String.format("email \"%s\" is not valid",email));
+      }
+      return false;
+    }
+    if (!StringUtils.isBlank(cc)) {
+      if (!EmailValidator.isValidCC(cc)) {
+        if (logErrors) {
+          LOG.warning(() -> String.format("cc \"%s\" is not valid",cc));
+        }
+        return false;
+      }
+    }
+    return true;
   }
 
   boolean isPluginEnabled() {
@@ -363,6 +382,7 @@ public class AdvisorGlobalConfiguration
       boolean acceptToS = json.getBoolean("acceptToS");
       String email = json.getString("email");
       String cc = json.getString("cc");
+      boolean nagDisabled = json.getBoolean("nagDisabled");
       JSONObject advanced = json.getJSONObject("advanced");
 
       Set<String> remove = new HashSet<>();
@@ -377,23 +397,22 @@ public class AdvisorGlobalConfiguration
         remove.add(SEND_ALL_COMPONENTS);
       }
 
-      final AdvisorGlobalConfiguration insights = AdvisorGlobalConfiguration.getInstance();
-      if (insights != null) {
-        insights.setExcludedComponents(remove);
+      final AdvisorGlobalConfiguration advisorGlobalConfiguration = AdvisorGlobalConfiguration.getInstance();
+      if (advisorGlobalConfiguration != null) {
+        advisorGlobalConfiguration.setAcceptToS(acceptToS);
+        advisorGlobalConfiguration.setEmail(email);
+        advisorGlobalConfiguration.setCc(cc);
+        advisorGlobalConfiguration.setNagDisabled(nagDisabled);
+        advisorGlobalConfiguration.setExcludedComponents(remove);
       }
 
       try {
-        return validate(acceptToS, email, cc);
+        return advisorGlobalConfiguration != null && advisorGlobalConfiguration.isValid();
       } catch (Exception e) {
         LOG.severe("Unexpected error while validating form: " + Functions.printThrowable(e));
         return false;
       }
     }
 
-    public boolean validate(boolean acceptToS, String email, String cc) {
-      return !doCheckAcceptToS(acceptToS).kind.equals(FormValidation.Kind.ERROR)
-        && !doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR)
-        && !doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR);
-    }
   }
 }

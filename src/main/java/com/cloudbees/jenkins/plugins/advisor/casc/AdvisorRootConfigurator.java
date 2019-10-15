@@ -81,25 +81,15 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
       excludedComponents.add(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS);
     }
 
-    // Check and apply configuration
-    if (!acceptToS) {
-      // In UI, if you don't accept the ToS, the configuration is not applied, so here we throw an exception
-      throw new ConfiguratorException(this,
-        "Terms of Service for CloudBees Jenkins Advisor have to be accepted. Please review the acceptToS field in the yaml file.");
-    }
-
-    AdvisorGlobalConfiguration insights = getTargetComponent(configurationContext);
-    AdvisorGlobalConfiguration.DescriptorImpl descriptor =
-      (AdvisorGlobalConfiguration.DescriptorImpl) insights.getDescriptor();
-    if (descriptor.doCheckEmail(email).kind.equals(FormValidation.Kind.ERROR) ||
-      descriptor.doCheckCc(cc).kind.equals(FormValidation.Kind.ERROR)) {
+    AdvisorGlobalConfiguration advisor = getTargetComponent(configurationContext);
+    if (!AdvisorGlobalConfiguration.isValid(true, acceptToS, email, cc)) {
       // In UI, if the fields are invalid, the configuration is not applied, so here we throw an exception
       throw new ConfiguratorException(this,
-        "Invalid configuration for CloudBees Jenkins Advisor. Please review the content of email and cc fields in the yaml file.");
+        "Invalid configuration for CloudBees Jenkins Advisor. Please check the logs and review the content in the yaml file.");
     }
-    updateConfiguration(insights, email, cc, true, nagDisabled, excludedComponents);
+    updateConfiguration(advisor, email, cc, true, nagDisabled, excludedComponents);
 
-    return insights;
+    return advisor;
   }
 
   private void updateConfiguration(AdvisorGlobalConfiguration conf, String email, String cc, boolean acceptToS,
@@ -109,7 +99,6 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
     conf.setAcceptToS(acceptToS);
     conf.setNagDisabled(nagDisabled);
     conf.setExcludedComponents(excludedComponents);
-    conf.setValid(true);
   }
 
   @Override
