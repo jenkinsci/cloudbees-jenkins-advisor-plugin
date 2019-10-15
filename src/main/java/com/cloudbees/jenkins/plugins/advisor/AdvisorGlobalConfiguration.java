@@ -331,43 +331,16 @@ public class AdvisorGlobalConfiguration
     }
 
     public FormValidation doCheckEmail(@QueryParameter String value) {
-      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-
-      if (emailAddress == null || emailAddress.isEmpty()) {
-        return FormValidation.error("Email cannot be blank");
-      }
-
-      if (emailAddress.contains(";") || emailAddress.contains(",")) {
-        return FormValidation.error(
-          "Email cannot contain illegal character ';' or ','. Consider using the CC field if multiple recipients are required");
-      }
-
-      if (!EmailValidator.isValid(emailAddress)) {
-        return FormValidation.error("Invalid email");
-      }
-
-      return FormValidation.ok();
+      return EmailValidator.validateEmail(value);
     }
 
     public FormValidation doCheckCc(@QueryParameter String value) {
-      String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
+      return EmailValidator.validateCC(value);
+    }
 
-      if (emailAddress == null || emailAddress.isEmpty()) {
-        return FormValidation.ok();
-      }
-
-      if (emailAddress.contains(";")) {
-        return FormValidation
-          .error("Email cannot contain illegal character ';'. Use ',' if multiple recipients are required.");
-      }
-
-      for (String cc : emailAddress.split(",")) {
-        if (!EmailValidator.isValid(cc)) {
-          return FormValidation.error(String.format("Invalid email [%s]", cc));
-        }
-      }
-
-      return FormValidation.ok();
+    public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
+                                          @QueryParameter("acceptToS") final boolean acceptToS) {
+      return EmailValidator.testSendEmail(value,acceptToS);
     }
 
     // Used from validateOnLoad.jelly
@@ -382,26 +355,6 @@ public class AdvisorGlobalConfiguration
         return SERVICE_OPERATIONAL;
       } catch (Exception e) {
         return "" + e.getMessage();
-      }
-    }
-
-    public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
-                                          @QueryParameter("acceptToS") final boolean acceptToS) {
-      try {
-        if (!acceptToS) {
-          return FormValidation.warning(
-            "It is impossible to launch a test without accepting our Terms and Conditions");
-        }
-        if (!doCheckEmail(value).kind.equals(OK)) {
-          return FormValidation.warning(
-            "It is impossible to launch a test without providing a valid email");
-        }
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(value.trim()));
-        advisorClient.doTestEmail();
-        return FormValidation
-          .ok("A request to send a test email from the server was done. Please check your inbox and filters.");
-      } catch (Exception e) {
-        return FormValidation.error("The test failed: " + e.getMessage());
       }
     }
 

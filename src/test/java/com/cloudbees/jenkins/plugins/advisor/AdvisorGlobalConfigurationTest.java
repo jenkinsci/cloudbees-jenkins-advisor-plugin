@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -274,113 +273,6 @@ public class AdvisorGlobalConfigurationTest {
 
     advisor.setCc(email + " , " + email);
     assertThat(advisor.getCc(), is(email + "," + email));
-  }
-
-  @Test
-  public void testDoCheckEmail() {
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
-      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation;
-
-    formValidation = advisorDescriptor.doCheckEmail(null);
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail("");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail(";");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail(",");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail(email + ";");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail(email + ",");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail("<Mr Foo> foo@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("Foo<foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("Foo <foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("\"foo\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("\"foo bar\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("\"foo\\ \"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("\"foo\\ /\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-
-    formValidation = advisorDescriptor.doCheckEmail(StringUtils.capitalize(email));
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail(email);
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckEmail("test.foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("test-foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("test_foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckEmail("test+foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-  }
-
-  @Test
-  public void testDoCheckCc() {
-    final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
-      (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation;
-
-    formValidation = advisorDescriptor.doCheckCc(null);
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc("");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc(";");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc(email + ";");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc("<Mr Foo> foo@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("Foo<foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("Foo <foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("\"foo\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("\"foo bar\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("\"foo\\ \"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("\"foo\\ /\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-
-    formValidation = advisorDescriptor.doCheckCc(StringUtils.capitalize(email));
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc(email);
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc("test.foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("test-foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("test_foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-    formValidation = advisorDescriptor.doCheckCc("test+foo@cloudbees.com");
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
-
-    formValidation = advisorDescriptor.doCheckCc(email + " , " + email + ", " + email + "," + email);
-    assertEquals(FormValidation.Kind.OK, formValidation.kind);
   }
 
   private class DoConfigureInfo implements Callable<HttpResponse> {
