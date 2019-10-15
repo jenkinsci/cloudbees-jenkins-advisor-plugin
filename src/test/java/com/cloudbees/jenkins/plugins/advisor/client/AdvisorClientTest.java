@@ -10,6 +10,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -24,6 +28,7 @@ import static org.junit.Assert.assertThat;
 public class AdvisorClientTest {
 
   private static final String TEST_EMAIL = "test@acme.com";
+  private static final List<Recipient> TEST_CC = Collections.singletonList(new Recipient(TEST_EMAIL));
   private static final String TEST_INSTANCE_ID = "12345";
   private static final String TEST_PLUGIN_VERSION = "2.9";
   @Rule
@@ -71,18 +76,19 @@ public class AdvisorClientTest {
   @Test
   public void uploadFileWithCC() {
     stubHealth();
-    stubUploadCc(TEST_EMAIL);
+    stubUploadCc(TEST_CC);
 
     File bundle = new File(getClass().getResource("/bundle.zip").getFile());
     ClientResponse response =
-      subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, TEST_EMAIL, TEST_PLUGIN_VERSION));
+      subject.uploadFile(
+        new ClientUploadRequest(TEST_INSTANCE_ID, bundle, TEST_CC, TEST_PLUGIN_VERSION));
 
     assertThat(response.getCode(), is(200));
   }
 
   @Test
   public void uploadFileWithCCMultipleRecipients() {
-    String cc = TEST_EMAIL + "," + TEST_EMAIL;
+    List<Recipient> cc = Arrays.asList(new Recipient(TEST_EMAIL), new Recipient(TEST_EMAIL));
     stubHealth();
     stubUploadCc(cc);
 
@@ -106,9 +112,11 @@ public class AdvisorClientTest {
         .withStatus(200)));
   }
 
-  private void stubUploadCc(String cc) {
+  private void stubUploadCc(List<Recipient> cc) {
     stubFor(
-      post(urlEqualTo(format("/api/users/%s/upload/%s?cc=%s", TEST_EMAIL, TEST_INSTANCE_ID, EmailUtil.urlEncode(cc))))
+      post(urlEqualTo(format("/api/users/%s/upload/%s?cc=%s", TEST_EMAIL, TEST_INSTANCE_ID,
+        EmailUtil.urlEncode(cc.stream().map(Recipient::getEmail).collect(
+          Collectors.joining(","))))))
         .willReturn(aResponse()
           .withStatus(200)));
   }

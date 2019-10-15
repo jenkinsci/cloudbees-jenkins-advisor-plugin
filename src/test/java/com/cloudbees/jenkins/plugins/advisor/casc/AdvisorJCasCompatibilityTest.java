@@ -1,6 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor.casc;
 
 import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import io.jenkins.plugins.casc.misc.RoundTripAbstractTest;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
@@ -16,7 +17,8 @@ public class AdvisorJCasCompatibilityTest extends RoundTripAbstractTest {
   protected void assertConfiguredAsExpected(RestartableJenkinsRule restartableJenkinsRule, String s) {
     AdvisorGlobalConfiguration advisor = AdvisorGlobalConfiguration.getInstance();
     assertEquals("me@email.com", advisor.getEmail());
-    assertEquals("we@email.com,they@email.com", advisor.getCc());
+    assertThat(advisor.getCcs().stream().map(Recipient::getEmail).toArray(),
+      arrayContainingInAnyOrder(Arrays.asList("we@email.com", "they@email.com").toArray()));
     assertTrue(advisor.isAcceptToS());
     assertTrue(advisor.isNagDisabled());
     assertEquals(2, advisor.getExcludedComponents().size());

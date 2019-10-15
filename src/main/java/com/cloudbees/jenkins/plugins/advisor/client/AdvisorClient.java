@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class AdvisorClient {
 
@@ -71,7 +72,8 @@ public class AdvisorClient {
 
   private ClientResponse doUploadFile(final ClientUploadRequest r) {
     File uploadFile = r.getFile();
-    String cc = EmailUtil.urlEncode(r.getCc());
+    String cc = (r.getCc() == null || r.getCc().isEmpty()) ? null :
+      EmailUtil.urlEncode(r.getCc().stream().map(Recipient::getEmail).collect(Collectors.joining(",")));
 
     String requestURL = AdvisorClientConfig.apiUploadURI(recipient.getEmail(), r.getInstanceId(), cc);
 

@@ -43,27 +43,27 @@ public class ReminderTest {
     assertTrue(managePage.asText().contains(blurb));
 
     // page doesn't show warning
-    submitForm(w, part, "test@test.test", false, true, "cc@test.test");
+    submitForm(w, part, "test@test.test", false, true);
     managePage = w.goTo("manage");
     assertFalse(managePage.asText().contains(blurb));
 
     // page shows warning
-    submitForm(w, part, "", false, true, "");
+    submitForm(w, part, "", false, true);
     managePage = w.goTo("manage");
     assertTrue(managePage.asText().contains(blurb));
 
     // page doesn't show warning
-    submitForm(w, part, "", true, true, "");
+    submitForm(w, part, "", true, true);
     managePage = w.goTo("manage");
     assertFalse(managePage.asText().contains(blurb));
 
     // page shows warning
-    submitForm(w, part, "", false, false, "");
+    submitForm(w, part, "", false, false);
     managePage = w.goTo("manage");
     assertTrue(managePage.asText().contains(blurb));
 
     // page doesn't show warning
-    submitForm(w, part, "", true, false, "");
+    submitForm(w, part, "", true, false);
     managePage = w.goTo("manage");
     assertFalse(managePage.asText().contains(blurb));
   }
@@ -77,11 +77,9 @@ public class ReminderTest {
     assertFalse(managePage.asText().contains(blurb));
   }
 
-  private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms,
-                          String ccEmail) throws Exception {
+  private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms) throws Exception {
     HtmlForm form = wc.goTo(part).getFirstByXPath("//form[@action='configure']");
     form.getInputByName("_.email").setValueAttribute(userEmail);
-    form.getInputByName("_.cc").setValueAttribute(ccEmail);
     form.getInputByName("_.nagDisabled").setChecked(nagOff);
     form.getInputByName("_.acceptToS").setChecked(acceptTerms);
     j.submit(form);

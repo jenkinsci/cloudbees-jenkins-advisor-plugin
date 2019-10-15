@@ -38,12 +38,15 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Extension
 public class AdvisorGlobalConfiguration
@@ -59,13 +62,17 @@ public class AdvisorGlobalConfiguration
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
   private String email;
-  private String cc;
+  private List<Recipient> ccs;
   private Set<String> excludedComponents;
   private boolean nagDisabled;
   private boolean acceptToS;
   private String lastBundleResult;
 
-
+  /**
+   * @deprecated replaced by ccs since 2.12
+   */
+  @Deprecated
+  private transient String cc;
   /**
    * @deprecated removed since 2.12
    */
@@ -76,12 +83,12 @@ public class AdvisorGlobalConfiguration
     load();
   }
 
-  public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
+  public AdvisorGlobalConfiguration(String email, List<Recipient> ccs, Set<String> excludedComponents) {
     this.setEmail(email);
-    this.setCc(cc);
+    this.setCcs(ccs);
     this.setExcludedComponents(excludedComponents);
   }
-
+  
   public static AdvisorGlobalConfiguration getInstance() {
     return Jenkins.get().getExtensionList(AdvisorGlobalConfiguration.class).get(0);
   }
@@ -153,6 +160,23 @@ public class AdvisorGlobalConfiguration
     this.lastBundleResult = lastBundleResult;
   }
 
+  protected Object readResolve() {
+    // cc is depreacated in 2.12 and replaced by ccs 
+    if (cc != null) {
+      this.setCcs(
+        Arrays.stream(
+          StringUtils.split(
+            EmailUtil.fixEmptyAndTrimAllSpaces(cc), ","))
+          .map(EmailUtil::fixEmptyAndTrimAllSpaces)
+          .filter(Objects::nonNull)
+          .map(Recipient::new)
+          .collect(Collectors.toList())
+      );
+      save();
+    }
+    return this;
+  }
+
   /**
    * Handles the form submission
    *
@@ -212,13 +236,13 @@ public class AdvisorGlobalConfiguration
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
-  public String getCc() {
-    return cc;
+  public List<Recipient> getCcs() {
+    return ccs != null ? ccs : Collections.emptyList();
   }
 
   @DataBoundSetter
-  public void setCc(@CheckForNull String cc) {
-    this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
+  public void setCcs(List<Recipient> ccs) {
+    this.ccs = ccs;
   }
 
   public Set<String> getExcludedComponents() {
@@ -260,10 +284,10 @@ public class AdvisorGlobalConfiguration
   }
 
   public boolean isValid() {
-    return isValid(false, isAcceptToS(), getEmail(), getCc());
+    return isValid(false, isAcceptToS(), getEmail(), getCcs());
   }
 
-  public static boolean isValid(boolean logErrors, boolean acceptToS, String email, String cc) {
+  public static boolean isValid(boolean logErrors, boolean acceptToS, String email, List<Recipient> ccs) {
     if (!acceptToS) {
       if (logErrors) {
         LOG.warning("acceptToS is invalid, it must be set to true");
@@ -276,11 +300,17 @@ public class AdvisorGlobalConfiguration
       }
       return false;
     }
-    if (!StringUtils.isBlank(cc)) {
-      if (!EmailValidator.isValidCC(cc)) {
-        if (logErrors) {
-          LOG.warning(() -> String.format("cc \"%s\" is not valid",cc));
-        }
+    if (!ccs.isEmpty()) {
+      List<String> erroneousCCEmails =
+        ccs.stream().map(Recipient::getEmail).filter(s -> !EmailValidator.isValidEmail(s)).collect(Collectors.toList());
+      if (!erroneousCCEmails.isEmpty()) {
+        erroneousCCEmails.forEach(s ->
+          {
+            if (logErrors) {
+              LOG.warning(() -> String.format("cc \"%s\" is not valid",s));
+            }
+          }
+        );
         return false;
       }
     }
@@ -349,21 +379,19 @@ public class AdvisorGlobalConfiguration
       return Messages.Insights_DisplayName();
     }
 
+    // Used from AdvisorGlobalConfiguration/index.jelly
     public FormValidation doCheckAcceptToS(@QueryParameter boolean value) {
       if (!value) {
         return FormValidation.error("Accepting our Terms and Conditions is mandatory to use this service.");
       }
       return FormValidation.ok();
     }
-
+    
+    // Used from AdvisorGlobalConfiguration/index.jelly
     public FormValidation doCheckEmail(@QueryParameter String value) {
       return EmailValidator.validateEmail(value);
     }
-
-    public FormValidation doCheckCc(@QueryParameter String value) {
-      return EmailValidator.validateCC(value);
-    }
-
+    
     public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
                                           @QueryParameter("acceptToS") final boolean acceptToS) {
       return EmailValidator.testSendEmail(value,acceptToS);
@@ -388,7 +416,7 @@ public class AdvisorGlobalConfiguration
     public boolean configure(StaplerRequest req, JSONObject json) {
       boolean acceptToS = json.getBoolean("acceptToS");
       String email = json.getString("email");
-      String cc = json.getString("cc");
+      List<Recipient> ccs = req.bindJSONToList(Recipient.class, json.get("ccs"));
       boolean nagDisabled = json.getBoolean("nagDisabled");
       JSONObject advanced = json.getJSONObject("advanced");
 
@@ -408,7 +436,7 @@ public class AdvisorGlobalConfiguration
       if (advisorGlobalConfiguration != null) {
         advisorGlobalConfiguration.setAcceptToS(acceptToS);
         advisorGlobalConfiguration.setEmail(email);
-        advisorGlobalConfiguration.setCc(cc);
+        advisorGlobalConfiguration.setCcs(ccs);
         advisorGlobalConfiguration.setNagDisabled(nagDisabled);
         advisorGlobalConfiguration.setExcludedComponents(remove);
       }

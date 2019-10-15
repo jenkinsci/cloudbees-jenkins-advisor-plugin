@@ -1,6 +1,8 @@
 advisor:
   acceptToS: true
-  cc: "we@email.com,they@email.com"
+  ccs:
+    - "we@email.com"
+    - "they@email.com"
   email: "me@email.com"
   excludedComponents:
     - "ThreadDumps"

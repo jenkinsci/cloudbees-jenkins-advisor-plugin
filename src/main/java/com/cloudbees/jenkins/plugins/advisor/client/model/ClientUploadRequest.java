@@ -1,15 +1,16 @@
 package com.cloudbees.jenkins.plugins.advisor.client.model;
 
 import java.io.File;
+import java.util.List;
 
 public class ClientUploadRequest {
 
   private final String instanceId;
   private final File file;
-  private final String cc;
+  private final List<Recipient> cc;
   private final String pluginVersion;
 
-  public ClientUploadRequest(String instanceId, File file, String cc, String pluginVersion) {
+  public ClientUploadRequest(String instanceId, File file, List<Recipient> cc, String pluginVersion) {
     this.instanceId = instanceId;
     this.file = file;
     this.cc = cc;
@@ -24,7 +25,7 @@ public class ClientUploadRequest {
     return file;
   }
 
-  public String getCc() {
+  public List<Recipient> getCc() {
     return cc;
   }
 

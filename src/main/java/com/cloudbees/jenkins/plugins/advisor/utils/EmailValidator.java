@@ -30,22 +30,6 @@ public final class EmailValidator {
     return StringUtils.isNotBlank(emailAddress) && isValid(emailAddress);
   }
 
-  public static boolean isValidCC(String value) {
-    String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-    if (emailAddress == null || emailAddress.isEmpty()) {
-      return true;
-    }
-    if (emailAddress.contains(";")) {
-      return false;
-    }
-    for (String cc : emailAddress.split(",")) {
-      if (!EmailValidator.isValid(cc)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   public static FormValidation validateEmail(String value) {
     String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
     if (StringUtils.isBlank(emailAddress)) {
@@ -78,23 +62,6 @@ public final class EmailValidator {
     } catch (Exception e) {
       return FormValidation.error("The test failed: " + e.getMessage());
     }
-  }
-
-  public static FormValidation validateCC(String value) {
-    String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-    if (emailAddress == null || emailAddress.isEmpty()) {
-      return FormValidation.ok();
-    }
-    if (emailAddress.contains(";")) {
-      return FormValidation
-        .error("Email cannot contain illegal character ';'. Use ',' if multiple recipients are required.");
-    }
-    for (String cc : emailAddress.split(",")) {
-      if (!EmailValidator.isValid(cc)) {
-        return FormValidation.error(String.format("Invalid email [%s]", cc));
-      }
-    }
-    return FormValidation.ok();
   }
   
 }

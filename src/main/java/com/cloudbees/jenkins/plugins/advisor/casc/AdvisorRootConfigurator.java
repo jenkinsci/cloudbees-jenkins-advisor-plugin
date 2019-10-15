@@ -1,6 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor.casc;
 
 import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -18,10 +19,11 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * A root element configurator used for configuring CloudBees Jenkins Advisor through {@link io.jenkins.plugins.casc.ConfigurationAsCode}
@@ -34,14 +36,12 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
 
   static final String ACCEPT_TOS_ATTR = "acceptToS";
   static final String EMAIL_ATTR = "email";
-  static final String CC_ATTR = "cc";
+  static final String CCS_ATTR = "ccs";
   static final String EXCLUDED_COMPONENTS_ATTR = "excludedComponents";
   static final String NAG_DISABLED_ATTR = "nagDisabled";
   
-  // Ignoring lastBundleResult since it is not configured in the plugin. It only informs about the last bundle generation
-  // Ignoring isValid since it is something auto-calculated during the configuration
-  private final Collection<String> excludedAttributesInConf = Arrays.asList("lastBundleResult", "valid");
-
+  private static final Logger LOG = Logger.getLogger(AdvisorRootConfigurator.class.getName());
+  
   @NonNull
   @Override
   public String getName() {
@@ -58,13 +58,28 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
     throws ConfiguratorException {
     // Scalar values
     final String email = (mapping.get(EMAIL_ATTR) != null ? mapping.getScalarValue(EMAIL_ATTR) : StringUtils.EMPTY);
-    final String cc = (mapping.get(CC_ATTR) != null ? mapping.getScalarValue(CC_ATTR) : StringUtils.EMPTY);
     final boolean nagDisabled = (mapping.get(NAG_DISABLED_ATTR) != null &&
       BooleanUtils.toBoolean(mapping.getScalarValue(NAG_DISABLED_ATTR)));
     final boolean acceptToS = (mapping.get(ACCEPT_TOS_ATTR) != null &&
       BooleanUtils.toBoolean(mapping.getScalarValue(ACCEPT_TOS_ATTR)));
 
     // List values
+    final List<Recipient> cc = new ArrayList<>();
+    CNode ccCN = mapping.get(CCS_ATTR);
+    if (ccCN != null) {
+      if (ccCN instanceof Sequence) {
+        Sequence s = (Sequence) ccCN;
+        for (CNode cNode : s) {
+          cc.add(new Recipient(cNode.asScalar().getValue()));
+        }
+        // We don't want to process it anymore because the mapping in YAML
+        // doesn't map the objects model (List<String> vs List<Recipient>
+        mapping.remove(CCS_ATTR);
+      } else {
+        throw new ConfiguratorException(this, CCS_ATTR + " is expected to be a list.");
+      }
+    }
+    
     final Set<String> excludedComponents = new HashSet<>();
     CNode excludedCN = mapping.get(EXCLUDED_COMPONENTS_ATTR);
     if (excludedCN != null) {
@@ -78,7 +93,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
           excludedComponents.add(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS);
         }
       } else {
-        throw new ConfiguratorException(this, "Excluded components are expected to be a list.");
+        throw new ConfiguratorException(this, EXCLUDED_COMPONENTS_ATTR + " is expected to be a list.");
       }
 
     } else {
@@ -96,10 +111,14 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
     return advisor;
   }
 
-  private void updateConfiguration(AdvisorGlobalConfiguration conf, String email, String cc, boolean acceptToS,
-                                   boolean nagDisabled, Set<String> excludedComponents) {
+  private void updateConfiguration(AdvisorGlobalConfiguration conf,
+                                   String email,
+                                   List<Recipient> ccs,
+                                   boolean acceptToS,
+                                   boolean nagDisabled,
+                                   Set<String> excludedComponents) {
     conf.setEmail(email);
-    conf.setCc(cc);
+    conf.setCcs(ccs);
     conf.setAcceptToS(acceptToS);
     conf.setNagDisabled(nagDisabled);
     conf.setExcludedComponents(excludedComponents);
@@ -119,24 +138,46 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
   @Override
   public CNode describe(AdvisorGlobalConfiguration instance, ConfigurationContext context) throws Exception {
     Mapping mapping = new Mapping();
-    // In UI, email is mandatory. If the email is empty, the Advisor is not configured, so nothing should be exported
-    if (StringUtils.isNotBlank(instance.getEmail())) {
-      for (Attribute<AdvisorGlobalConfiguration, ?> attribute : describe()) {
-        final String attributeName = attribute.getName();
-        if (!excludedAttributesInConf.contains(attributeName)) {
-          mapping.put(attributeName, attribute.describe(instance, context));
-        }
-      }
+    // If the UI config is invalid nothing should be exported
+    if (instance.isValid()) {
 
-      CNode excluded = mapping.get(EXCLUDED_COMPONENTS_ATTR);
-      if (excluded instanceof Sequence) {
-        Sequence seq = (Sequence) excluded;
-        if (seq.isEmpty()) {
-          seq.add(new Scalar(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS));
+      // Manually generate the YAML to ensure a longer term compatibility
+      // by keeping the control on the mapping in both sides
+
+      for (Attribute<AdvisorGlobalConfiguration, ?> attribute : describe()) {
+        switch (attribute.getName()) {
+          case ACCEPT_TOS_ATTR:
+            mapping.put(ACCEPT_TOS_ATTR, attribute.describe(instance, context));
+            break;
+          case EMAIL_ATTR:
+            mapping.put(EMAIL_ATTR, attribute.describe(instance, context));
+            break;
+          case CCS_ATTR:
+            // We build it manually because we don't want to expose the Bean model
+            Sequence ccs = new Sequence();
+            instance.getCcs().stream().map(Recipient::getEmail).map(Scalar::new).forEach(ccs::add);
+            if (!ccs.isEmpty()) {
+              mapping.put(CCS_ATTR, ccs);
+            }
+            break;
+          case EXCLUDED_COMPONENTS_ATTR:
+            CNode excludedCNode = attribute.describe(instance, context);
+            if (excludedCNode instanceof Sequence) {
+              Sequence seq = (Sequence) excludedCNode;
+              if (seq.isEmpty()) {
+                seq.add(new Scalar(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS));
+              }
+            }
+            mapping.put(EXCLUDED_COMPONENTS_ATTR, excludedCNode);
+            break;
+          case NAG_DISABLED_ATTR:
+            mapping.put(NAG_DISABLED_ATTR, attribute.describe(instance, context));
+            break;
+          default:
+            LOG.fine("Unknown attribute:" + attribute.getName());
         }
       }
     }
-
     return mapping;
   }
 

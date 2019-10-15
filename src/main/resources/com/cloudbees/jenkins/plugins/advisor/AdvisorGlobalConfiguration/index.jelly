@@ -64,9 +64,24 @@
             title="${%Send a test email}" progress="${%Triggering a test...}"
             method="testSendEmail" with="email,acceptToS"/>
 
-          <f:entry title="${%CC...}" field="cc"
-                   description="You can optionally include a list of comma-separated emails to receive the report.">
-            <f:textbox/>
+          <f:entry field="ccs"
+                   title="${%CC...}"
+                   description="${%You can include additional emails to receive the report in CC.}">
+            <f:repeatable field="ccs" add="${%Add CC}">
+              <table width="100%">
+                <f:entry field="email" title="${%Email}">
+                  <f:textbox/>
+                </f:entry>
+                <f:entry title="">
+                  <div style="text-align: right">
+                    <f:repeatableDeleteButton value="${%Delete CC}"/>
+                    <f:validateButton
+                      title="${%Send a test email}" progress="${%Triggering a test...}"
+                      method="testSendEmail" with="email,acceptToS"/>
+                  </div>
+                </f:entry>
+              </table>
+            </f:repeatable>
           </f:entry>
 
         </f:section>

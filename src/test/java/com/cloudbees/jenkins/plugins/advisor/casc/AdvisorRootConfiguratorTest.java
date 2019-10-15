@@ -1,6 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor.casc;
 
 import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import io.jenkins.plugins.casc.ConfigurationContext;
 import io.jenkins.plugins.casc.ConfiguratorException;
 import io.jenkins.plugins.casc.ConfiguratorRegistry;
@@ -15,12 +16,15 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.ACCEPT_TOS_ATTR;
-import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.CC_ATTR;
+import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.CCS_ATTR;
 import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.EMAIL_ATTR;
 import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.EXCLUDED_COMPONENTS_ATTR;
 import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator.NAG_DISABLED_ATTR;
@@ -29,14 +33,14 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class AdvisorRootConfiguratorTest {
 
   private final static String FAKE_EMAIL = "fake@email.com";
-  private final static String FAKE_CC = "onemore@mail.com,another@email.com";
+  private final static List<Recipient> FAKE_CC =
+    Arrays.asList(new Recipient("onemore@mail.com"), new Recipient("another@email.com"));
   private final static Set<String> EXCLUDED = new HashSet<>(Arrays.asList("ThreadDumps", "PipelineThreadDump"));
   private final static Boolean ACCEPT_TOS = Boolean.TRUE;
   private final static Boolean NAG_DISABLED = Boolean.TRUE;
@@ -60,13 +64,16 @@ public class AdvisorRootConfiguratorTest {
 
     mapping = new Mapping();
     mapping.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
-    mapping.put(CC_ATTR, FAKE_CC);
+    Sequence ccs = new Sequence();
+    ccs.add(new Scalar("onemore@mail.com"));
+    ccs.add(new Scalar("another@email.com"));
+    mapping.put(CCS_ATTR, ccs);
     mapping.put(EMAIL_ATTR, FAKE_EMAIL);
+    Sequence excluded = new Sequence();
+    excluded.add(new Scalar("ThreadDumps"));
+    excluded.add(new Scalar("PipelineThreadDump"));
+    mapping.put(EXCLUDED_COMPONENTS_ATTR, excluded);
     mapping.put(NAG_DISABLED_ATTR, NAG_DISABLED);
-    Sequence s = new Sequence();
-    s.add(new Scalar("ThreadDumps"));
-    s.add(new Scalar("PipelineThreadDump"));
-    mapping.putIfNotEmpry(EXCLUDED_COMPONENTS_ATTR, s);
   }
 
   @Test
@@ -101,13 +108,16 @@ public class AdvisorRootConfiguratorTest {
     Mapping described = configurator.describe(configuration, context).asMapping();
     assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
+    List<String> ccMapping = toListValues(mapping.get(CCS_ATTR).asSequence());
+    List<String> ccDescribed = toListValues(described.get(CCS_ATTR).asSequence());
+    assertEquals(ccMapping.size(), ccDescribed.size());
+    assertThat(ccDescribed.toArray(), arrayContainingInAnyOrder(ccMapping.toArray()));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
     assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> mappingSeq = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(mappingSeq.size(), describedSeq.size());
-    assertThat(describedSeq.toArray(), arrayContainingInAnyOrder(mappingSeq.toArray()));
+    Set<String> excludedComponentsMapping = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    Set<String> excludedComponentsDescribed = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    assertEquals(excludedComponentsMapping.size(), excludedComponentsDescribed.size());
+    assertThat(excludedComponentsDescribed.toArray(), arrayContainingInAnyOrder(excludedComponentsMapping.toArray()));
   }
 
   @Test
@@ -145,20 +155,20 @@ public class AdvisorRootConfiguratorTest {
 
   @Test
   public void testDescribeWithEmptyCC() throws Exception {
-    final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, "", EXCLUDED);
+    final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, Collections.emptyList(), EXCLUDED);
     c.setAcceptToS(ACCEPT_TOS);
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
     assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertNull(described.get(CC_ATTR));
+    assertFalse(described.containsKey(CCS_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
     assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> mappingSeq = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(mappingSeq.size(), describedSeq.size());
-    assertThat(describedSeq.toArray(), arrayContainingInAnyOrder(mappingSeq.toArray()));
+    Set<String> excludedComponentsMapping = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    Set<String> excludedComponentsDescribed = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    assertEquals(excludedComponentsMapping.size(), excludedComponentsDescribed.size());
+    assertThat(excludedComponentsDescribed.toArray(), arrayContainingInAnyOrder(excludedComponentsMapping.toArray()));
   }
 
   @Test
@@ -170,31 +180,13 @@ public class AdvisorRootConfiguratorTest {
     Mapping described = configurator.describe(c, context).asMapping();
     assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertNull(described.get(CC_ATTR));
+    assertFalse(described.containsKey(CCS_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
     assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> mappingSeq = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(mappingSeq.size(), describedSeq.size());
-    assertThat(describedSeq.toArray(), arrayContainingInAnyOrder(mappingSeq.toArray()));
-  }
-
-  @Test
-  public void testDescribeWithBlankCC() throws Exception {
-    final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, " ", EXCLUDED);
-    c.setAcceptToS(ACCEPT_TOS);
-    c.setNagDisabled(NAG_DISABLED);
-
-    Mapping described = configurator.describe(c, context).asMapping();
-    assertNotNull(described);
-    assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertNull(described.get(CC_ATTR));
-    assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
-    assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> mappingSeq = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(mappingSeq.size(), describedSeq.size());
-    assertThat(describedSeq.toArray(), arrayContainingInAnyOrder(mappingSeq.toArray()));
+    Set<String> excludedComponentsMapping = toScalarValues(mapping.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    Set<String> excludedComponentsDescribed = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    assertEquals(excludedComponentsMapping.size(), excludedComponentsDescribed.size());
+    assertThat(excludedComponentsDescribed.toArray(), arrayContainingInAnyOrder(excludedComponentsMapping.toArray()));
   }
 
   @Test
@@ -206,12 +198,15 @@ public class AdvisorRootConfiguratorTest {
     Mapping described = configurator.describe(c, context).asMapping();
     assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
+    List<String> ccMapping = toListValues(mapping.get(CCS_ATTR).asSequence());
+    List<String> ccDescribed = toListValues(described.get(CCS_ATTR).asSequence());
+    assertEquals(ccMapping.size(), ccDescribed.size());
+    assertThat(ccDescribed.toArray(), arrayContainingInAnyOrder(ccMapping.toArray()));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
     assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(1, describedSeq.size());
-    assertEquals(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS, describedSeq.toArray()[0]);
+    Set<String> excludedComponentsDescribed = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    assertEquals(1, excludedComponentsDescribed.size());
+    assertEquals(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS, excludedComponentsDescribed.toArray()[0]);
   }
 
   @Test
@@ -223,12 +218,15 @@ public class AdvisorRootConfiguratorTest {
     Mapping described = configurator.describe(c, context).asMapping();
     assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
-    assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
+    List<String> ccMapping = toListValues(mapping.get(CCS_ATTR).asSequence());
+    List<String> ccDescribed = toListValues(described.get(CCS_ATTR).asSequence());
+    assertEquals(ccMapping.size(), ccDescribed.size());
+    assertThat(ccDescribed.toArray(), arrayContainingInAnyOrder(ccMapping.toArray()));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
     assertEquals(mapping.getScalarValue(NAG_DISABLED_ATTR), described.getScalarValue(NAG_DISABLED_ATTR));
-    Set<String> describedSeq = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
-    assertEquals(1, describedSeq.size());
-    assertEquals(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS, describedSeq.toArray()[0]);
+    Set<String> excludedComponentsDescribed = toScalarValues(described.get(EXCLUDED_COMPONENTS_ATTR).asSequence());
+    assertEquals(1, excludedComponentsDescribed.size());
+    assertEquals(AdvisorGlobalConfiguration.SEND_ALL_COMPONENTS, excludedComponentsDescribed.toArray()[0]);
   }
 
   private Set<String> toScalarValues(Sequence s) throws Exception {
@@ -239,12 +237,22 @@ public class AdvisorRootConfiguratorTest {
     return converted;
   }
 
+  private List<String> toListValues(Sequence s) throws Exception {
+    List<String> converted = new ArrayList<>(s.size());
+    for (CNode cNode : s) {
+      converted.add(cNode.asScalar().getValue());
+    }
+    return converted;
+  }
+  
   @Test
   public void testInstance() throws Exception {
     AdvisorGlobalConfiguration instance = configurator.instance(mapping, context);
     assertNotNull(instance);
     assertEquals(configuration.getEmail(), instance.getEmail());
-    assertEquals(configuration.getCc(), instance.getCc());
+    assertEquals(configuration.getCcs().size(), instance.getCcs().size());
+    assertThat(instance.getCcs().stream().map(Recipient::getEmail).toArray(),
+      arrayContainingInAnyOrder(configuration.getCcs().stream().map(Recipient::getEmail).toArray()));
     assertEquals(configuration.isAcceptToS(), instance.isAcceptToS());
     assertEquals(configuration.isNagDisabled(), instance.isNagDisabled());
     assertEquals(configuration.getExcludedComponents().size(), instance.getExcludedComponents().size());
@@ -256,9 +264,12 @@ public class AdvisorRootConfiguratorTest {
   @Test
   public void testInstanceSENDALL() throws Exception {
     final Mapping mappingWithDefault = new Mapping();
-    mappingWithDefault.put(CC_ATTR, FAKE_CC);
-    mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
     mappingWithDefault.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
+    mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("onemore@mail.com"));
+    cc.add(new Scalar("another@email.com"));
+    mappingWithDefault.put(CCS_ATTR, cc);
 
     AdvisorGlobalConfiguration instance = configurator.instance(mappingWithDefault, context);
     assertNotNull(instance);
@@ -273,8 +284,11 @@ public class AdvisorRootConfiguratorTest {
   public void testInstanceWithOutToS() throws Exception {
     thrown.expect(ConfiguratorException.class);
     final Mapping mappingWithDefault = new Mapping();
-    mappingWithDefault.put(CC_ATTR, FAKE_CC);
     mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("onemore@mail.com"));
+    cc.add(new Scalar("another@email.com"));
+    mappingWithDefault.put(CCS_ATTR, cc);
 
     configurator.instance(mappingWithDefault, context);
   }
@@ -284,8 +298,11 @@ public class AdvisorRootConfiguratorTest {
     thrown.expect(ConfiguratorException.class);
     final Mapping mappingNotAcceptingToS = new Mapping();
     mappingNotAcceptingToS.put(ACCEPT_TOS_ATTR, false);
-    mappingNotAcceptingToS.put(CC_ATTR, FAKE_CC);
     mappingNotAcceptingToS.put(EMAIL_ATTR, FAKE_EMAIL);
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("onemore@mail.com"));
+    cc.add(new Scalar("another@email.com"));
+    mappingNotAcceptingToS.put(CCS_ATTR, cc);
     mappingNotAcceptingToS.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
     configurator.instance(mappingNotAcceptingToS, context);
@@ -296,8 +313,11 @@ public class AdvisorRootConfiguratorTest {
     thrown.expect(ConfiguratorException.class);
     final Mapping m = new Mapping();
     m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
-    m.put(CC_ATTR, FAKE_CC);
     m.put(EMAIL_ATTR, "");
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("onemore@mail.com"));
+    cc.add(new Scalar("another@email.com"));
+    m.put(CCS_ATTR, cc);
     m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
     configurator.instance(m, context);
@@ -308,7 +328,10 @@ public class AdvisorRootConfiguratorTest {
     thrown.expect(ConfiguratorException.class);
     final Mapping m = new Mapping();
     m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
-    m.put(CC_ATTR, FAKE_CC);
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("onemore@mail.com"));
+    cc.add(new Scalar("another@email.com"));
+    m.put(CCS_ATTR, cc);
     m.put(EMAIL_ATTR, "bad_email");
     m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
@@ -320,7 +343,6 @@ public class AdvisorRootConfiguratorTest {
     thrown.expect(ConfiguratorException.class);
     final Mapping m = new Mapping();
     m.put(ACCEPT_TOS_ATTR, false);
-    m.put(CC_ATTR, "");
     m.put(EMAIL_ATTR, FAKE_EMAIL);
     m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
@@ -332,7 +354,9 @@ public class AdvisorRootConfiguratorTest {
     thrown.expect(ConfiguratorException.class);
     final Mapping m = new Mapping();
     m.put(ACCEPT_TOS_ATTR, false);
-    m.put(CC_ATTR, "bad_cc");
+    Sequence cc = new Sequence();
+    cc.add(new Scalar("bad_cc"));
+    m.put(CCS_ATTR, cc);
     m.put(EMAIL_ATTR, FAKE_EMAIL);
     m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
