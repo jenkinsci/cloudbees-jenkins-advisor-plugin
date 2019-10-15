@@ -74,7 +74,6 @@ public class AdvisorGlobalConfiguration
     this.setEmail(email);
     this.setCc(cc);
     this.excludedComponents = excludedComponents;
-    this.lastBundleResult = "";
   }
 
   public static AdvisorGlobalConfiguration getInstance() {
