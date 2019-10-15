@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -98,6 +99,7 @@ public class AdvisorRootConfiguratorTest {
   @Test
   public void testDescribe() throws Exception {
     Mapping described = configurator.describe(configuration, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -115,6 +117,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertTrue(described.isEmpty());
   }
 
@@ -125,6 +128,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertTrue(described.isEmpty());
   }
 
@@ -135,6 +139,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertTrue(described.isEmpty());
   }
 
@@ -145,6 +150,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertNull(described.get(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -162,6 +168,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertNull(described.get(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -179,6 +186,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertNull(described.get(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -196,6 +204,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -212,6 +221,7 @@ public class AdvisorRootConfiguratorTest {
     c.setNagDisabled(NAG_DISABLED);
 
     Mapping described = configurator.describe(c, context).asMapping();
+    assertNotNull(described);
     assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
     assertEquals(mapping.getScalarValue(CC_ATTR), described.getScalarValue(CC_ATTR));
     assertEquals(mapping.getScalarValue(ACCEPT_TOS_ATTR), described.getScalarValue(ACCEPT_TOS_ATTR));
@@ -232,6 +242,7 @@ public class AdvisorRootConfiguratorTest {
   @Test
   public void testInstance() throws Exception {
     AdvisorGlobalConfiguration instance = configurator.instance(mapping, context);
+    assertNotNull(instance);
     assertEquals(configuration.getEmail(), instance.getEmail());
     assertEquals(configuration.getCc(), instance.getCc());
     assertEquals(configuration.isAcceptToS(), instance.isAcceptToS());
@@ -250,6 +261,7 @@ public class AdvisorRootConfiguratorTest {
     mappingWithDefault.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
 
     AdvisorGlobalConfiguration instance = configurator.instance(mappingWithDefault, context);
+    assertNotNull(instance);
     assertTrue(instance.isAcceptToS());
     assertFalse(instance.isNagDisabled());
     assertEquals(1, instance.getExcludedComponents().size());
