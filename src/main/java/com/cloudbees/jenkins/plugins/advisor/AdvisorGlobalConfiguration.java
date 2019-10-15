@@ -402,8 +402,13 @@ public class AdvisorGlobalConfiguration
       }
     }
 
-    public FormValidation doTestSendEmail(@QueryParameter("email") final String value) {
+    public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
+                                          @QueryParameter("acceptToS") final boolean acceptToS) {
       try {
+        if (!acceptToS) {
+          return FormValidation.warning(
+            "It is impossible to launch a test without accepting our Terms and Conditions");
+        }
         if (!doCheckEmail(value).kind.equals(OK)) {
           return FormValidation.warning(
             "It is impossible to launch a test without providing a valid email");
