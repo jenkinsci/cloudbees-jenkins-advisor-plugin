@@ -4,7 +4,6 @@ import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.util.FormValidation;
 import io.jenkins.plugins.casc.Attribute;
 import io.jenkins.plugins.casc.BaseConfigurator;
 import io.jenkins.plugins.casc.ConfigurationContext;
@@ -23,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * A root element configurator used for configuring CloudBees Jenkins Advisor through {@link io.jenkins.plugins.casc.ConfigurationAsCode}
