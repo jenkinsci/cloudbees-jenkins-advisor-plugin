@@ -4,7 +4,6 @@ import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
-import com.cloudbees.jenkins.plugins.advisor.utils.FormValidationHelper;
 import com.cloudbees.jenkins.support.SupportAction;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import com.cloudbees.jenkins.support.api.Component;
@@ -373,7 +372,7 @@ public class AdvisorGlobalConfiguration
         if (email.isEmpty()) {
           return FormValidation.error("Missing email");
         }
-        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        Optional<FormValidation> ccErrors = EmailValidator.validateCC(cc);
         if (ccErrors.isPresent()) {
           return ccErrors.get();
         }
@@ -407,7 +406,7 @@ public class AdvisorGlobalConfiguration
         if (email.isEmpty()) {
           return FormValidation.error("Missing email");
         }
-        Optional<FormValidation> ccErrors = FormValidationHelper.validateCC(cc);
+        Optional<FormValidation> ccErrors = EmailValidator.validateCC(cc);
         if (ccErrors.isPresent()) {
           return ccErrors.get();
         }
