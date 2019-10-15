@@ -113,14 +113,14 @@ public class BundleUpload extends AsyncPeriodicWork {
         updateLastBundleResult(config, createTimestampedMessage(BUNDLE_SUCCESSFULLY_UPLOADED));
       } else {
         updateLastBundleResult(config,
-          createTimestampedErrorMessage("Bundle upload failed. Response code was: " + response.getCode() + ". " +
+          createTimestampedErrorMessage("Bundle upload failed.\nResponse code was: " + response.getCode() + ".\n" +
             "Response message: " + response.getMessage()));
       }
     } catch (Exception e) {
       log(Level.SEVERE, "Issue while uploading file to bundle upload service: " + e.getMessage());
       log(Level.FINEST,
         "Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
-      updateLastBundleResult(config, createTimestampedErrorMessage("Bundle upload failed: " + e.getMessage()));
+      updateLastBundleResult(config, createTimestampedErrorMessage("Bundle upload failed.\nThe error was " + e.getMessage()));
     }
   }
 
@@ -160,9 +160,10 @@ public class BundleUpload extends AsyncPeriodicWork {
   }
 
   private String createTimestampedMessage(String message) {
-    return String.format("%1$tF %1$tT - %2$s",
+    return String.format("%1$tF %1$tT - %2$s.%nNext upload within %3$d hours.",
       Calendar.getInstance().getTime(),
-      message);
+      message,
+      RECURRENCE_PERIOD_HOURS);
   }
 
   private void updateLastBundleResult(AdvisorGlobalConfiguration config, String message) {

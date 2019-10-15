@@ -7,8 +7,19 @@
     </st:attribute>
   </st:documentation>
 
+  <j:if test="${result==null}">
+    <div class="alert alert-info" role="alert">
+      <strong>
+        <i class="fa fa-info-circle"/>
+        Your first report soon.
+      </strong>
+      <p>
+        When connected to our server you will receive your first report within the next ${app.pluginManager.uberClassLoader.loadClass('com.cloudbees.jenkins.plugins.advisor.BundleUpload').getField('RECURRENCE_PERIOD_HOURS').get(null)} hours.
+      </p>
+    </div>
+  </j:if>
   <j:if test="${result!=null}">
-    <j:if test="${result!=null &amp;&amp; result.contains('ERROR')}">
+    <j:if test="${result.contains('ERROR')}">
       <div class="alert alert-danger" role="alert">
         <strong>
           <i class="fa fa-minus-circle"/>
@@ -21,7 +32,7 @@
         </p>
       </div>
     </j:if>
-    <j:if test="${result!=null &amp;&amp; result.contains('WARN')}">
+    <j:if test="${result.contains('WARN')}">
       <div class="alert alert-warning" role="alert">
         <strong>
           <i class="fa fa-exclamation-triangle"/>
@@ -34,8 +45,7 @@
         </p>
       </div>
     </j:if>
-    <j:if
-      test="${result!=null &amp;&amp; !result.contains('ERROR') &amp;&amp; !result.contains('WARN')}">
+    <j:if test="${!result.contains('ERROR') &amp;&amp; !result.contains('WARN')}">
       <div class="alert alert-success" role="alert">
         <strong>
           <i class="fa fa-check-circle"/>
