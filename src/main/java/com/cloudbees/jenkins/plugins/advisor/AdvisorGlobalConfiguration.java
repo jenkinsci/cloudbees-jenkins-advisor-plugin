@@ -339,8 +339,7 @@ public class AdvisorGlobalConfiguration
           "Email cannot contain illegal character ';' or ','. Consider using the CC field if multiple recipients are required");
       }
 
-      EmailValidator validator = EmailValidator.getInstance();
-      if (!validator.isValid(emailAddress)) {
+      if (!EmailValidator.isValid(emailAddress)) {
         return FormValidation.error("Invalid email");
       }
 
@@ -360,8 +359,7 @@ public class AdvisorGlobalConfiguration
       }
 
       for (String cc : emailAddress.split(",")) {
-        EmailValidator validator = EmailValidator.getInstance();
-        if (!validator.isValid(cc)) {
+        if (!EmailValidator.isValid(cc)) {
           return FormValidation.error(String.format("Invalid email [%s]", cc));
         }
       }
