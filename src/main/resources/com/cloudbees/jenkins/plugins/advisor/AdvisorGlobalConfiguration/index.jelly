@@ -54,12 +54,14 @@
           </f:entry>
         </f:section>
 
-        <f:section title="${%Recipient}">
-          <f:entry title="${%Email}" field="email">
+        <f:section title="${%Email Recipients}">
+          <f:entry field="email"
+                   title="${%TO...}"
+                   description="${%The report will be sent to this address.}">
             <f:textbox/>
           </f:entry>
 
-          <f:entry title="${%CC}" field="cc"
+          <f:entry title="${%CC...}" field="cc"
                    description="You can optionally include a list of comma-separated emails to receive the report.">
             <f:textbox/>
           </f:entry>
@@ -69,15 +71,8 @@
             method="testSendEmail" with="email,cc"/>
         </f:section>
 
-        <f:advanced align="left" title="${%Advanced Settings}">
-
-          <f:section title="${%Reminder}">
-            <f:entry field="nagDisabled">
-              <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
-            </f:entry>
-          </f:section>
-
-          <f:section name="advanced" title="${%Configure Data}">
+        <f:section name="advanced" title="${%Analyzed Data}">
+          <f:advanced align="right" title="${%Configure Data}">
             <f:block>
               <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
                 configurations.
@@ -104,9 +99,14 @@
                 </div>
               </f:entry>
             </j:forEach>
-          </f:section>
-
-        </f:advanced>
+          </f:advanced>
+        </f:section>
+        
+        <f:section title="${%Reminder}">
+          <f:entry field="nagDisabled">
+            <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
+          </f:entry>
+        </f:section>
 
         <f:bottomButtonBar>
           <f:submit name="save" value="${%Save}"/>
