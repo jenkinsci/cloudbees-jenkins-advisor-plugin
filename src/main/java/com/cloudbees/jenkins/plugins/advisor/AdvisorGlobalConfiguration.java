@@ -66,6 +66,12 @@ public class AdvisorGlobalConfiguration
   private String lastBundleResult;
 
 
+  /**
+   * @deprecated removed since 2.12
+   */
+  @Deprecated
+  private transient boolean isValid;
+  
   public AdvisorGlobalConfiguration() {
     load();
   }
