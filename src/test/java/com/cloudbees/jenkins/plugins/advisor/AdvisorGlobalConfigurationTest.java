@@ -25,12 +25,15 @@ import org.powermock.reflect.Whitebox;
 import java.net.URL;
 import java.util.concurrent.Callable;
 
+import static com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration.INVALID_CONFIGURATION;
+import static com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration.SERVICE_OPERATIONAL;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -83,7 +86,7 @@ public class AdvisorGlobalConfigurationTest {
   }
 
   @Test
-  public void testConnectionFailure() throws Exception {
+  public void testServerConnectionFailure() throws Exception {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
@@ -95,20 +98,25 @@ public class AdvisorGlobalConfigurationTest {
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
       (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation = advisorDescriptor.doTestConnection(email, cc);
-    assertEquals("Test connection fail was expected", FormValidation.Kind.ERROR, formValidation.kind);
 
+    // We don't do any remote test if the configuration isn't valid
+    String result = advisorDescriptor.validateServerConnection();
+    assertThat("Test connection fail was expected", result, containsString(INVALID_CONFIGURATION));    
+    
     DoConfigureInfo doConfigure = new DoConfigureInfo();
+    doConfigure.setTerms(true);
     doConfigure.setUp(email);
     j.executeOnServer(doConfigure);
+
+    result = advisorDescriptor.validateServerConnection();
+    assertThat("Test connection fail was expected", result, containsString("404"));    
     managePage = wc.goTo("cloudbees-jenkins-advisor");
     String t = managePage.asText();
-    System.out.println("\n\n\n\n\nT: " + t + "\n\n\n\n");
     assertTrue(managePage.asText().contains("Connection failure"));
   }
 
   @Test
-  public void testConnectionPass() throws Exception {
+  public void testServerConnectionPass() throws Exception {
     wireMockRule.resetAll();
     stubFor(get(urlEqualTo("/api/health"))
       .willReturn(aResponse()
@@ -120,13 +128,19 @@ public class AdvisorGlobalConfigurationTest {
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
       (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation = advisorDescriptor.doTestConnection(email, cc);
-    assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
 
+    // We don't do any remote test if the configuration isn't valid
+    String result = advisorDescriptor.validateServerConnection();
+    assertThat("Test connection fail was expected", result, containsString(INVALID_CONFIGURATION));
+    
     DoConfigureInfo doConfigure = new DoConfigureInfo();
-    doConfigure.setUp(email);
     doConfigure.setTerms(true);
+    doConfigure.setUp(email);
     j.executeOnServer(doConfigure);
+
+    result = advisorDescriptor.validateServerConnection();
+    assertThat("Test connection is ok", result, containsString(SERVICE_OPERATIONAL));
+    
     managePage = wc.goTo("cloudbees-jenkins-advisor");
     assertTrue(managePage.asText().contains("successfully connected"));
   }

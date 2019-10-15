@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +54,9 @@ public class AdvisorGlobalConfiguration
 
   public static final String PLUGIN_NAME = "cloudbees-jenkins-advisor";
   public static final String SEND_ALL_COMPONENTS = "SENDALL";
+
+  public static final String INVALID_CONFIGURATION = "invalid-configuration";
+  public static final String SERVICE_OPERATIONAL = "service-operational";
 
   private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
@@ -368,35 +370,16 @@ public class AdvisorGlobalConfiguration
       return FormValidation.ok();
     }
 
-    public FormValidation doTestConnection(@QueryParameter("email") final String email,
-                                           @QueryParameter("cc") final String cc) {
-      try {
-        if (email.isEmpty()) {
-          return FormValidation.error("Missing email");
-        }
-        Optional<FormValidation> ccErrors = EmailValidator.validateCC(cc);
-        if (ccErrors.isPresent()) {
-          return ccErrors.get();
-        }
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
-
-        advisorClient.doCheckHealth();
-        return FormValidation.ok("Success");
-      } catch (Exception e) {
-        return FormValidation.error("Client error : " + e.getMessage());
-      }
-    }
-
     // Used from validateOnLoad.jelly
     public String validateServerConnection() {
       AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-      if(!config.isValid()){
-        return "invalid-configuration";
+      if (!config.isValid()) {
+        return INVALID_CONFIGURATION;
       }
       try {
         AdvisorClient advisorClient = new AdvisorClient(new Recipient(null));
         advisorClient.doCheckHealth();
-        return "service-operational";
+        return SERVICE_OPERATIONAL;
       } catch (Exception e) {
         return "" + e.getMessage();
       }

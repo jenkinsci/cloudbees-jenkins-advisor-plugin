@@ -3,10 +3,11 @@
   <st:documentation>
     Check if Jenkins Health Advisor by CloudBees the server is available.
   </st:documentation>
-
+  
   <div>
     <j:set var="validationStatus"
            value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').validateServerConnection()}"/>
+    
     <j:if test="${validationStatus.contains('service-operational')}">
       <div class="alert alert-success" role="alert">
         <strong>
@@ -20,7 +21,7 @@
         <p>Please fix it to start using Jenkins Health Advisor by CloudBees.</p>
       </div>
     </j:if>
-    <j:if test="${validationStatus.contains('xception')}">
+    <j:if test="${!validationStatus.contains('service-operational') &amp;&amp; !validationStatus.contains('invalid-configuration')}">
       <div class="alert alert-danger" role="alert">
         <strong>
           <i class="fa fa-minus-circle"/> Connection failure to Jenkins Health Advisor by CloudBees.</strong>
