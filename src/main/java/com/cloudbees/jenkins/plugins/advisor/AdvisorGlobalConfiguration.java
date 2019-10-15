@@ -73,7 +73,7 @@ public class AdvisorGlobalConfiguration
   public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
     this.setEmail(email);
     this.setCc(cc);
-    this.excludedComponents = excludedComponents;
+    this.setExcludedComponents(excludedComponents);
   }
 
   public static AdvisorGlobalConfiguration getInstance() {
