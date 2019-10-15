@@ -394,7 +394,7 @@ public class AdvisorGlobalConfiguration
         return "invalid-configuration";
       }
       try {
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(config.email));
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(null));
         advisorClient.doCheckHealth();
         return "service-operational";
       } catch (Exception e) {
