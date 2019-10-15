@@ -32,6 +32,12 @@ import java.util.Set;
 public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfiguration>
   implements RootElementConfigurator<AdvisorGlobalConfiguration> {
 
+  static final String ACCEPT_TOS_ATTR = "acceptToS";
+  static final String EMAIL_ATTR = "email";
+  static final String CC_ATTR = "cc";
+  static final String EXCLUDED_COMPONENTS_ATTR = "excludedComponents";
+  static final String NAG_DISABLED_ATTR = "nagDisabled";
+  
   // Ignoring lastBundleResult since it is not configured in the plugin. It only informs about the last bundle generation
   // Ignoring isValid since it is something auto-calculated during the configuration
   private final Collection<String> excludedAttributesInConf = Arrays.asList("lastBundleResult", "valid");
@@ -51,16 +57,16 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
   protected AdvisorGlobalConfiguration instance(Mapping mapping, ConfigurationContext configurationContext)
     throws ConfiguratorException {
     // Scalar values
-    final String email = (mapping.get("email") != null ? mapping.getScalarValue("email") : StringUtils.EMPTY);
-    final String cc = (mapping.get("cc") != null ? mapping.getScalarValue("cc") : StringUtils.EMPTY);
-    final boolean nagDisabled = (mapping.get("nagDisabled") != null &&
-      BooleanUtils.toBoolean(mapping.getScalarValue("nagDisabled")));
-    final boolean acceptToS = (mapping.get("acceptToS") != null &&
-      BooleanUtils.toBoolean(mapping.getScalarValue("acceptToS")));
+    final String email = (mapping.get(EMAIL_ATTR) != null ? mapping.getScalarValue(EMAIL_ATTR) : StringUtils.EMPTY);
+    final String cc = (mapping.get(CC_ATTR) != null ? mapping.getScalarValue(CC_ATTR) : StringUtils.EMPTY);
+    final boolean nagDisabled = (mapping.get(NAG_DISABLED_ATTR) != null &&
+      BooleanUtils.toBoolean(mapping.getScalarValue(NAG_DISABLED_ATTR)));
+    final boolean acceptToS = (mapping.get(ACCEPT_TOS_ATTR) != null &&
+      BooleanUtils.toBoolean(mapping.getScalarValue(ACCEPT_TOS_ATTR)));
 
     // List values
     final Set<String> excludedComponents = new HashSet<>();
-    CNode excludedCN = mapping.get("excludedComponents");
+    CNode excludedCN = mapping.get(EXCLUDED_COMPONENTS_ATTR);
     if (excludedCN != null) {
       if (excludedCN instanceof Sequence) {
         Sequence s = (Sequence) excludedCN;
@@ -122,7 +128,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
         }
       }
 
-      CNode excluded = mapping.get("excludedComponents");
+      CNode excluded = mapping.get(EXCLUDED_COMPONENTS_ATTR);
       if (excluded instanceof Sequence) {
         Sequence seq = (Sequence) excluded;
         if (seq.isEmpty()) {
