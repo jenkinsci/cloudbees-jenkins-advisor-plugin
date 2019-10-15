@@ -1,4 +1,4 @@
-package com.cloudbees.jenkins.plugins.advisor.client;
+package com.cloudbees.jenkins.plugins.advisor.utils;
 
 import java.io.File;
 import java.nio.file.Files;

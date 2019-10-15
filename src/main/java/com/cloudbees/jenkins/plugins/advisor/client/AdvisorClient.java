@@ -4,6 +4,7 @@ import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
+import com.cloudbees.jenkins.plugins.advisor.utils.FileHelper;
 
 import java.io.File;
 import java.io.IOException;
