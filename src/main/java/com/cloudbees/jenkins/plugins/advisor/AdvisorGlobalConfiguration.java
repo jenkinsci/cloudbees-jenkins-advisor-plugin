@@ -26,7 +26,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -70,7 +70,6 @@ public class AdvisorGlobalConfiguration
     load();
   }
 
-  @DataBoundConstructor
   public AdvisorGlobalConfiguration(String email, String cc, Set<String> excludedComponents) {
     this.setEmail(email);
     this.setCc(cc);
@@ -122,6 +121,7 @@ public class AdvisorGlobalConfiguration
     return nagDisabled;
   }
 
+  @DataBoundSetter
   public void setNagDisabled(boolean nagDisabled) {
     if (this.nagDisabled != nagDisabled) {
       this.nagDisabled = nagDisabled;
@@ -132,6 +132,7 @@ public class AdvisorGlobalConfiguration
     return acceptToS;
   }
 
+  @DataBoundSetter
   public void setAcceptToS(boolean acceptToS) {
     if (this.acceptToS != acceptToS) {
       this.acceptToS = acceptToS;
@@ -142,6 +143,7 @@ public class AdvisorGlobalConfiguration
     return lastBundleResult;
   }
 
+  @DataBoundSetter
   public void setLastBundleResult(String lastBundleResult) {
     this.lastBundleResult = lastBundleResult;
   }
@@ -200,6 +202,7 @@ public class AdvisorGlobalConfiguration
     return email;
   }
 
+  @DataBoundSetter
   public void setEmail(@CheckForNull String email) {
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
@@ -208,6 +211,7 @@ public class AdvisorGlobalConfiguration
     return cc;
   }
 
+  @DataBoundSetter
   public void setCc(@CheckForNull String cc) {
     this.cc = EmailUtil.fixEmptyAndTrimAllSpaces(cc);
   }
@@ -216,6 +220,7 @@ public class AdvisorGlobalConfiguration
     return excludedComponents != null ? excludedComponents : Collections.emptySet();
   }
 
+  @DataBoundSetter
   public void setExcludedComponents(Set<String> excludedComponents) {
     this.excludedComponents = excludedComponents;
   }
