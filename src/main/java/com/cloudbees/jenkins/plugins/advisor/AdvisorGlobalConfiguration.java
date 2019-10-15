@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static hudson.util.FormValidation.Kind.OK;
+
 @Extension
 public class AdvisorGlobalConfiguration
   extends ManagementLink
@@ -400,23 +402,18 @@ public class AdvisorGlobalConfiguration
       }
     }
 
-    public FormValidation doTestSendEmail(@QueryParameter("email") final String email,
-                                          @QueryParameter("cc") final String cc) {
+    public FormValidation doTestSendEmail(@QueryParameter("email") final String value) {
       try {
-        if (email.isEmpty()) {
-          return FormValidation.error("Missing email");
+        if (!doCheckEmail(value).kind.equals(OK)) {
+          return FormValidation.warning(
+            "It is impossible to launch a test without providing a valid email");
         }
-        Optional<FormValidation> ccErrors = EmailValidator.validateCC(cc);
-        if (ccErrors.isPresent()) {
-          return ccErrors.get();
-        }
-
-        AdvisorClient advisorClient = new AdvisorClient(new Recipient(email.trim()));
-
+        AdvisorClient advisorClient = new AdvisorClient(new Recipient(value.trim()));
         advisorClient.doTestEmail();
-        return FormValidation.ok("A request to send a test email from the server was done. Please check your inbox and filters.");
+        return FormValidation
+          .ok("A request to send a test email from the server was done. Please check your inbox and filters.");
       } catch (Exception e) {
-        return FormValidation.error("Client error : " + e.getMessage());
+        return FormValidation.error("The test failed: " + e.getMessage());
       }
     }
 

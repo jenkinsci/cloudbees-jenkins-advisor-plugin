@@ -60,15 +60,15 @@
                    description="${%The report will be sent to this address.}">
             <f:textbox/>
           </f:entry>
+          <f:validateButton
+            title="${%Send a test email}" progress="${%Triggering a test...}"
+            method="testSendEmail" with="email"/>
 
           <f:entry title="${%CC...}" field="cc"
                    description="You can optionally include a list of comma-separated emails to receive the report.">
             <f:textbox/>
           </f:entry>
 
-          <f:validateButton
-            title="${%Send a test email}" progress="${%Testing...}"
-            method="testSendEmail" with="email,cc"/>
         </f:section>
 
         <f:section name="advanced" title="${%Analyzed Data}">

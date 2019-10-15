@@ -140,7 +140,7 @@ public class AdvisorGlobalConfigurationTest {
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
       (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-    FormValidation formValidation = advisorDescriptor.doTestSendEmail(email, cc);
+    FormValidation formValidation = advisorDescriptor.doTestSendEmail(email);
     assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
   }
 
