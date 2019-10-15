@@ -1,5 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -50,8 +52,8 @@ public class AdvisorClientConfig {
   }
 
   public static String apiUploadURI(String username, String instanceId, String cc) {
-    if (cc != null) {
-      return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
+    if (StringUtils.isNotBlank(cc)) {
+        return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
     } else {
       return apiUploadURI(username, instanceId);
     }
