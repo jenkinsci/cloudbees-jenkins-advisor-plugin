@@ -7,21 +7,25 @@
   <div>
     <j:set var="validationStatus"
            value="${app.getDescriptorByName('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').validateServerConnection()}"/>
+    <j:set var="invalid"
+           value="${app.pluginManager.uberClassLoader.loadClass('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').getField('INVALID_CONFIGURATION').get(null)}"/>
+    <j:set var="operational"
+           value="${app.pluginManager.uberClassLoader.loadClass('com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration').getField('SERVICE_OPERATIONAL').get(null)}"/>
     
-    <j:if test="${validationStatus.contains('service-operational')}">
+    <j:if test="${validationStatus.contains(operational)}">
       <div class="alert alert-success" role="alert">
         <strong>
           <i class="fa fa-thumbs-up"/> Jenkins Health Advisor by CloudBees has been successfully connected.</strong>
       </div>
     </j:if>
-    <j:if test="${validationStatus.contains('invalid-configuration')}">
+    <j:if test="${validationStatus.contains(invalid)}">
       <div class="alert alert-warning" role="alert">
         <strong>
           <i class="fa fa-exclamation-triangle"/> Invalid configuration.</strong>
         <p>Please fix it to start using Jenkins Health Advisor by CloudBees.</p>
       </div>
     </j:if>
-    <j:if test="${!validationStatus.contains('service-operational') &amp;&amp; !validationStatus.contains('invalid-configuration')}">
+    <j:if test="${!validationStatus.contains(operational) &amp;&amp; !validationStatus.contains(invalid)}">
       <div class="alert alert-danger" role="alert">
         <strong>
           <i class="fa fa-minus-circle"/> Connection failure to Jenkins Health Advisor by CloudBees.</strong>
