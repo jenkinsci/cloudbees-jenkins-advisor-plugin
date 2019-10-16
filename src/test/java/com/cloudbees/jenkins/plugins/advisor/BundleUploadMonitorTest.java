@@ -25,7 +25,7 @@ public class BundleUploadMonitorTest {
   public final JenkinsRule j = new JenkinsRule();
   @Rule
   public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-  private final String textPrefix = "Jenkins Health Advisor by CloudBees failed to upload a bundle";
+  private final String textPrefix = "Jenkins Health Advisor by CloudBees failed!";
 
   @Before
   public void setup() {

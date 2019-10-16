@@ -1,11 +1,11 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
-  <div class="alert alert-warning">
+  <div class="alert alert-danger">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%Check Advisor Settings}"/>
     </form>
-    ${%BundleIssue(it.getFailureMessage())}
+    ${%BundleIssue(h.rawHtml(it.getFailureMessage()))}
   </div>
 
 </j:jelly>

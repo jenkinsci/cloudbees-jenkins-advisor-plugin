@@ -7,6 +7,9 @@
     </st:attribute>
   </st:documentation>
 
+  <j:set var="recurrence"
+         value="${app.pluginManager.uberClassLoader.loadClass('com.cloudbees.jenkins.plugins.advisor.BundleUpload').getField('RECURRENCE_PERIOD_HOURS').get(null)}"/>
+
   <j:if test="${result==null}">
     <div class="alert alert-info" role="alert">
       <strong>
@@ -14,7 +17,8 @@
         Your first report soon.
       </strong>
       <p>
-        When connected to our server you will receive your first report within the next ${app.pluginManager.uberClassLoader.loadClass('com.cloudbees.jenkins.plugins.advisor.BundleUpload').getField('RECURRENCE_PERIOD_HOURS').get(null)} hours.
+        <strong>When connected to our server</strong>
+        you will receive your first report within <strong>${recurrence} hours</strong>.
       </p>
     </div>
   </j:if>
@@ -26,35 +30,35 @@
           Last upload failed!
         </strong>
         <p>
-          <pre>
-            <code>${result}</code>
-          </pre>
+          <j:out value="${result}"/>
+          <br/>
+          <em>Next upload within ${recurrence} hours.</em>
         </p>
       </div>
     </j:if>
-    <j:if test="${result.contains('WARN')}">
+    <j:if test="${result.contains('WARNING')}">
       <div class="alert alert-warning" role="alert">
         <strong>
           <i class="fa fa-exclamation-triangle"/>
           Last upload skipped!
         </strong>
         <p>
-          <pre>
-            <code>${result}</code>
-          </pre>
+          <j:out value="${result}"/>
+          <br/>
+          <em>Next upload within ${recurrence} hours.</em>
         </p>
       </div>
     </j:if>
-    <j:if test="${!result.contains('ERROR') &amp;&amp; !result.contains('WARN')}">
+    <j:if test="${!result.contains('ERROR') &amp;&amp; !result.contains('WARNING')}">
       <div class="alert alert-success" role="alert">
         <strong>
           <i class="fa fa-check-circle"/>
           Last upload succeeded!
         </strong>
         <p>
-          <pre>
-            <code>${result}</code>
-          </pre>
+          <j:out value="${result}"/>
+          <br/>
+          <em>Next upload within ${recurrence} hours.</em>
         </p>
       </div>
     </j:if>

@@ -33,8 +33,8 @@ public class BundleUpload extends AsyncPeriodicWork {
     BundleUpload.class.getName() + ".initialDelayMinutes", 30);
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
-  private static final String UNABLE_TO_GENERATE_SUPPORT_BUNDLE = "ERROR: Unable to generate support bundle";
-  private static final String COULD_NOT_SAVE_SUPPORT_BUNDLE = "ERROR: Could not save support bundle";
+  private static final String UNABLE_TO_GENERATE_SUPPORT_BUNDLE = "Unable to generate support bundle";
+  private static final String COULD_NOT_SAVE_SUPPORT_BUNDLE = "Unable to save support bundle";
   private static final String BUNDLE_DIR_DOES_NOT_EXIST =
     "Bundle root directory does not exist and could not be created";
   protected static final String BUNDLE_SUCCESSFULLY_UPLOADED = "Bundle uploaded";
@@ -54,17 +54,18 @@ public class BundleUpload extends AsyncPeriodicWork {
     }
 
     if (!config.isPluginEnabled()) {
+      // How could it be possible ?
       log(Level.INFO, "Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload.");
       updateLastBundleResult(
         config,
-        createTimestampedWarnMessage("Jenkins Health Advisor by CloudBees plugin disabled. Skipping bundle upload."));
+        createTimestampedWarnMessage("<strong>Plugin disabled</strong>, the upload was skipped"));
       return;
     }
     if (!config.isValid()) {
       log(Level.INFO, "Invalid configuration. Skipping bundle upload.");
       updateLastBundleResult(
         config,
-        createTimestampedWarnMessage("Invalid configuration. Skipping bundle upload."));
+        createTimestampedWarnMessage("<strong>Invalid configuration</strong>, the upload was skipped"));
       return;
     }
 
@@ -74,7 +75,6 @@ public class BundleUpload extends AsyncPeriodicWork {
       executeInternal(config.getEmail(), bundle, pluginVersion);
     } else {
       log(Level.SEVERE, UNABLE_TO_GENERATE_SUPPORT_BUNDLE);
-      updateLastBundleResult(config, createTimestampedErrorMessage(UNABLE_TO_GENERATE_SUPPORT_BUNDLE));
     }
   }
 
@@ -83,9 +83,9 @@ public class BundleUpload extends AsyncPeriodicWork {
     try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
       File bundleDir = SupportPlugin.getRootDirectory();
       if (!bundleDir.exists() && !bundleDir.mkdirs()) {
-        log(Level.SEVERE, String.format("%s %s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
+        log(Level.SEVERE, String.format("%s: %s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
         updateLastBundleResult(config, createTimestampedErrorMessage(
-          String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST)));
+          "<strong>%s</strong>: %s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
         return null;
       }
 
@@ -97,7 +97,8 @@ public class BundleUpload extends AsyncPeriodicWork {
     } catch (Exception e) {
       logError(COULD_NOT_SAVE_SUPPORT_BUNDLE, e);
       updateLastBundleResult(config,
-        createTimestampedErrorMessage(String.format("%s%n%s", COULD_NOT_SAVE_SUPPORT_BUNDLE, e)));
+        createTimestampedErrorMessage("<strong>%s</strong><br/><pre><code>%s</code></pre>",
+          COULD_NOT_SAVE_SUPPORT_BUNDLE, e.getMessage()));
     }
     return null;
   }
@@ -110,17 +111,19 @@ public class BundleUpload extends AsyncPeriodicWork {
       ClientResponse response = advisorClient
         .uploadFile(new ClientUploadRequest(Jenkins.get().getLegacyInstanceId(), file, config.getCc(), pluginVersion));
       if (response.getCode() == 200) {
-        updateLastBundleResult(config, createTimestampedMessage(BUNDLE_SUCCESSFULLY_UPLOADED));
+        updateLastBundleResult(config, createTimestampedInfoMessage(BUNDLE_SUCCESSFULLY_UPLOADED));
       } else {
         updateLastBundleResult(config,
-          createTimestampedErrorMessage("Bundle upload failed.\nResponse code was: " + response.getCode() + ".\n" +
-            "Response message: " + response.getMessage()));
+          createTimestampedErrorMessage(
+            "<strong>Bundle upload failed</strong><br/>Server response is: <code>%d - %s</code>",
+            response.getCode(), response.getMessage()));
       }
     } catch (Exception e) {
       log(Level.SEVERE, "Issue while uploading file to bundle upload service: " + e.getMessage());
       log(Level.FINEST,
         "Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
-      updateLastBundleResult(config, createTimestampedErrorMessage("Bundle upload failed.\nThe error was " + e.getMessage()));
+      updateLastBundleResult(config, createTimestampedErrorMessage(
+        "<strong>Bundle upload failed</strong><br/><pre><code>%s</code></pre>", e.getMessage()));
     }
   }
 
@@ -151,19 +154,28 @@ public class BundleUpload extends AsyncPeriodicWork {
     LOG.log(Level.SEVERE, message, t);
   }
 
+  private String createTimestampedInfoMessage(String message) {
+    return createTimestampedMessage(null, message);
+  }
+
   private String createTimestampedWarnMessage(String message) {
-    return "[WARN] " + createTimestampedMessage(message);
+    return createTimestampedMessage("WARNING", message);
   }
 
-  private String createTimestampedErrorMessage(String message) {
-    return "[ERROR] " + createTimestampedMessage(message);
+  private String createTimestampedErrorMessage(String format, Object... args) {
+    return createTimestampedMessage("ERROR", format, args);
+  }
+  
+  private String createTimestampedMessage(String level, String format, Object... args) {
+    return createTimestampedMessage(level, String.format(format, args));
   }
 
-  private String createTimestampedMessage(String message) {
-    return String.format("%1$tF %1$tT - %2$s.%nNext upload within %3$d hours.",
-      Calendar.getInstance().getTime(),
-      message,
-      RECURRENCE_PERIOD_HOURS);
+  private String createTimestampedMessage(String level, String message) {
+    if (level != null) {
+      return String.format("%1$s - %2$tF %2$tT - %3$s", level, Calendar.getInstance().getTime(), message);
+    } else {
+      return String.format("%1$tF %1$tT - %2$s", Calendar.getInstance().getTime(), message);
+    }
   }
 
   private void updateLastBundleResult(AdvisorGlobalConfiguration config, String message) {
