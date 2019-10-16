@@ -236,6 +236,7 @@ public class AdvisorGlobalConfiguration
     this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
   }
 
+  @Nonnull
   public List<Recipient> getCcs() {
     return ccs != null ? ccs : Collections.emptyList();
   }
@@ -245,6 +246,7 @@ public class AdvisorGlobalConfiguration
     this.ccs = ccs;
   }
 
+  @Nonnull
   public Set<String> getExcludedComponents() {
     return excludedComponents != null ? excludedComponents : Collections.emptySet();
   }
