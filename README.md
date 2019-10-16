@@ -23,6 +23,31 @@ Jenkins Health Advisor by CloudBees identifies problems by scanning a Support Bu
 
 See [https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/](https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
+### Configuration as Code Support
+
+The version 3.0 of Jenkins Health Advisor by CloudBees is adding the support for [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/).
+Here is a configuration sample:
+
+```yaml
+advisor:
+  acceptToS: true
+  email: "jdoe@acme.com"
+  ccs:
+    - "list1@acme.com"
+    - "list2@acme.com"
+  excludedComponents:
+    - "ItemsContent"
+    - "GCLogs"
+    - "Agents"
+    - "AgentsConfigFile"
+    - "ConfigFileComponent"
+    - "RootCAs"
+    - "SlaveLogs"
+    - "OtherConfigFilesComponent"
+    - "HeapUsageHistogram"
+  nagDisabled: false
+``` 
+
 ## Troubleshooting
 See [Jenkins Health Advisor by CloudBees - Troubleshooting Guide](https://support.cloudbees.com/hc/en-us/articles/115001213031?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
