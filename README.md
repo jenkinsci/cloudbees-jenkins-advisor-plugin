@@ -11,7 +11,7 @@
 
 Jenkins Health Advisor by CloudBees (formerly known as "CloudBees Jenkins Advisor") proactively notifies you of problems with your Jenkins-based environment. Jenkins Health Advisor by CloudBees identifies numerous issues before they affect your users, including security vulnerabilities, performance problems, and plugin version issues. Best of all, Jenkins Health Advisor by CloudBees is constantly being improved by the [CloudBees Support](https://www.cloudbees.com/products/cloudbees-jenkins-support?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin) and Engineering teams to cover the most recent identified issues.
 
-By default, you’ll receive a summary email whenever a new problem is identified in your Jenkins instance, and whenever one or more of the problems affecting your instance has been resolved. You can configure the email address Jenkins Health Advisor by CloudBees uses in the Configuration section.
+By default, you’ll receive a summary email whenever a new problem is identified in your Jenkins instance. You can configure the email address Jenkins Health Advisor by CloudBees uses in the Configuration section.
 
 Initially, Jenkins Health Advisor by CloudBees sends an initial report that lists everything it detects in your system. Subsequent reports will only report changes from the initial report. It’s important to note that Jenkins Health Advisor by CloudBees only emails you if it finds something wrong: if it doesn’t find any problem in your system, it won’t send you email.
 
