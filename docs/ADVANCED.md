@@ -49,19 +49,36 @@ Overriding with Java System Property:
 
 ## Configure Programmatically
 
+### plugin version < 3.0
+
 ```java
 import com.cloudbees.jenkins.plugins.advisor.*
 
 def config = AdvisorGlobalConfiguration.instance
   
-config.email = "test@email.com"
-config.cc = "testCC@email.com" // optional
+config.email = "jdoe@acme.com"
+config.cc = "list1@acme.com,list2@acme.com" // optional
 config.isValid = true
 config.nagDisabled = true
 config.acceptToS = true
 
 config.save()
 ```
+### plugin version >= 3.0
+
+```java
+import com.cloudbees.jenkins.plugins.advisor.*
+
+def config = AdvisorGlobalConfiguration.instance
+  
+config.email = "jdoe@acme.com"
+config.ccs = [new Recipient("list1@acme.com"),new Recipient("list2@acme.com")] // optional
+config.nagDisabled = true
+config.acceptToS = true
+
+config.save()
+```
+
 
 ## Troubleshooting
 
