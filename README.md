@@ -15,13 +15,13 @@ By default, you’ll receive a summary email whenever a new problem is identifie
 
 Initially, Jenkins Health Advisor by CloudBees sends an initial report that lists everything it detects in your system. Subsequent reports will only report changes from the initial report. It’s important to note that Jenkins Health Advisor by CloudBees only emails you if it finds something wrong: if it doesn’t find any problem in your system, it won’t send you email.
 
-Jenkins Health Advisor by CloudBees identifies problems by scanning a Support Bundle generate by the [support-core](https://plugins.jenkins.io/support-core) plugin from your Jenkins master. The Support Bundle is generated on a daily basis by the plugin and submitted to servers hosted by CloudBees. For instructions on defining the types and kinds of data to include in the Support Bundle, see the Optional Configuration section in the [documentation...](https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
+Jenkins Health Advisor by CloudBees identifies problems by scanning a Support Bundle generate by the [support-core](https://plugins.jenkins.io/support-core) plugin from your Jenkins master. The Support Bundle is generated on a daily basis by the plugin and submitted to servers hosted by CloudBees. For instructions on defining the types and kinds of data to include in the Support Bundle, see the Optional Configuration section in the [documentation...](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
 ![](docs/images/configuration.png)
 
 ## Documentation
 
-See [https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/](https://go.cloudbees.com/docs/plugins/cloudbees-jenkins-advisor/?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
+See [https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
 ### Configuration as Code Support
 
