@@ -6,8 +6,10 @@ import hudson.RelativePath;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 public class Recipient extends AbstractDescribableImpl<Recipient> {
 
@@ -40,8 +42,10 @@ public class Recipient extends AbstractDescribableImpl<Recipient> {
       return EmailValidator.validateEmail(value);
     }
 
+    @POST
     public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
                                           @RelativePath("..") @QueryParameter("acceptToS") final boolean acceptToS) {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
       return EmailValidator.testSendEmail(value, acceptToS);
     }
 
