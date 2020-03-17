@@ -112,6 +112,14 @@ public class AdvisorGlobalConfiguration
     return Messages.Insights_DisplayName();
   }
 
+  /**
+   * Name of the category for this management link.
+   * TBD: Use getCategory when core requirement is greater or equal to 2.226 
+   */
+  public @Nonnull String getCategoryName() {
+    return "TROUBLESHOOTING";
+  }  
+
   @CheckForNull
   @Override
   public String getDescription() {
