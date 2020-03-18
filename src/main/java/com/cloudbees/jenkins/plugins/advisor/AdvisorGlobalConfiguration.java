@@ -32,6 +32,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -394,8 +395,10 @@ public class AdvisorGlobalConfiguration
       return EmailValidator.validateEmail(value);
     }
     
+    @POST
     public FormValidation doTestSendEmail(@QueryParameter("email") final String value,
                                           @QueryParameter("acceptToS") final boolean acceptToS) {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
       return EmailValidator.testSendEmail(value,acceptToS);
     }
 

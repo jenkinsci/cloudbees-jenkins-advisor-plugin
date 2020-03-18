@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>cloudbees-jenkins-advisor</artifactId>
-  <version>3.1-SNAPSHOT</version>
+  <version>3.0.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <properties>
