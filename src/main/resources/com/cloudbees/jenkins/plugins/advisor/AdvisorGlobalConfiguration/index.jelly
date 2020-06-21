@@ -4,12 +4,15 @@
   <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
 
     <l:header>
-      <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css"/>
       <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css"/>
       <style type="text/css">
-        table {
-        border-collapse: separate;
-        border-spacing: 5px;
+        .jenkins-health-advisor .alert-success {
+          background-color: #d4edda;
+          border-color: #c3e6cb;
+          color: #138347;
+        }
+        .jenkins-health-advisor .alert-success p {
+          color: #138347;
         }
       </style>
     </l:header>
@@ -17,121 +20,124 @@
     <st:include page="sidepanel.jelly" it="${app}"/>
 
     <l:main-panel>
-      <h1>
-        <img width="48" height="48" alt="Jenkins Health Advisor by CloudBees Icon"
-             src="${rootURL}${h.resourcePath}/plugin/cloudbees-jenkins-advisor/icons/advisor.svg"/>
-        ${it.actionTitle}
-      </h1>
-      <p>
-        <a href="https://plugins.jenkins.io/cloudbees-jenkins-advisor" target="_blank">Jenkins Health Advisor by
-          CloudBees
-        </a>
-        automatically analyzes your Jenkins environment and proactively alerts you of components needing attention with
-        detailed email reports.
-      </p>
-      <p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your
-        email address.
-      </p>
+      <div class="jenkins-health-advisor">
 
-      <a:validateOnLoad/>
+        <h1>
+          <img width="48" height="48" alt="Jenkins Health Advisor by CloudBees Icon"
+               src="${rootURL}${h.resourcePath}/plugin/cloudbees-jenkins-advisor/icons/advisor.svg"/>
+          ${it.actionTitle}
+        </h1>
+        <p>
+          <a href="https://plugins.jenkins.io/cloudbees-jenkins-advisor" target="_blank">Jenkins Health Advisor by
+            CloudBees
+          </a>
+          automatically analyzes your Jenkins environment and proactively alerts you of components needing attention with
+          detailed email reports.
+        </p>
+        <p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your
+          email address.
+        </p>
 
-      <f:form name="config" method="POST" action="configure">
+        <a:validateOnLoad/>
 
-        <j:set var="instance" value="${it}"/>
-        <j:set var="descriptor" value="${it.descriptor}"/>
+        <f:form name="config" method="POST" action="configure">
 
-        <f:section title="${%Terms and Conditions}">
-          <f:block>
-            <p>To use Jenkins Health Advisor by CloudBees, please agree to <a
-              href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
-              our Terms and Conditions</a>.
-            </p>
-          </f:block>
+          <j:set var="instance" value="${it}"/>
+          <j:set var="descriptor" value="${it.descriptor}"/>
 
-          <f:entry field="acceptToS"
-                   description="No data will be sent to CloudBees if you don't accept these Terms and Conditions.">
-            <f:checkbox title="${%I agree with these Terms and Conditions}"/>
-          </f:entry>
-        </f:section>
-
-        <f:section title="${%Email Recipients}">
-          <f:entry field="email"
-                   title="${%TO...}"
-                   description="${%The report will be sent to this address.}">
-            <f:textbox/>
-          </f:entry>
-          <f:validateButton
-            title="${%Send a test email}" progress="${%Triggering a test...}"
-            method="testSendEmail" with="email,acceptToS"/>
-
-          <f:entry field="ccs"
-                   title="${%CC...}"
-                   description="${%You can include additional emails to receive the report in CC.}">
-            <f:repeatable field="ccs" add="${%Add CC}">
-              <table width="100%">
-                <f:entry field="email" title="${%Email}">
-                  <f:textbox/>
-                </f:entry>
-                <f:entry title="">
-                  <div style="text-align: right">
-                    <f:repeatableDeleteButton value="${%Delete CC}"/>
-                    <f:validateButton
-                      title="${%Send a test email}" progress="${%Triggering a test...}"
-                      method="testSendEmail" with="email,acceptToS"/>
-                  </div>
-                </f:entry>
-              </table>
-            </f:repeatable>
-          </f:entry>
-
-        </f:section>
-
-        <f:section name="advanced" title="${%Analyzed Data}">
-          <f:advanced align="right" title="${%Configure Data}">
+          <f:section title="${%Terms and Conditions}">
             <f:block>
-              <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
-                configurations.
-                You can choose to filter out other data from being analyzed by configuring the options below.
+              <p>To use Jenkins Health Advisor by CloudBees, please agree to <a
+                href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
+                our Terms and Conditions</a>.
               </p>
             </f:block>
-            <j:forEach var="component" items="${it.components}">
-              <f:entry field="component">
-                <div name="components" style="margin-left:0">
-                  <j:if test="${component.enabled}">
-                    <f:checkbox name="selected" checked="${it.selectedByDefault(component)}"
-                                title="${component.displayName}"/>
-                  </j:if>
-                  <j:if test="${!component.enabled}">
-                    <input type="checkbox"
-                           name="selected"
-                           value="false"
-                           disabled="disabled"/>
-                    <label class="attach-previous" style="text-decoration: line-through;"
-                           title="${%permissionPreReqs(component.displayPermissions)}">${component.displayName}
-                    </label>
-                  </j:if>
-                  <input style="display:none" name="name" value="${component.id}"/>
-                </div>
-              </f:entry>
-            </j:forEach>
-          </f:advanced>
-        </f:section>
+
+            <f:entry field="acceptToS"
+                     description="No data will be sent to CloudBees if you don't accept these Terms and Conditions.">
+              <f:checkbox title="${%I agree with these Terms and Conditions}"/>
+            </f:entry>
+          </f:section>
+
+          <f:section title="${%Email Recipients}">
+            <f:entry field="email"
+                     title="${%TO...}"
+                     description="${%The report will be sent to this address.}">
+              <f:textbox/>
+            </f:entry>
+            <f:validateButton
+              title="${%Send a test email}" progress="${%Triggering a test...}"
+              method="testSendEmail" with="email,acceptToS"/>
+
+            <f:entry field="ccs"
+                     title="${%CC...}"
+                     description="${%You can include additional emails to receive the report in CC.}">
+              <f:repeatable field="ccs" add="${%Add CC}">
+                <table width="100%">
+                  <f:entry field="email" title="${%Email}">
+                    <f:textbox/>
+                  </f:entry>
+                  <f:entry title="">
+                    <div style="text-align: right">
+                      <f:repeatableDeleteButton value="${%Delete CC}"/>
+                      <f:validateButton
+                        title="${%Send a test email}" progress="${%Triggering a test...}"
+                        method="testSendEmail" with="email,acceptToS"/>
+                    </div>
+                  </f:entry>
+                </table>
+              </f:repeatable>
+            </f:entry>
+
+          </f:section>
+
+          <f:section name="advanced" title="${%Analyzed Data}">
+            <f:advanced align="right" title="${%Configure Data}">
+              <f:block>
+                <p>By default, Jenkins Health Advisor by CloudBees will not scan your agent logs, configurations or global
+                  configurations.
+                  You can choose to filter out other data from being analyzed by configuring the options below.
+                </p>
+              </f:block>
+              <j:forEach var="component" items="${it.components}">
+                <f:entry field="component">
+                  <div name="components" style="margin-left:0">
+                    <j:if test="${component.enabled}">
+                      <f:checkbox name="selected" checked="${it.selectedByDefault(component)}"
+                                  title="${component.displayName}"/>
+                    </j:if>
+                    <j:if test="${!component.enabled}">
+                      <input type="checkbox"
+                             name="selected"
+                             value="false"
+                             disabled="disabled"/>
+                      <label class="attach-previous" style="text-decoration: line-through;"
+                             title="${%permissionPreReqs(component.displayPermissions)}">${component.displayName}
+                      </label>
+                    </j:if>
+                    <input style="display:none" name="name" value="${component.id}"/>
+                  </div>
+                </f:entry>
+              </j:forEach>
+            </f:advanced>
+          </f:section>
+
+          <f:section title="${%Reminder}">
+            <f:entry field="nagDisabled">
+              <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
+            </f:entry>
+          </f:section>
+
+          <f:bottomButtonBar>
+            <f:submit name="save" value="${%Save}"/>
+            <input name="advisor:apply" type="submit" value="Apply" class="submit-button"/>
+          </f:bottomButtonBar>
+
+        </f:form>
+
+        <a:lastResult result="${it.lastBundleResult}"/>        
         
-        <f:section title="${%Reminder}">
-          <f:entry field="nagDisabled">
-            <f:checkbox title="${%Suppress the reminder to configure Jenkins Health Advisor by CloudBees}"/>
-          </f:entry>
-        </f:section>
-
-        <f:bottomButtonBar>
-          <f:submit name="save" value="${%Save}"/>
-          <input name="advisor:apply" type="submit" value="Apply" class="submit-button"/>
-        </f:bottomButtonBar>
-
-      </f:form>
-
-      <a:lastResult result="${it.lastBundleResult}"/>
-
+      </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>
