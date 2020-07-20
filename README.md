@@ -1,8 +1,10 @@
 # Jenkins Health Advisor by CloudBees
 
 [![Build Status](https://ci.jenkins.io/job/Plugins/job/cloudbees-jenkins-advisor-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/cloudbees-jenkins-advisor-plugin/job/master/)
+[![Contributors](https://img.shields.io/github/contributors/jenkinsci/cloudbees-jenkins-advisor-plugin.svg)](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/graphs/contributors)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/cloudbees-jenkins-advisor.svg)](https://plugins.jenkins.io/cloudbees-jenkins-advisor)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/cloudbees-jenkins-advisor-plugin.svg?label=changelog)](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/cloudbees-jenkins-advisor.svg?color=blue)](https://plugins.jenkins.io/cloudbees-jenkins-advisor-plugin)
 [![Supported by CloudBees](https://img.shields.io/badge/Supported%20by-CloudBees-blue?logo=cloudbees&logoColor=white)](https://www.cloudbees.com/products/cloudbees-jenkins-support?utm_medium=badge&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
 <img src="src/main/webapp/icons/advisor.svg" width="192" alt="butler dressed as a doctor">
