@@ -2,18 +2,14 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import hudson.LocalPluginManager;
-import hudson.PluginWrapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.jvnet.hudson.test.recipes.WithPluginManager;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
-import javax.annotation.CheckForNull;
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import static com.cloudbees.jenkins.plugins.advisor.BundleUpload.BUNDLE_SUCCESSFULLY_UPLOADED;
@@ -36,8 +32,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 public class BundleUploadTest {
 
@@ -92,7 +86,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  @WithPluginManager(DisabledPluginManager.class)
+  @LocalData
   public void execute_pluginDisabled() {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
@@ -142,28 +136,6 @@ public class BundleUploadTest {
   public void getInitialDelay() {
     assertThat(new BundleUpload().getInitialDelay(),
       is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
-  }
-
-  /**
-   * Work around issues where the PluginManager doesn't have permission to save files
-   */
-  public static class DisabledPluginManager extends LocalPluginManager {
-    public DisabledPluginManager(File rootDir) {
-      super(rootDir);
-    }
-
-    @Override
-    @CheckForNull
-    public PluginWrapper getPlugin(String shortName) {
-      PluginWrapper actual = super.getPlugin(shortName);
-      if (shortName.equals(AdvisorGlobalConfiguration.PLUGIN_NAME)) {
-        PluginWrapper pw = spy(actual);
-
-        doReturn(false).when(pw).isEnabled();
-        return pw;
-      }
-      return actual;
-    }
   }
 
 }
