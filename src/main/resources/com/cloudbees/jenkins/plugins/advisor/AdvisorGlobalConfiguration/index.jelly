@@ -9,11 +9,15 @@
         /* TODO remove when baseline newer than 2.245, https://github.com/jenkinsci/jenkins/pull/4842 */
         .jenkins-health-advisor .alert-success {
           background-color: #d4edda;
+          background-color: var(--alert-success-bg-color, #d4edda);
           border-color: #c3e6cb;
+          border-color: var(--alert-success-border-color, #c3e6cb);
           color: #138347;
+          color: var(--alert-success-text-color, #138347);
         }
         .jenkins-health-advisor .alert-success p {
           color: #138347;
+          color: var(--alert-success-text-color, #138347);
         }
       </style>
     </l:header>
