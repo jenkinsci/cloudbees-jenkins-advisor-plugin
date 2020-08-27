@@ -19,11 +19,9 @@ Initially, Jenkins Health Advisor by CloudBees sends an initial report that list
 
 Jenkins Health Advisor by CloudBees identifies problems by scanning a Support Bundle generate by the [support-core](https://plugins.jenkins.io/support-core) plugin from your Jenkins master. The Support Bundle is generated on a daily basis by the plugin and submitted to servers hosted by CloudBees. For instructions on defining the types and kinds of data to include in the Support Bundle, see the Optional Configuration section in the [documentation...](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
+### Configuration panel
+
 ![](docs/images/configuration.png)
-
-## Documentation
-
-See [https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
 ### Configuration as Code Support
 
@@ -49,6 +47,16 @@ advisor:
     - "HeapUsageHistogram"
   nagDisabled: false
 ``` 
+
+### Report sample
+
+Once configured you are receiving an email like this one each time a new issue is detected on your instance.
+
+![](docs/images/2020-08-27-advisor-email-sample.png)
+
+## Documentation
+
+See [https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor](https://docs.cloudbees.com/docs/admin-resources/latest/plugins/cloudbees-jenkins-advisor?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
 ## Troubleshooting
 See [Jenkins Health Advisor by CloudBees - Troubleshooting Guide](https://support.cloudbees.com/hc/en-us/articles/115001213031?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
