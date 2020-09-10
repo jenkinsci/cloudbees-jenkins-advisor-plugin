@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
          xmlns:f="/lib/form" xmlns:a="/lib/advisor">
-  <l:layout title="${it.actionTitleText}" norefresh="true" permission="${it.ADMINISTRATOR}">
+  <l:layout title="${it.actionTitleText}" norefresh="true" permission="${app.ADMINISTER}">
 
     <l:header>
       <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css"/>
