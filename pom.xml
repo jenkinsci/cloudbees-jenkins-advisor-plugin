@@ -72,6 +72,16 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <!-- Versions conflict resolution. -->
+        <!-- support-core and others plugins require org.jenkins-ci.plugins:jackson2-api:2.11.0 -->
+        <!-- io.jenkins.configuration-as-code:test-harness:1.36 requires jackson 2.10.2 -->
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>2.11.0</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+      <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.204.x</artifactId>
         <version>12</version>
