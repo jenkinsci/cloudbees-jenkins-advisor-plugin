@@ -17,7 +17,9 @@ import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Paths;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +33,10 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   public static final int INITIAL_DELAY_MINUTES = Integer.getInteger(
     BundleUpload.class.getName() + ".initialDelayMinutes", 30);
+  
+  public static final String TEMP_BUNDLE_DIRECTORY = System.getProperty(
+      BundleUpload.class.getName() + ".tempBundleDirectory",
+      Paths.get(SupportPlugin.getRootDirectory().toString(), "advisor").toString());
 
   private static final Logger LOG = Logger.getLogger(BundleUpload.class.getName());
   private static final String UNABLE_TO_GENERATE_SUPPORT_BUNDLE = "Unable to generate support bundle";
@@ -80,8 +86,9 @@ public class BundleUpload extends AsyncPeriodicWork {
 
   private File generateBundle() {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+    File file = null;
     try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
-      File bundleDir = SupportPlugin.getRootDirectory();
+      File bundleDir = new File(TEMP_BUNDLE_DIRECTORY);
       if (!bundleDir.exists() && !bundleDir.mkdirs()) {
         log(Level.SEVERE, String.format("%s: %s", COULD_NOT_SAVE_SUPPORT_BUNDLE, BUNDLE_DIR_DOES_NOT_EXIST));
         updateLastBundleResult(config, createTimestampedErrorMessage(
@@ -89,7 +96,7 @@ public class BundleUpload extends AsyncPeriodicWork {
         return null;
       }
 
-      File file = new File(bundleDir, SupportPlugin.getBundleFileName());
+      file = new File(bundleDir, SupportPlugin.getBundleFileName());
       try (FileOutputStream fos = new FileOutputStream(file)) {
         SupportPlugin.writeBundle(fos, config.getIncludedComponents());
         return file;
@@ -99,6 +106,9 @@ public class BundleUpload extends AsyncPeriodicWork {
       updateLastBundleResult(config,
         createTimestampedErrorMessage("<strong>%s</strong><br/><pre><code>%s</code></pre>",
           COULD_NOT_SAVE_SUPPORT_BUNDLE, e.getMessage()));
+      if (file != null && file.exists() && !file.delete()) {
+        log(Level.WARNING, "Could not delete bundle {0}" + file);
+      }
     }
     return null;
   }
@@ -124,6 +134,33 @@ public class BundleUpload extends AsyncPeriodicWork {
         "Exception while uploading file to bundle upload service. Cause: " + ExceptionUtils.getStackTrace(e));
       updateLastBundleResult(config, createTimestampedErrorMessage(
         "<strong>Bundle upload failed</strong><br/><pre><code>%s</code></pre>", e.getMessage()));
+    } finally {
+      if (!file.delete()) {
+        log(Level.WARNING, "Could not delete bundle {0}" + file);
+      }
+      cleanup(new File(TEMP_BUNDLE_DIRECTORY));
+    }
+  }
+
+  /**
+   * Cleanup the bundle directory. Removing all bundles older than the recurrence period. 
+   * 
+   * @param bundleDir the bundle directory as {@link File}
+   */
+  private void cleanup(File bundleDir) {
+    File[] files = bundleDir.listFiles((dir, name) -> name.endsWith(".zip"));
+    if (files == null) {
+      log(Level.WARNING, "Could not list files under" + bundleDir.getAbsolutePath());
+      return;
+    }
+    long maxAge = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(RECURRENCE_PERIOD_HOURS);
+    for (File f : files) {
+      if (f.lastModified() < maxAge) {
+        log(Level.INFO, "Deleting bundle" + f);
+        if (!f.delete()) {
+          log(Level.WARNING, "Could not delete bundle {0}" + f);
+        }
+      }
     }
   }
 
@@ -191,5 +228,13 @@ public class BundleUpload extends AsyncPeriodicWork {
   @Override
   public long getInitialDelay() {
     return TimeUnit.MINUTES.toMillis(INITIAL_DELAY_MINUTES);
+  }
+
+  /**
+   * Get the directory where Advisor bundle are temporarily generated before being sent to the remote server.
+   * @return the path as {@link String}
+   */
+  public String getTempBundleDirectory() {
+    return TEMP_BUNDLE_DIRECTORY;
   }
 }

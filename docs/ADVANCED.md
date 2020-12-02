@@ -47,6 +47,17 @@ Overriding with Java System Property:
 -Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.initialDelayMinutes=60
 ```
 
+### Temporary Bundle Directory
+
+Cannot be overridden at runtime. Requires restart to take effect. Defaults to `$JENKINS_HOME/support/advisor`.
+
+Overriding with Java System Property:
+
+```bash
+-Dcom.cloudbees.jenkins.plugins.advisor.BundleUpload.tempBundleDirectory=/tmp/jenkins/advisor
+```
+
+
 ## Configure Programmatically
 
 ### plugin version < 3.0

@@ -10,6 +10,9 @@ import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import static com.cloudbees.jenkins.plugins.advisor.BundleUpload.BUNDLE_SUCCESSFULLY_UPLOADED;
@@ -83,6 +86,8 @@ public class BundleUploadTest {
 
     // Refresh the configuration?
     assertThat(config.getLastBundleResult(), containsString(BUNDLE_SUCCESSFULLY_UPLOADED));
+
+    assertThat(Files.list(Paths.get(BundleUpload.TEMP_BUNDLE_DIRECTORY)).count(), is(equalTo(0L)));
   }
 
   @Test
@@ -98,7 +103,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_isNotValid() {
+  public void execute_isNotValid() throws IOException {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     assertFalse("The configuration must be valid", config.isValid());
@@ -111,7 +116,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_noConnection() {
+  public void execute_noConnection() throws IOException {
     BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
@@ -122,6 +127,13 @@ public class BundleUploadTest {
     wireMockRule.shutdownServer();
 
     subject.run();
+  }
+
+  @WithoutJenkins
+  @Test
+  public void getTempBundleDirectory() {
+    assertThat(new BundleUpload().getTempBundleDirectory(),
+        is(equalTo(BundleUpload.TEMP_BUNDLE_DIRECTORY)));
   }
 
   @WithoutJenkins
