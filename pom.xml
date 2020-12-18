@@ -5,18 +5,18 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.4</version>
+    <version>4.14</version>
     <relativePath />
   </parent>
 
   <artifactId>cloudbees-jenkins-advisor</artifactId>
-  <version>3.2.2-SNAPSHOT</version>
+  <version>3.2.4-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <properties>
     <jenkins.version>2.204.6</jenkins.version>
     <java.level>8</java.level>
-    <hpi.pluginChagelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChagelogUrl>
+    <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/cloudbees-jenkins-advisor-plugin/master/src/main/webapp/icons/advisor.svg</hpi.pluginLogoUrl>
   </properties>
 
@@ -74,7 +74,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.204.x</artifactId>
-        <version>11</version>
+        <version>18</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>support-core</artifactId>
-      <version>2.69</version>
+      <version>2.72</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins</groupId>
@@ -99,6 +99,12 @@
       <groupId>io.jenkins.configuration-as-code</groupId>
       <artifactId>test-harness</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion> <!-- TODO pending https://github.com/jenkinsci/bom/pull/294 -->
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -115,7 +121,7 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-standalone</artifactId>
-      <version>2.27.1</version>
+      <version>2.27.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

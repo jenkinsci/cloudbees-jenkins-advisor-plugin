@@ -53,7 +53,7 @@
           <f:section title="${%Terms and Conditions}">
             <f:block>
               <p>To use Jenkins Health Advisor by CloudBees, please agree to <a
-                href='https://www.cloudbees.com/jenkins/cloudbees-jenkins-advisor/terms-of-service?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
+                href='https://www.cloudbees.com/company/legal/terms-of-service/jenkins-health-advisor?utm_medium=config&amp;utm_source=plugin&amp;utm_campaign=cloudbees-jenkins-advisor-plugin'>
                 our Terms and Conditions</a>.
               </p>
             </f:block>
