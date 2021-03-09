@@ -22,8 +22,9 @@ public class EmailUtilTest {
 
   @Test
   public void urlEncode() {
-    assertThat(EmailUtil.urlEncode(EMAIL), is(EMAIL));
-    assertThat(EmailUtil.urlEncode(EMAIL + "," + EMAIL), is(EMAIL + "%2C" + EMAIL));
+    assertThat(EmailUtil.urlEncode(EMAIL), is("test%40acme.com"));
+    assertThat(EmailUtil.urlEncode("test+foo@acme.com"), is("test%2Bfoo%40acme.com"));
+    assertThat(EmailUtil.urlEncode(EMAIL + "," + EMAIL), is("test%40acme.com%2Ctest%40acme.com"));
     assertThat(EmailUtil.urlEncode(null), is(nullValue()));
   }
 
