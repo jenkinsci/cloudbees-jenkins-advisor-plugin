@@ -39,7 +39,7 @@
           automatically analyzes your Jenkins environment and proactively alerts you of components needing attention with
           detailed email reports.
         </p>
-        <p>As issues are detected in your master, Jenkins Health Advisor by CloudBees will send new reports to your
+        <p>As issues are detected in your instance, Jenkins Health Advisor by CloudBees will send new reports to your
           email address.
         </p>
 
