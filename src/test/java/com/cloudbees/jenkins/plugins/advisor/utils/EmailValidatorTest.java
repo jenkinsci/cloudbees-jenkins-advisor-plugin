@@ -14,17 +14,16 @@ public class EmailValidatorTest {
 
   @Test
   public void validEmails() {
-    assertTrue("simple email", EmailValidator.isValid("jdoe@acme.com"));
-    assertTrue("email with tag", EmailValidator.isValid("jdoe+advisor@acme.com"));
+    assertTrue("simple email", EmailValidator.isValidEmail("jdoe@acme.com"));
+    assertTrue("email with tag", EmailValidator.isValidEmail("jdoe+advisor@acme.com"));
+    assertTrue("JENKINS-65230 email", EmailValidator.isValidEmail("test.test-test@acme.com"));
     // Not supported
     //assertTrue("email with name", emailValidator.isValid("John Doe <jdoe@acme.com>"));
   }
 
   @Test
   public void invalidEmails() {
-    assertFalse("email is empty", EmailValidator.isValid(""));
-    assertFalse("not an email", EmailValidator.isValid("Not valid"));
-    assertFalse("email with not root DN", EmailValidator.isValid("jdoe@acme"));
+    assertFalse("email is empty", EmailValidator.isValidEmail(""));
   }
 
   @Test
@@ -48,22 +47,6 @@ public class EmailValidatorTest {
 
     formValidation = EmailValidator.validateEmail(email + ",");
     assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
-    formValidation = EmailValidator.validateEmail("<Mr Foo> foo@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("Foo<foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("Foo <foo@acme.com>");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("\"foo\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("\"foo bar\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("\"foo\\ \"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-    formValidation = EmailValidator.validateEmail("\"foo\\ /\"@acme.com");
-    assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
-
 
     formValidation = EmailValidator.validateEmail(StringUtils.capitalize(email));
     assertEquals(FormValidation.Kind.OK, formValidation.kind);

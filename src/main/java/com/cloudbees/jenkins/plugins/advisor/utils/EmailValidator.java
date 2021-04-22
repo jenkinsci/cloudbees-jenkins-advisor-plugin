@@ -20,14 +20,9 @@ public final class EmailValidator {
     throw new UnsupportedOperationException("Cannot instantiate utility class");
   }
 
-  static boolean isValid(@NonNull String email) {
-    Matcher matcher = PATTERN.matcher(email);
-    return matcher.matches();
-  }
-
   public static boolean isValidEmail(String value) {
     String emailAddress = EmailUtil.fixEmptyAndTrimAllSpaces(value);
-    return StringUtils.isNotBlank(emailAddress) && isValid(emailAddress);
+    return StringUtils.isNotBlank(emailAddress);
   }
 
   public static FormValidation validateEmail(String value) {
@@ -38,9 +33,6 @@ public final class EmailValidator {
     if (emailAddress.contains(";") || emailAddress.contains(",")) {
       return FormValidation.error(
         "Email cannot contain illegal character ';' or ','. Consider using the CC fields if multiple recipients are required");
-    }
-    if (!isValid(emailAddress)) {
-      return FormValidation.error("Invalid email");
     }
     return FormValidation.ok();
   }

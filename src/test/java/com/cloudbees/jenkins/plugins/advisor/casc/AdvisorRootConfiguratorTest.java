@@ -332,7 +332,7 @@ public class AdvisorRootConfiguratorTest {
     cc.add(new Scalar("onemore@mail.com"));
     cc.add(new Scalar("another@email.com"));
     m.put(CCS_ATTR, cc);
-    m.put(EMAIL_ATTR, "bad_email");
+    m.put(EMAIL_ATTR, "");
     m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
     configurator.instance(m, context);
