@@ -400,6 +400,7 @@ public class AdvisorGlobalConfiguration
     
     // Used from AdvisorGlobalConfiguration/index.jelly
     public FormValidation doCheckEmail(@QueryParameter String value) {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
       return EmailValidator.validateEmail(value);
     }
     

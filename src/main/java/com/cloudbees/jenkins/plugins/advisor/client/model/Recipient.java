@@ -39,6 +39,7 @@ public class Recipient extends AbstractDescribableImpl<Recipient> {
     }
 
     public FormValidation doCheckEmail(@QueryParameter String value) {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
       return EmailValidator.validateEmail(value);
     }
 
