@@ -52,7 +52,7 @@ advisor:
 
 Once configured you are receiving an email like this one each time a new issue is detected on your instance.
 
-![](docs/images/2020-08-27-advisor-email-sample.png)
+![](docs/images/2021-08-10-advisor-email-sample.png)
 
 ## Documentation
 
