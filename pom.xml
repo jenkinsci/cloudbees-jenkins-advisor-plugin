@@ -86,7 +86,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>support-core</artifactId>
-      <version>2.75</version>
+      <version>1162.vb_b_e5198c6b_22</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins</groupId>
