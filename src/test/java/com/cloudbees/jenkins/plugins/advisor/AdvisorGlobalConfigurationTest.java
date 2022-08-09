@@ -18,10 +18,8 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.reflect.Whitebox;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -39,15 +37,15 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 /**
  * Test the AdvisorGlobalConfiguration page; essentially the core of
  * the Jenkins Health Advisor by CloudBees connection.
  */
-@PowerMockIgnore({"org.apache.http.conn.ssl.*", "javax.net.ssl.*", "javax.crypto.*"})
 public class AdvisorGlobalConfigurationTest {
 
   @Rule
@@ -95,7 +93,7 @@ public class AdvisorGlobalConfigurationTest {
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertFalse(managePage.asText().contains("There was a connection failure"));
+    assertFalse(managePage.asNormalizedText().contains("There was a connection failure"));
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
       (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
@@ -112,8 +110,8 @@ public class AdvisorGlobalConfigurationTest {
     result = advisorDescriptor.validateServerConnection();
     assertThat("Test connection fail was expected", result, containsString("404"));    
     managePage = wc.goTo("cloudbees-jenkins-advisor");
-    String t = managePage.asText();
-    assertTrue(managePage.asText().contains("Connection failure"));
+    String t = managePage.asNormalizedText();
+    assertTrue(managePage.asNormalizedText().contains("Connection failure"));
   }
 
   @Test
@@ -125,7 +123,7 @@ public class AdvisorGlobalConfigurationTest {
 
     WebClient wc = j.createWebClient();
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertFalse(managePage.asText().contains("successfully connected"));
+    assertFalse(managePage.asNormalizedText().contains("successfully connected"));
 
     final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
       (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
@@ -143,7 +141,7 @@ public class AdvisorGlobalConfigurationTest {
     assertThat("Test connection is ok", result, containsString(SERVICE_OPERATIONAL));
     
     managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asText().contains("successfully connected"));
+    assertTrue(managePage.asNormalizedText().contains("successfully connected"));
   }
 
   @Test
@@ -166,20 +164,20 @@ public class AdvisorGlobalConfigurationTest {
     // Invalid email - send back to main page
     doConfigure.setUp("", Collections.emptyList());
     HttpRedirect hr1 = (HttpRedirect) j.executeOnServer(doConfigure);
-    String url1 = Whitebox.getInternalState(hr1, "url");
+    String url1 = getInternalState(hr1, "url");
     assertEquals("Rerouted back to configuration", ".", url1);
 
     // Didn't accept Terms of Service - send back to main page
     doConfigure.setUp(email, Collections.singletonList(new Recipient(email)));
     doConfigure.setTerms(false);
     HttpRedirect hr2 = (HttpRedirect) j.executeOnServer(doConfigure);
-    String url2 = Whitebox.getInternalState(hr2, "url");
+    String url2 = getInternalState(hr2, "url");
     assertEquals("Rerouted back to configuration", ".", url2);
 
     // Redirect to main page
     doConfigure.setTerms(true);
     HttpRedirect hr4 = (HttpRedirect) j.executeOnServer(doConfigure);
-    String url4 = Whitebox.getInternalState(hr4, "url");
+    String url4 = getInternalState(hr4, "url");
     assertEquals("Rerouted back to main mpage", "/jenkins/manage", url4);
   }
 
@@ -220,8 +218,8 @@ public class AdvisorGlobalConfigurationTest {
     j.executeOnServer(doConfigure);
     assertThat(advisor.getExcludedComponents().size(), is(25));
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asText().contains("uncheckedJenkinsLogs"));
-    assertTrue(managePage.asText().contains("uncheckedSlaveLogs"));
+    assertTrue(managePage.asNormalizedText().contains("unchecked JenkinsLogs"));
+    assertTrue(managePage.asNormalizedText().contains("unchecked SlaveLogs"));
 
     String allComponentsSelected =
       "{\"components\": [{\"selected\": true, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": true, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": true, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": true, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": true, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": true, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": true, \"name\": \"RootCAs\"}, {\"selected\": true, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": true, \"name\": \"SystemProperties\"}, {\"selected\": true, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": true, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
@@ -231,8 +229,8 @@ public class AdvisorGlobalConfigurationTest {
     assertThat(advisor.getExcludedComponents().size(), is(1));
     assertTrue(advisor.getExcludedComponents().contains("SENDALL"));
     managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asText().contains("checkedJenkinsLogs"));
-    assertTrue(managePage.asText().contains("checkedSlaveLogs"));
+    assertTrue(managePage.asNormalizedText().contains("checked JenkinsLogs"));
+    assertTrue(managePage.asNormalizedText().contains("checked SlaveLogs"));
 
     String mixCompoentsSelected =
       "{\"components\": [{\"selected\": false, \"name\": \"JenkinsLogs\"}, {\"selected\": true, \"name\"\r\n: \"SlaveLogs\"}, {\"selected\": false, \"name\": \"GCLogs\"}, {\"selected\": true, \"name\": \"AgentsConfigFile\"\r\n}, {\"selected\": true, \"name\": \"ConfigFileComponent\"}, {\"selected\": true, \"name\": \"OtherConfigFilesComponent\"\r\n}, {\"selected\": false, \"name\": \"AboutBrowser\"}, {\"selected\": true, \"name\": \"AboutJenkins\"}, {\"selected\"\r\n: true, \"name\": \"AboutUser\"}, {\"selected\": false, \"name\": \"AdministrativeMonitors\"}, {\"selected\": true\r\n, \"name\": \"BuildQueue\"}, {\"selected\": true, \"name\": \"DumpExportTable\"}, {\"selected\": false, \"name\": \"EnvironmentVariables\"\r\n}, {\"selected\": true, \"name\": \"FileDescriptorLimit\"}, {\"selected\": false, \"name\": \"JVMProcessSystemMetricsContents\"\r\n}, {\"selected\": true, \"name\": \"LoadStats\"}, {\"selected\": true, \"name\": \"LoggerManager\"}, {\"selected\"\r\n: true, \"name\": \"Metrics\"}, {\"selected\": true, \"name\": \"NetworkInterfaces\"}, {\"selected\": true, \"name\"\r\n: \"NodeMonitors\"}, {\"selected\": false, \"name\": \"RootCAs\"}, {\"selected\": false, \"name\": \"SystemConfiguration\"\r\n}, {\"selected\": false, \"name\": \"SystemProperties\"}, {\"selected\": false, \"name\": \"UpdateCenter\"}, {\"selected\"\r\n: true, \"name\": \"SlowRequestComponent\"}, {\"selected\": true, \"name\": \"DeadlockRequestComponent\"}, {\"selected\"\r\n: true, \"name\": \"PipelineTimings\"}, {\"selected\": false, \"name\": \"PipelineThreadDump\"}, {\"selected\": true\r\n, \"name\": \"ThreadDumps\"}]}";
@@ -241,8 +239,8 @@ public class AdvisorGlobalConfigurationTest {
     j.executeOnServer(doConfigure3);
     assertThat(advisor.getExcludedComponents().size(), is(11));
     managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asText().contains("uncheckedJenkinsLogs"));
-    assertTrue(managePage.asText().contains("checkedSlaveLogs"));
+    assertTrue(managePage.asNormalizedText().contains("unchecked JenkinsLogs"));
+    assertTrue(managePage.asNormalizedText().contains("checked SlaveLogs"));
   }
 
   @Test
@@ -294,7 +292,7 @@ public class AdvisorGlobalConfigurationTest {
 
     @Override
     public HttpResponse call() throws Exception {
-      StaplerRequest spyRequest = PowerMockito.spy(Stapler.getCurrentRequest());
+      StaplerRequest spyRequest = spy(Stapler.getCurrentRequest());
 
       JSONObject json1 = new JSONObject();
       json1.element("email", testEmail);
@@ -309,4 +307,9 @@ public class AdvisorGlobalConfigurationTest {
     }
   }
 
+  private static String getInternalState(Object object, String fieldName) throws ReflectiveOperationException {
+    Field field = object.getClass().getDeclaredField(fieldName);
+    field.setAccessible(true);
+    return (String) field.get(object);
+  }
 }

@@ -64,7 +64,7 @@ public class BundleUploadMonitorTest {
 
     WebClient w = j.createWebClient();
     HtmlPage managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains(textPrefix));
+    assertFalse(managePage.asNormalizedText().contains(textPrefix));
   }
 
   @Test
@@ -97,7 +97,7 @@ public class BundleUploadMonitorTest {
 
     WebClient w = j.createWebClient();
     HtmlPage managePage = w.goTo("manage");
-    String text = managePage.asText();
+    String text = managePage.asNormalizedText();
     assertTrue(text.contains(textPrefix));
   }
 
@@ -107,7 +107,7 @@ public class BundleUploadMonitorTest {
 
     WebClient w = j.createWebClient();
     HtmlPage managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains("Successfully uploaded a bundle"));
+    assertFalse(managePage.asNormalizedText().contains("Successfully uploaded a bundle"));
   }
 
 }
