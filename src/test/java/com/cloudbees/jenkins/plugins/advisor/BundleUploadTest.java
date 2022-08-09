@@ -90,7 +90,7 @@ public class BundleUploadTest {
     assertThat(Files.list(Paths.get(BundleUpload.TEMP_BUNDLE_DIRECTORY)).count(), is(equalTo(0L)));
 
     // wait for the AsyncPeriodicWork in BundleUpload to finish
-    Thread.sleep(1000L);
+    Thread.sleep(5000L);
   }
 
   @Test
