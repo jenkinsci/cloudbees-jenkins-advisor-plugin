@@ -40,32 +40,32 @@ public class ReminderTest {
     String part = AdvisorGlobalConfiguration.getInstance().getUrlName();
 
     HtmlPage managePage = w.goTo("manage");
-    assertTrue(managePage.asText().contains(blurb));
+    assertTrue(managePage.asNormalizedText().contains(blurb));
 
     // page doesn't show warning
     submitForm(w, part, "test@test.test", false, true);
     managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains(blurb));
+    assertFalse(managePage.asNormalizedText().contains(blurb));
 
     // page shows warning
     submitForm(w, part, "", false, true);
     managePage = w.goTo("manage");
-    assertTrue(managePage.asText().contains(blurb));
+    assertTrue(managePage.asNormalizedText().contains(blurb));
 
     // page doesn't show warning
     submitForm(w, part, "", true, true);
     managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains(blurb));
+    assertFalse(managePage.asNormalizedText().contains(blurb));
 
     // page shows warning
     submitForm(w, part, "", false, false);
     managePage = w.goTo("manage");
-    assertTrue(managePage.asText().contains(blurb));
+    assertTrue(managePage.asNormalizedText().contains(blurb));
 
     // page doesn't show warning
     submitForm(w, part, "", true, false);
     managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains(blurb));
+    assertFalse(managePage.asNormalizedText().contains(blurb));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class ReminderTest {
 
     WebClient w = j.createWebClient();
     HtmlPage managePage = w.goTo("manage");
-    assertFalse(managePage.asText().contains(blurb));
+    assertFalse(managePage.asNormalizedText().contains(blurb));
   }
 
   private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms) throws Exception {
