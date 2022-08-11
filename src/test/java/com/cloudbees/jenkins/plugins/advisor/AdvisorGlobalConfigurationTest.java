@@ -218,7 +218,7 @@ public class AdvisorGlobalConfigurationTest {
     j.executeOnServer(doConfigure);
     assertThat(advisor.getExcludedComponents().size(), is(25));
     HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
-    assertTrue(managePage.asNormalizedText().contains("unchecked JenkinsLogs"));
+    assertThat(managePage.asNormalizedText(), containsString("unchecked JenkinsLogs"));
     assertTrue(managePage.asNormalizedText().contains("unchecked SlaveLogs"));
 
     String allComponentsSelected =
