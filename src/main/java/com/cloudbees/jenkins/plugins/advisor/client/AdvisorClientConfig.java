@@ -43,8 +43,8 @@ public class AdvisorClientConfig {
     return advisorURL() + "/api/health";
   }
 
-  public static String testEmailURI(String email) {
-    return advisorURL() + format("/api/test/emails/%s", email);
+  public static String testEmailURI() {
+    return advisorURL() + "/api/test/emails";
   }
 
   public static String apiUploadURI(String username, String instanceId) {
@@ -53,7 +53,7 @@ public class AdvisorClientConfig {
 
   public static String apiUploadURI(String username, String instanceId, String cc) {
     if (StringUtils.isNotBlank(cc)) {
-        return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
+      return advisorURL() + format("/api/users/%s/upload/%s?cc=%s", username, instanceId, cc);
     } else {
       return apiUploadURI(username, instanceId);
     }

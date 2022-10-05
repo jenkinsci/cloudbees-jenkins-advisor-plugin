@@ -1,13 +1,16 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
+import com.cloudbees.jenkins.plugins.advisor.client.dto.UserInfo;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
 import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
 import com.cloudbees.jenkins.plugins.advisor.utils.FileHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -28,7 +31,14 @@ public class AdvisorClient {
   public String doTestEmail() {
     try {
       HttpURLConnection con =
-        HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI(recipient.getEmail()));
+        HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI());
+      con.setRequestMethod("POST");
+      con.setRequestProperty("Content-Type", "application/json");
+      con.setDoOutput(true);
+      
+      try(OutputStream os = con.getOutputStream()) {
+        new ObjectMapper().writeValue(os, new UserInfo(recipient.getEmail()));
+      }
 
       int responseCode = con.getResponseCode();
 
