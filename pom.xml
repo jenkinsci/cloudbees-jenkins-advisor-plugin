@@ -10,12 +10,12 @@
   </parent>
 
   <artifactId>cloudbees-jenkins-advisor</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
 
   <properties>
     <revision>3.3.4</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <jenkins.version>2.319.3</jenkins.version>
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
@@ -38,16 +38,33 @@
       <id>owood</id>
       <name>Owen Wood</name>
       <email>owood@cloudbees.com</email>
+      <roles>
+        <role>Maintainer (retired)</role>
+      </roles>
     </developer>
     <developer>
       <id>kwhetstone</id>
       <name>Kristin Whetstone</name>
       <email>kwhetstone@cloudbees.com</email>
+      <roles>
+        <role>Maintainer (retired)</role>
+      </roles>
     </developer>
     <developer>
       <id>aheritier</id>
       <name>Arnaud Héritier</name>
       <email>aheritier@cloudbees.com</email>
+      <roles>
+        <role>Maintainer (retired)</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>pierrebtz</id>
+      <name>Pierre Beitz</name>
+      <email>pbeitz@cloudbees.com</email>
+      <roles>
+        <role>Maintainer</role>
+      </roles>
     </developer>
   </developers>
 
