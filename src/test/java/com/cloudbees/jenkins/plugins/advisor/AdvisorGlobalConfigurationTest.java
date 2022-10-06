@@ -28,7 +28,9 @@ import java.util.concurrent.Callable;
 import static com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration.INVALID_CONFIGURATION;
 import static com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration.SERVICE_OPERATIONAL;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -147,7 +149,8 @@ public class AdvisorGlobalConfigurationTest {
   @Test
   public void testSendEmail() {
     wireMockRule.resetAll();
-    stubFor(get(urlEqualTo("/api/test/emails/test@cloudbees.com"))
+    stubFor(post(urlEqualTo("/api/test/emails"))
+      .withRequestBody(equalTo("{\"email\":\"test@cloudbees.com\"}"))
       .willReturn(aResponse()
         .withStatus(200)));
 
