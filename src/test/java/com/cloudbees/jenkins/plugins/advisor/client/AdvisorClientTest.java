@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -53,7 +54,8 @@ public class AdvisorClientTest {
 
   @Test
   public void testDoTestEmail() {
-    stubFor(get(urlEqualTo(format("/api/test/emails/%s", TEST_EMAIL)))
+    stubFor(post(urlEqualTo("/api/test/emails"))
+      .withRequestBody(equalTo("{\"email\":\"test@acme.com\"}"))
       .willReturn(aResponse()
         .withStatus(200)));
     String token = subject.doTestEmail();
