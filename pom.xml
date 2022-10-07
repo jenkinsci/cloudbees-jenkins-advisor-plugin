@@ -14,7 +14,6 @@
   <packaging>hpi</packaging>
 
   <properties>
-    <revision>3.3.4</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <jenkins.version>2.319.3</jenkins.version>
