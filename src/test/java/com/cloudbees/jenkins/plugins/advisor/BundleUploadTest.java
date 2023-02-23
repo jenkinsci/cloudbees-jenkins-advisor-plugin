@@ -73,8 +73,8 @@ public class BundleUploadTest {
 
     subject.run();
 
-    // wait for the AsyncPeriodicWork in BundleUpload to kick off
-    while (wireMockRule.getAllServeEvents().size() < 2) {
+    // wait for the AsyncPeriodicWork in BundleUpload to kick off and complete.
+    while (wireMockRule.getAllServeEvents().size() < 2 || subject.isRunning()) {
       Thread.sleep(1000L);
     }
 
