@@ -12,9 +12,11 @@ import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import static com.cloudbees.jenkins.plugins.advisor.BundleUpload.BUNDLE_SUCCESSFULLY_UPLOADED;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
@@ -30,6 +32,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -80,7 +83,9 @@ public class BundleUploadTest {
     // Refresh the configuration?
     assertThat(config.getLastBundleResult(), containsString(BUNDLE_SUCCESSFULLY_UPLOADED));
 
-    assertThat(Files.list(Paths.get(BundleUpload.TEMP_BUNDLE_DIRECTORY)).count(), is(equalTo(0L)));
+    try (Stream<Path> children  = Files.list(Paths.get(BundleUpload.TEMP_BUNDLE_DIRECTORY))) {
+        assertThat(children.collect(Collectors.toList()), is(empty()));
+    }
   }
 
   @Test
