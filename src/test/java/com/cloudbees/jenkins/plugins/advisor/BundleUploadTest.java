@@ -56,8 +56,6 @@ public class BundleUploadTest {
   @WithTimeout(30)
   @Test
   public void execute() throws Exception {
-    BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
-
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setEmail(TEST_EMAIL);
     config.setAcceptToS(true);
@@ -71,12 +69,7 @@ public class BundleUploadTest {
       .willReturn(aResponse()
         .withStatus(200)));
 
-    subject.run();
-
-    // wait for the AsyncPeriodicWork in BundleUpload to kick off and complete.
-    while (wireMockRule.getAllServeEvents().size() < 2 || subject.isRunning()) {
-      Thread.sleep(1000L);
-    }
+    runBundleUpload();
 
     verify(getRequestedFor(urlEqualTo("/api/health")));
 
@@ -93,32 +86,27 @@ public class BundleUploadTest {
   @Test
   @LocalData
   public void execute_pluginDisabled() {
-    BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
-
     stubFor(any(anyUrl()));
 
-    subject.run();
+    runBundleUpload();
 
     verify(0, anyRequestedFor(anyUrl()));
   }
 
   @Test
   public void execute_isNotValid() throws IOException {
-    BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     assertFalse("The configuration must be valid", config.isValid());
     
     stubFor(any(anyUrl()));
 
-    subject.run();
+    runBundleUpload();
 
     verify(0, anyRequestedFor(anyUrl()));
   }
 
   @Test
   public void execute_noConnection() throws IOException {
-    BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
-
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setAcceptToS(true);
     config.setEmail(TEST_EMAIL);
@@ -126,7 +114,7 @@ public class BundleUploadTest {
 
     wireMockRule.shutdownServer();
 
-    subject.run();
+    runBundleUpload();
   }
 
   @WithoutJenkins
@@ -148,6 +136,14 @@ public class BundleUploadTest {
   public void getInitialDelay() {
     assertThat(new BundleUpload().getInitialDelay(),
       is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
+  }
+  
+  /**
+   * Runs the {@link BundleUpload} task and waits for it to finish.
+   */
+  private final void runBundleUpload() {
+      BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
+      subject.execute(() -> System.out);
   }
 
 }

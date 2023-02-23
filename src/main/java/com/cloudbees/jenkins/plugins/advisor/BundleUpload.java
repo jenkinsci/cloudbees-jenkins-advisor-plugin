@@ -45,20 +45,13 @@ public class BundleUpload extends AsyncPeriodicWork {
     "Bundle root directory does not exist and could not be created";
   protected static final String BUNDLE_SUCCESSFULLY_UPLOADED = "Bundle uploaded";
   private TaskListener task;
-  private volatile boolean isRunning; // true if the task is currently running.
 
   public BundleUpload() {
     super("Bundle Upload");
   }
 
-  // for testing
-  protected boolean isRunning() {
-      return isRunning;
-  }
-
   @Override
   protected void execute(TaskListener listener) {
-    isRunning = true;
     task = listener;
 
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
@@ -89,7 +82,6 @@ public class BundleUpload extends AsyncPeriodicWork {
     } else {
       log(Level.SEVERE, UNABLE_TO_GENERATE_SUPPORT_BUNDLE);
     }
-    isRunning = false;
   }
 
   private File generateBundle() {
