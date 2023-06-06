@@ -1,7 +1,7 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,7 +79,7 @@ public class ReminderTest {
 
   private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms) throws Exception {
     HtmlForm form = wc.goTo(part).getFirstByXPath("//form[@action='configure']");
-    form.getInputByName("_.email").setValueAttribute(userEmail);
+    form.getInputByName("_.email").setValue(userEmail);
     form.getInputByName("_.nagDisabled").setChecked(nagOff);
     form.getInputByName("_.acceptToS").setChecked(acceptTerms);
     j.submit(form);
