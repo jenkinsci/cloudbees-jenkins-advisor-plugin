@@ -4,10 +4,12 @@ import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 /**
  * Displays a message whenever there is an issue during the bundle upload process.
@@ -35,11 +37,13 @@ public class BundleUploadMonitor extends AdministrativeMonitor {
 
   @Restricted(NoExternalUse.class)
   @RequirePOST
-  public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes) {
+  public void doAct(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    return yes != null
-      ? HttpResponses.redirectViaContextPath(config.getUrlName())
-      : HttpResponses.forwardToPreviousPage();
+    if(req.hasParameter("yes")) {
+      rsp.sendRedirect(req.getContextPath() + "/manage/" + config.getUrlName());
+    } else {
+      rsp.forwardToPreviousPage(req);
+    }
   }
 
   /**
