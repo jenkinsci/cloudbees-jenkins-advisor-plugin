@@ -5,10 +5,12 @@ import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 /**
  * Displays the reminder that the configuration must be done.
@@ -33,15 +35,15 @@ public class Reminder extends AdministrativeMonitor {
 
   @Restricted(NoExternalUse.class)
   @RequirePOST
-  public HttpResponse doAct(@QueryParameter(fixEmpty = true) String yes, @QueryParameter(fixEmpty = true) String no) {
+  public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    if (yes != null) {
-      return HttpResponses.redirectViaContextPath(config.getUrlName());
-    } else if (no != null) {
+    if (req.hasParameter("yes")) {
+      rsp.sendRedirect(req.getContextPath() + "/manage/" + config.getUrlName());
+    } else if (req.hasParameter("no")) {
       // should never return null if we get here
-      return HttpResponses.redirectViaContextPath(Jenkins.get().getPluginManager().getSearchUrl() + "/installed");
-    } else { //remind later
-      return HttpResponses.forwardToPreviousPage();
+      rsp.sendRedirect(req.getContextPath() + "/" + Jenkins.get().getPluginManager().getSearchUrl() + "/installed");
+    } else {
+      rsp.forwardToPreviousPage(req);
     }
   }
 }
