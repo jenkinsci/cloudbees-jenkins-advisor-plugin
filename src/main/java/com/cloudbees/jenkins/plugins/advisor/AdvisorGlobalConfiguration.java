@@ -329,19 +329,17 @@ public class AdvisorGlobalConfiguration
   }
 
   boolean isPluginEnabled() {
-    boolean lastEnabledState;
-    try {
-      PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(PLUGIN_NAME);
+    var jenkins = Jenkins.getInstanceOrNull();
+    if (jenkins != null) {
+      PluginWrapper plugin = jenkins.getPluginManager().getPlugin(PLUGIN_NAME);
 
       if (plugin == null) {
         LOG.severe("Expected to find plugin: [" + PLUGIN_NAME + "] but none found");
         return false;
       }
-      lastEnabledState = plugin.isEnabled();
-    } catch (NullPointerException e) {
-      return false;
+      return plugin.isEnabled();
     }
-    return lastEnabledState;
+    return false;
   }
 
   @Override
