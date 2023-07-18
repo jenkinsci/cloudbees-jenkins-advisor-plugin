@@ -1,10 +1,10 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
 import hudson.util.FormValidation;

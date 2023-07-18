@@ -1,6 +1,6 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPage;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Before;
 import org.junit.Rule;

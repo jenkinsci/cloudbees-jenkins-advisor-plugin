@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.48</version>
+    <version>4.71</version>
     <relativePath />
   </parent>
 
@@ -16,7 +16,7 @@
   <properties>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-    <jenkins.version>2.319.3</jenkins.version>
+    <jenkins.version>2.387.3</jenkins.version>
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/cloudbees-jenkins-advisor-plugin/master/src/main/webapp/icons/advisor.svg</hpi.pluginLogoUrl>
   </properties>
@@ -91,8 +91,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.319.x</artifactId>
-        <version>1607.va_c1576527071</version>
+        <artifactId>bom-2.387.x</artifactId>
+        <version>2244.vd60654536b_96</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>

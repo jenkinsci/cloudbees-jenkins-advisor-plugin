@@ -10,13 +10,13 @@ import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import static com.cloudbees.jenkins.plugins.advisor.BundleUpload.BUNDLE_SUCCESSFULLY_UPLOADED;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
@@ -99,7 +99,7 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_isNotValid() throws IOException {
+  public void execute_isNotValid() {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     assertFalse("The configuration must be valid", config.isValid());
     
@@ -111,15 +111,26 @@ public class BundleUploadTest {
   }
 
   @Test
-  public void execute_noConnection() throws IOException {
+  public void execute_noConnection() {
     AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
     config.setAcceptToS(true);
     config.setEmail(TEST_EMAIL);
-    assertTrue("The configuration must be valid", config.isValid());    
+    assertTrue("The configuration must be valid", config.isValid());
 
+    waitForWiremockShutdown();
+    runBundleUpload();
+  }
+
+  private void waitForWiremockShutdown() {
     wireMockRule.shutdownServer();
 
-    runBundleUpload();
+    while (wireMockRule.isRunning()) {
+      try {
+        Thread.sleep(50);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @WithoutJenkins
@@ -146,7 +157,7 @@ public class BundleUploadTest {
   /**
    * Runs the {@link BundleUpload} task and waits for it to finish.
    */
-  private final void runBundleUpload() {
+  private void runBundleUpload() {
       BundleUpload subject = j.getInstance().getExtensionList(BundleUpload.class).get(0);
       subject.execute(() -> System.out);
   }
