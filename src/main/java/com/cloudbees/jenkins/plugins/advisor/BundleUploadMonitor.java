@@ -2,14 +2,13 @@ package com.cloudbees.jenkins.plugins.advisor;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Displays a message whenever there is an issue during the bundle upload process.
@@ -18,40 +17,41 @@ import java.io.IOException;
 @Extension
 public class BundleUploadMonitor extends AdministrativeMonitor {
 
-  @Override
-  public boolean isActivated() {
-    AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    /*
-    no nag when plugin is disabled
-    no nag when no error messages logged by BundleUpload
-    */
-    return config.isPluginEnabled() && config.getLastBundleResult() != null &&
-      (config.getLastBundleResult().contains("ERROR") ||
-        config.getLastBundleResult().contains("Bundle upload failed"));
-  }
-
-  @Override
-  public String getDisplayName() {
-    return Messages.BundleUploadMonitor_DisplayName();
-  }
-
-  @Restricted(NoExternalUse.class)
-  @RequirePOST
-  public void doAct(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-    AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
-    if(req.hasParameter("yes")) {
-      rsp.sendRedirect(req.getContextPath() + "/manage/" + config.getUrlName());
-    } else {
-      rsp.forwardToPreviousPage(req);
+    @Override
+    public boolean isActivated() {
+        AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+        /*
+        no nag when plugin is disabled
+        no nag when no error messages logged by BundleUpload
+        */
+        return config.isPluginEnabled()
+                && config.getLastBundleResult() != null
+                && (config.getLastBundleResult().contains("ERROR")
+                        || config.getLastBundleResult().contains("Bundle upload failed"));
     }
-  }
 
-  /**
-   * Get the failure message from the last bundle upload.
-   *
-   * @return String     the error message that was saved as part of the last BundleUpload
-   */
-  public String getFailureMessage() {
-    return AdvisorGlobalConfiguration.getInstance().getLastBundleResult();
-  }
+    @Override
+    public String getDisplayName() {
+        return Messages.BundleUploadMonitor_DisplayName();
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST
+    public void doAct(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+        AdvisorGlobalConfiguration config = AdvisorGlobalConfiguration.getInstance();
+        if (req.hasParameter("yes")) {
+            rsp.sendRedirect(req.getContextPath() + "/manage/" + config.getUrlName());
+        } else {
+            rsp.forwardToPreviousPage(req);
+        }
+    }
+
+    /**
+     * Get the failure message from the last bundle upload.
+     *
+     * @return String     the error message that was saved as part of the last BundleUpload
+     */
+    public String getFailureMessage() {
+        return AdvisorGlobalConfiguration.getInstance().getLastBundleResult();
+    }
 }

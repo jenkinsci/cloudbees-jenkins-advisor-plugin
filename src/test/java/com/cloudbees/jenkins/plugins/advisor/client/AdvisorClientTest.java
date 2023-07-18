@@ -1,20 +1,5 @@
 package com.cloudbees.jenkins.plugins.advisor.client;
 
-import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
-import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
-import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
-import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -23,104 +8,115 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.lang.String.format;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+import com.cloudbees.jenkins.plugins.advisor.client.model.ClientResponse;
+import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
+import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
+import com.cloudbees.jenkins.plugins.advisor.utils.EmailUtil;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class AdvisorClientTest {
 
-  private static final String TEST_EMAIL = "test@acme.com";
-  private static final List<Recipient> TEST_CC = Collections.singletonList(new Recipient(TEST_EMAIL));
-  private static final String TEST_INSTANCE_ID = "12345";
-  private static final String TEST_PLUGIN_VERSION = "2.9";
-  @Rule
-  public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-  private final Recipient recipient = new Recipient(TEST_EMAIL);
-  private final AdvisorClient subject = new AdvisorClient(recipient);
+    private static final String TEST_EMAIL = "test@acme.com";
+    private static final List<Recipient> TEST_CC = Collections.singletonList(new Recipient(TEST_EMAIL));
+    private static final String TEST_INSTANCE_ID = "12345";
+    private static final String TEST_PLUGIN_VERSION = "2.9";
 
-  @Before
-  public void setup() {
-    // Dynamically configure the Advisor Server URL to reach WireMock server
-    System.setProperty("com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL",
-      wireMockRule.url("/"));
-  }
+    @Rule
+    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
-  @Test
-  public void testDoCheckHealth() {
-    stubHealth();
-    String token = subject.doCheckHealth();
+    private final Recipient recipient = new Recipient(TEST_EMAIL);
+    private final AdvisorClient subject = new AdvisorClient(recipient);
 
-    assertThat(token, is(AdvisorClient.HEALTH_SUCCESS));
-  }
+    @Before
+    public void setup() {
+        // Dynamically configure the Advisor Server URL to reach WireMock server
+        System.setProperty(
+                "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL", wireMockRule.url("/"));
+    }
 
-  @Test
-  public void testDoTestEmail() {
-    stubFor(post(urlEqualTo("/api/test/emails"))
-      .withRequestBody(equalTo("{\"email\":\"test@acme.com\"}"))
-      .willReturn(aResponse()
-        .withStatus(200)));
-    String token = subject.doTestEmail();
+    @Test
+    public void testDoCheckHealth() {
+        stubHealth();
+        String token = subject.doCheckHealth();
 
-    assertThat(token, is(AdvisorClient.EMAIL_SUCCESS));
-  }
+        assertThat(token, is(AdvisorClient.HEALTH_SUCCESS));
+    }
 
-  @Test
-  public void uploadFile() {
-    stubHealth();
-    stubUpload();
+    @Test
+    public void testDoTestEmail() {
+        stubFor(post(urlEqualTo("/api/test/emails"))
+                .withRequestBody(equalTo("{\"email\":\"test@acme.com\"}"))
+                .willReturn(aResponse().withStatus(200)));
+        String token = subject.doTestEmail();
 
-    File bundle = new File(getClass().getResource("/bundle.zip").getFile());
-    ClientResponse response =
-      subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, null, TEST_PLUGIN_VERSION));
+        assertThat(token, is(AdvisorClient.EMAIL_SUCCESS));
+    }
 
-    assertThat(response.getCode(), is(200));
-  }
+    @Test
+    public void uploadFile() {
+        stubHealth();
+        stubUpload();
 
-  @Test
-  public void uploadFileWithCC() {
-    stubHealth();
-    stubUploadCc(TEST_CC);
+        File bundle = new File(getClass().getResource("/bundle.zip").getFile());
+        ClientResponse response =
+                subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, null, TEST_PLUGIN_VERSION));
 
-    File bundle = new File(getClass().getResource("/bundle.zip").getFile());
-    ClientResponse response =
-      subject.uploadFile(
-        new ClientUploadRequest(TEST_INSTANCE_ID, bundle, TEST_CC, TEST_PLUGIN_VERSION));
+        assertThat(response.getCode(), is(200));
+    }
 
-    assertThat(response.getCode(), is(200));
-  }
+    @Test
+    public void uploadFileWithCC() {
+        stubHealth();
+        stubUploadCc(TEST_CC);
 
-  @Test
-  public void uploadFileWithCCMultipleRecipients() {
-    List<Recipient> cc = Arrays.asList(new Recipient(TEST_EMAIL), new Recipient(TEST_EMAIL));
-    stubHealth();
-    stubUploadCc(cc);
+        File bundle = new File(getClass().getResource("/bundle.zip").getFile());
+        ClientResponse response =
+                subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, TEST_CC, TEST_PLUGIN_VERSION));
 
-    File bundle = new File(getClass().getResource("/bundle.zip").getFile());
-    ClientResponse response =
-      subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, cc, TEST_PLUGIN_VERSION));
+        assertThat(response.getCode(), is(200));
+    }
 
-    assertThat(response.getCode(), is(200));
-  }
+    @Test
+    public void uploadFileWithCCMultipleRecipients() {
+        List<Recipient> cc = Arrays.asList(new Recipient(TEST_EMAIL), new Recipient(TEST_EMAIL));
+        stubHealth();
+        stubUploadCc(cc);
 
-  private void stubHealth() {
-    stubFor(get(urlEqualTo("/api/health"))
-      //.withHeader("Content-Type", WireMock.equalTo("application/json"))
-      .willReturn(aResponse()
-        .withStatus(200)));
-  }
+        File bundle = new File(getClass().getResource("/bundle.zip").getFile());
+        ClientResponse response =
+                subject.uploadFile(new ClientUploadRequest(TEST_INSTANCE_ID, bundle, cc, TEST_PLUGIN_VERSION));
 
-  private void stubUpload() {
-    stubFor(post(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, TEST_INSTANCE_ID)))
-      .willReturn(aResponse()
-        .withStatus(200)));
-  }
+        assertThat(response.getCode(), is(200));
+    }
 
-  private void stubUploadCc(List<Recipient> cc) {
-    stubFor(
-      post(urlEqualTo(format("/api/users/%s/upload/%s?cc=%s", TEST_EMAIL, TEST_INSTANCE_ID,
-        EmailUtil.urlEncode(cc.stream().map(Recipient::getEmail).collect(
-          Collectors.joining(","))))))
-        .willReturn(aResponse()
-          .withStatus(200)));
-  }
+    private void stubHealth() {
+        stubFor(get(urlEqualTo("/api/health"))
+                // .withHeader("Content-Type", WireMock.equalTo("application/json"))
+                .willReturn(aResponse().withStatus(200)));
+    }
 
+    private void stubUpload() {
+        stubFor(post(urlEqualTo(format("/api/users/%s/upload/%s", TEST_EMAIL, TEST_INSTANCE_ID)))
+                .willReturn(aResponse().withStatus(200)));
+    }
+
+    private void stubUploadCc(List<Recipient> cc) {
+        stubFor(post(urlEqualTo(format(
+                        "/api/users/%s/upload/%s?cc=%s",
+                        TEST_EMAIL,
+                        TEST_INSTANCE_ID,
+                        EmailUtil.urlEncode(cc.stream().map(Recipient::getEmail).collect(Collectors.joining(","))))))
+                .willReturn(aResponse().withStatus(200)));
+    }
 }
