@@ -56,7 +56,10 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
     protected AdvisorGlobalConfiguration instance(Mapping mapping, ConfigurationContext configurationContext)
             throws ConfiguratorException {
         // Scalar values
-        final String email = (mapping.get(EMAIL_ATTR) != null ? mapping.getScalarValue(EMAIL_ATTR) : StringUtils.EMPTY);
+        final String email = configurationContext
+                .getSecretSourceResolver()
+                .resolve((mapping.get(EMAIL_ATTR) != null ? mapping.getScalarValue(EMAIL_ATTR) : StringUtils.EMPTY));
+
         final boolean nagDisabled = (mapping.get(NAG_DISABLED_ATTR) != null
                 && BooleanUtils.toBoolean(mapping.getScalarValue(NAG_DISABLED_ATTR)));
         final boolean acceptToS = (mapping.get(ACCEPT_TOS_ATTR) != null
@@ -69,7 +72,9 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
             if (ccCN instanceof Sequence) {
                 Sequence s = (Sequence) ccCN;
                 for (CNode cNode : s) {
-                    cc.add(new Recipient(cNode.asScalar().getValue()));
+                    cc.add(new Recipient(configurationContext
+                            .getSecretSourceResolver()
+                            .resolve(cNode.asScalar().getValue())));
                 }
                 // We don't want to process it anymore because the mapping in YAML
                 // doesn't map the objects model (List<String> vs List<Recipient>
@@ -151,13 +156,17 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
                         mapping.put(ACCEPT_TOS_ATTR, attribute.describe(instance, context));
                         break;
                     case EMAIL_ATTR:
-                        mapping.put(EMAIL_ATTR, attribute.describe(instance, context));
+                        mapping.put(
+                                EMAIL_ATTR,
+                                String.valueOf(attribute.describe(instance, context)));
                         break;
                     case CCS_ATTR:
                         // We build it manually because we don't want to expose the Bean model
+                        SecretSourceResolver r = context.getSecretSourceResolver();
                         Sequence ccs = new Sequence();
                         instance.getCcs().stream()
                                 .map(Recipient::getEmail)
+                                .map(r::encode)
                                 .map(Scalar::new)
                                 .forEach(ccs::add);
                         if (!ccs.isEmpty()) {

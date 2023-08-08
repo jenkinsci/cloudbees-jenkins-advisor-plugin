@@ -160,6 +160,24 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
+    public void testDescribeWithVarialbeValue() throws Exception {
+        List<Recipient> cc_with_var = Arrays.asList(new Recipient("${admin_cc}"), new Recipient("${admin_cc}"));
+        final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration("${admin_email}", cc_with_var, EXCLUDED);
+        c.setAcceptToS(ACCEPT_TOS);
+        c.setNagDisabled(NAG_DISABLED);
+
+        Mapping described = configurator.describe(c, context).asMapping();
+        assertNotNull(described);
+        String email = described.getScalarValue(EMAIL_ATTR);
+
+        assertEquals("^${admin_email}", email);
+        assertTrue("encoded email cc not found in list", toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")));
+    }
+
+    @Test
+    public void testResolveWithVariableName() throws Exception {}
+
+    @Test
     public void testDescribeWithEmptyCC() throws Exception {
         final AdvisorGlobalConfiguration c =
                 new AdvisorGlobalConfiguration(FAKE_EMAIL, Collections.emptyList(), EXCLUDED);
