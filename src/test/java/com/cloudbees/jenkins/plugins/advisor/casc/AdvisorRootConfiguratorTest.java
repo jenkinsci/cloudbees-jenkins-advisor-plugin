@@ -176,15 +176,17 @@ public class AdvisorRootConfiguratorTest {
         String email = described.getScalarValue(EMAIL_ATTR);
 
         assertEquals("^${admin_email}", email);
-        assertTrue("encoded email cc not found in list", toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")));
+        assertTrue(
+                "encoded email cc not found in list",
+                toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")));
     }
 
     @Test
     public void testResolveWithVariableName() throws Exception {
-      ConfiguratorRegistry registry = ConfiguratorRegistry.get();
-      context = new ConfigurationContext(registry);
-      environment.set("admin_email","mike@is.cool.com");
-      assertThat(context.getSecretSourceResolver().resolve("${admin_email}"), equalTo("mike@is.cool.com"));
+        ConfiguratorRegistry registry = ConfiguratorRegistry.get();
+        context = new ConfigurationContext(registry);
+        environment.set("admin_email", "mike@is.cool.com");
+        assertThat(context.getSecretSourceResolver().resolve("${admin_email}"), equalTo("mike@is.cool.com"));
     }
 
     @Test

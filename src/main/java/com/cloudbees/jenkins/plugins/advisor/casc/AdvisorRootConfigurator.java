@@ -157,9 +157,7 @@ public class AdvisorRootConfigurator extends BaseConfigurator<AdvisorGlobalConfi
                         mapping.put(ACCEPT_TOS_ATTR, attribute.describe(instance, context));
                         break;
                     case EMAIL_ATTR:
-                        mapping.put(
-                                EMAIL_ATTR,
-                                String.valueOf(attribute.describe(instance, context)));
+                        mapping.put(EMAIL_ATTR, String.valueOf(attribute.describe(instance, context)));
                         break;
                     case CCS_ATTR:
                         // We build it manually because we don't want to expose the Bean model
