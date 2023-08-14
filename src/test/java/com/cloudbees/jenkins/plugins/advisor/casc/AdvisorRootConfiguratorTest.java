@@ -8,6 +8,7 @@ import static com.cloudbees.jenkins.plugins.advisor.casc.AdvisorRootConfigurator
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +33,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -49,6 +51,9 @@ public class AdvisorRootConfiguratorTest {
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
+
+    @Rule
+    public final EnvironmentVariables environment = new EnvironmentVariables();
 
     private AdvisorRootConfigurator configurator;
     private AdvisorGlobalConfiguration configuration;
@@ -157,6 +162,31 @@ public class AdvisorRootConfiguratorTest {
         Mapping described = configurator.describe(c, context).asMapping();
         assertNotNull(described);
         assertTrue(described.isEmpty());
+    }
+
+    @Test
+    public void testDescribeWithVarialbeValue() throws Exception {
+        List<Recipient> cc_with_var = Arrays.asList(new Recipient("${admin_cc}"), new Recipient("${admin_cc}"));
+        final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration("${admin_email}", cc_with_var, EXCLUDED);
+        c.setAcceptToS(ACCEPT_TOS);
+        c.setNagDisabled(NAG_DISABLED);
+
+        Mapping described = configurator.describe(c, context).asMapping();
+        assertNotNull(described);
+        String email = described.getScalarValue(EMAIL_ATTR);
+
+        assertEquals("^${admin_email}", email);
+        assertTrue(
+                "encoded email cc not found in list",
+                toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")));
+    }
+
+    @Test
+    public void testResolveWithVariableName() throws Exception {
+        ConfiguratorRegistry registry = ConfiguratorRegistry.get();
+        context = new ConfigurationContext(registry);
+        environment.set("admin_email", "mike@is.cool.com");
+        assertThat(context.getSecretSourceResolver().resolve("${admin_email}"), equalTo("mike@is.cool.com"));
     }
 
     @Test
