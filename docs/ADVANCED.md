@@ -133,3 +133,8 @@ for(trigger in PeriodicWork.all()) {
   }
 }
 ```
+
+### Test email button is not working
+
+On February 9, 2024, the CloudBees Advisor server changed the endpoint used to validate the email.
+You need to use at least version [326.v1821e6a_85e3f](https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases/tag/326.v1821e6a_85e3f) of the plugin to use the new endpoint.
