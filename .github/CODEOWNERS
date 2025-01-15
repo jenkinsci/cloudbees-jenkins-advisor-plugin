@@ -5,4 +5,5 @@
 # @cloudbees/team-support will be requested for
 # review when someone opens a pull request.
 
-*       @aheritier @kwhetstone @PierreBtz
+* @aheritier @kwhetstone @PierreBtz
+* @jenkinsci/cloudbees-jenkins-advisor-plugin-developers
