@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.71</version>
+    <version>5.5</version>
     <relativePath />
   </parent>
 
@@ -69,7 +69,9 @@
   <properties>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-    <jenkins.version>2.387.3</jenkins.version>
+    <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/cloudbees-jenkins-advisor-plugin/master/src/main/webapp/icons/advisor.svg</hpi.pluginLogoUrl>
     <spotless.check.skip>false</spotless.check.skip>
@@ -79,8 +81,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.387.x</artifactId>
-        <version>2244.vd60654536b_96</version>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>3893.v213a_42768d35</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -93,6 +95,10 @@
       <artifactId>configuration-as-code</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>gson-api</artifactId>
+    </dependency>
     <!-- plugin dependencies -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -102,12 +108,6 @@
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8-standalone</artifactId>
       <version>2.35.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.9.1</version>
       <scope>test</scope>
     </dependency>
 
