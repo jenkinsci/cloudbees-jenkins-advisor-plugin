@@ -41,7 +41,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Test the AdvisorGlobalConfiguration page; essentially the core of
@@ -285,7 +285,7 @@ public class AdvisorGlobalConfigurationTest {
 
         @Override
         public HttpResponse call() throws Exception {
-            StaplerRequest spyRequest = spy(Stapler.getCurrentRequest());
+            StaplerRequest2 spyRequest = spy(Stapler.getCurrentRequest2());
 
             JSONObject json1 = new JSONObject();
             json1.element("email", testEmail);

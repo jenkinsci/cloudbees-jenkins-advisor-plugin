@@ -44,7 +44,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
@@ -189,7 +189,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     @RequirePOST
     @Nonnull
     @Restricted(NoExternalUse.class)
-    public HttpResponse doConfigure(@Nonnull StaplerRequest req) {
+    public HttpResponse doConfigure(@Nonnull StaplerRequest2 req) {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         try {
@@ -217,7 +217,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
      * @return {@code false} to keep the client in the same config page.
      * @throws FormException if something goes wrong.
      */
-    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
+    private boolean configureDescriptor(StaplerRequest2 req, JSONObject json, Descriptor<?> d) throws FormException {
         req.bindJSON(this, json);
         return d.configure(req, json);
     }
@@ -419,7 +419,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) {
+        public boolean configure(StaplerRequest2 req, JSONObject json) {
             boolean acceptToS = json.getBoolean("acceptToS");
             String email = json.getString("email");
             List<Recipient> ccs = req.bindJSONToList(Recipient.class, json.get("ccs"));
