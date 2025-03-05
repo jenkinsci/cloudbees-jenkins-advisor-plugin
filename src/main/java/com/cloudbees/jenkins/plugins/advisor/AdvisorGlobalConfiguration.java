@@ -7,6 +7,32 @@ import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
 import com.cloudbees.jenkins.support.SupportAction;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import com.cloudbees.jenkins.support.api.Component;
+import com.cloudbees.jenkins.support.configfiles.AgentsConfigFile;
+import com.cloudbees.jenkins.support.configfiles.ConfigFileComponent;
+import com.cloudbees.jenkins.support.configfiles.OtherConfigFilesComponent;
+import com.cloudbees.jenkins.support.impl.AboutBrowser;
+import com.cloudbees.jenkins.support.impl.AboutJenkins;
+import com.cloudbees.jenkins.support.impl.AboutUser;
+import com.cloudbees.jenkins.support.impl.AdministrativeMonitors;
+import com.cloudbees.jenkins.support.impl.AgentProtocols;
+import com.cloudbees.jenkins.support.impl.BuildQueue;
+import com.cloudbees.jenkins.support.impl.EnvironmentVariables;
+import com.cloudbees.jenkins.support.impl.FileDescriptorLimit;
+import com.cloudbees.jenkins.support.impl.JVMProcessSystemMetricsContents;
+import com.cloudbees.jenkins.support.impl.JenkinsLogs;
+import com.cloudbees.jenkins.support.impl.LoggerManager;
+import com.cloudbees.jenkins.support.impl.NodeMonitors;
+import com.cloudbees.jenkins.support.impl.ReverseProxy;
+import com.cloudbees.jenkins.support.impl.RunningBuilds;
+import com.cloudbees.jenkins.support.impl.SlaveLaunchLogs;
+import com.cloudbees.jenkins.support.impl.SlaveLogs;
+import com.cloudbees.jenkins.support.impl.SystemConfiguration;
+import com.cloudbees.jenkins.support.impl.SystemProperties;
+import com.cloudbees.jenkins.support.impl.ThreadDumps;
+import com.cloudbees.jenkins.support.impl.UpdateCenter;
+import com.cloudbees.jenkins.support.slowrequest.SlowRequestComponent;
+import com.cloudbees.jenkins.support.threaddump.HighLoadComponent;
+import com.cloudbees.jenkins.support.timer.DeadlockRequestComponent;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -59,6 +85,42 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     public static final String SERVICE_OPERATIONAL = "service-operational";
 
     private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
+
+    private static final Set<Class<? extends Component>> ALLOWED_COMPONENTS = Set.of(
+            AboutBrowser.class,
+            AboutJenkins.class,
+            AboutUser.class,
+            AdministrativeMonitors.class,
+            AgentProtocols.class,
+            SystemConfiguration.class,
+            UpdateCenter.class,
+            ThreadDumps.class,
+            SystemProperties.class,
+            SlowRequestComponent.class,
+            SlaveLogs.class,
+            SlaveLaunchLogs.class,
+            RunningBuilds.class,
+            JVMProcessSystemMetricsContents.Agents.class,
+            SystemConfiguration.Agents.class,
+            AgentsConfigFile.class,
+            BuildQueue.class,
+            ConfigFileComponent.class,
+            DeadlockRequestComponent.class,
+            // TODO check if it's ok with Allan, Advisor uses it, and this is properly anonymized
+            // but I just want to make sure since env variables could hold secrets...
+            EnvironmentVariables.class,
+            FileDescriptorLimit.class,
+            HighLoadComponent.class,
+            JenkinsLogs.class,
+            LoggerManager.class,
+            JVMProcessSystemMetricsContents.Master.class,
+            SystemConfiguration.Master.class,
+            NodeMonitors.class,
+            // TODO check with Allan: I'm on the fence on this one
+            // it's used in some probes and is anonymized, and also removes credentials.xml... so
+            // in theory that should be ok...
+            OtherConfigFilesComponent.class,
+            ReverseProxy.class);
 
     private String email;
     private List<Recipient> ccs;
@@ -285,7 +347,9 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     }
 
     public List<Component> getComponents() {
-        return SupportPlugin.getComponents();
+        return SupportPlugin.getComponents().stream()
+                .filter(c -> ALLOWED_COMPONENTS.contains(c.getClass()))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public boolean isValid() {
