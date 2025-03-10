@@ -2,18 +2,21 @@ package com.cloudbees.jenkins.plugins.advisor.casc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
-import io.jenkins.plugins.casc.misc.RoundTripAbstractTest;
+import io.jenkins.plugins.casc.misc.junit.jupiter.AbstractRoundTripTest;
 import java.util.Arrays;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AdvisorJCasCompatibilityTest extends RoundTripAbstractTest {
+@WithJenkins
+class AdvisorJCasCompatibilityTest extends AbstractRoundTripTest {
+
     @Override
-    protected void assertConfiguredAsExpected(RestartableJenkinsRule restartableJenkinsRule, String s) {
+    protected void assertConfiguredAsExpected(JenkinsRule jenkinsRule, String s) {
         AdvisorGlobalConfiguration advisor = AdvisorGlobalConfiguration.getInstance();
         assertEquals("me@email.com", advisor.getEmail());
         assertThat(

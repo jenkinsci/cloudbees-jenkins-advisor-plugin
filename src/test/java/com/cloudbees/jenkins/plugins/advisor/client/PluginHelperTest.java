@@ -4,17 +4,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PluginHelperTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PluginHelperTest {
 
     @Test
-    public void getPluginVersion() {
+    void getPluginVersion(JenkinsRule j) {
         assertThat(PluginHelper.getPluginVersion(), is(notNullValue()));
     }
 }

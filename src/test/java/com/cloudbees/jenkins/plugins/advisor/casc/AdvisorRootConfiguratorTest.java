@@ -9,10 +9,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cloudbees.jenkins.plugins.advisor.AdvisorGlobalConfiguration;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
@@ -29,15 +30,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class AdvisorRootConfiguratorTest {
+@WithJenkins
+class AdvisorRootConfiguratorTest {
 
     private static final String FAKE_EMAIL = "fake@email.com";
     private static final List<Recipient> FAKE_CC =
@@ -46,22 +47,20 @@ public class AdvisorRootConfiguratorTest {
     private static final Boolean ACCEPT_TOS = Boolean.TRUE;
     private static final Boolean NAG_DISABLED = Boolean.TRUE;
 
-    @ClassRule
-    public static JenkinsRule rule = new JenkinsRule();
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
-
-    @Rule
-    public final EnvironmentVariables environment = new EnvironmentVariables();
+    private static JenkinsRule rule;
 
     private AdvisorRootConfigurator configurator;
     private AdvisorGlobalConfiguration configuration;
     private Mapping mapping;
     private ConfigurationContext context;
 
-    @Before
-    public void setUpConfigurator() {
+    @BeforeAll
+    static void setUp(JenkinsRule r) {
+        rule = r;
+    }
+
+    @BeforeEach
+    void setUpConfigurator() {
         context = new ConfigurationContext(ConfiguratorRegistry.get());
         configurator = new AdvisorRootConfigurator();
 
@@ -84,35 +83,35 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testGetName() {
+    void testGetName() {
         assertEquals("advisor", configurator.getName());
     }
 
     @Test
-    public void testGetTarget() {
-        assertEquals("Wrong target class", configurator.getTarget(), AdvisorGlobalConfiguration.class);
+    void testGetTarget() {
+        assertEquals(AdvisorGlobalConfiguration.class, configurator.getTarget(), "Wrong target class");
     }
 
     @Test
-    public void testCanConfigure() {
+    void testCanConfigure() {
         assertTrue(
-                "Can't configure AdvisorGlobalConfiguration",
-                configurator.canConfigure(AdvisorGlobalConfiguration.class));
-        assertFalse("Can configure AdvisorRootConfigurator", configurator.canConfigure(AdvisorRootConfigurator.class));
+                configurator.canConfigure(AdvisorGlobalConfiguration.class),
+                "Can't configure AdvisorGlobalConfiguration");
+        assertFalse(configurator.canConfigure(AdvisorRootConfigurator.class), "Can configure AdvisorRootConfigurator");
     }
 
     @Test
-    public void testGetImplementedAPI() {
-        assertEquals("Wrong implemented API", configurator.getImplementedAPI(), AdvisorGlobalConfiguration.class);
+    void testGetImplementedAPI() {
+        assertEquals(AdvisorGlobalConfiguration.class, configurator.getImplementedAPI(), "Wrong implemented API");
     }
 
     @Test
-    public void testGetConfigurators() {
+    void testGetConfigurators() {
         assertThat(configurator.getConfigurators(context), contains(configurator));
     }
 
     @Test
-    public void testDescribe() throws Exception {
+    void testDescribe() throws Exception {
         Mapping described = configurator.describe(configuration, context).asMapping();
         assertNotNull(described);
         assertEquals(mapping.getScalarValue(EMAIL_ATTR), described.getScalarValue(EMAIL_ATTR));
@@ -132,7 +131,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithEmptyEmail() throws Exception {
+    void testDescribeWithEmptyEmail() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration("", FAKE_CC, EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -143,7 +142,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithNullEmail() throws Exception {
+    void testDescribeWithNullEmail() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(null, FAKE_CC, EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -154,7 +153,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithBlankEmail() throws Exception {
+    void testDescribeWithBlankEmail() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(" ", FAKE_CC, EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -165,7 +164,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithVarialbeValue() throws Exception {
+    void testDescribeWithVarialbeValue() throws Exception {
         List<Recipient> cc_with_var = Arrays.asList(new Recipient("${admin_cc}"), new Recipient("${admin_cc}"));
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration("${admin_email}", cc_with_var, EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
@@ -177,20 +176,20 @@ public class AdvisorRootConfiguratorTest {
 
         assertEquals("^${admin_email}", email);
         assertTrue(
-                "encoded email cc not found in list",
-                toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")));
+                toListValues(described.get(CCS_ATTR).asSequence()).stream().anyMatch(cc -> cc.equals("^${admin_cc}")),
+                "encoded email cc not found in list");
     }
 
     @Test
-    public void testResolveWithVariableName() throws Exception {
+    @SetEnvironmentVariable(key = "admin_email", value = "mike@is.cool.com")
+    void testResolveWithVariableName() {
         ConfiguratorRegistry registry = ConfiguratorRegistry.get();
         context = new ConfigurationContext(registry);
-        environment.set("admin_email", "mike@is.cool.com");
         assertThat(context.getSecretSourceResolver().resolve("${admin_email}"), equalTo("mike@is.cool.com"));
     }
 
     @Test
-    public void testDescribeWithEmptyCC() throws Exception {
+    void testDescribeWithEmptyCC() throws Exception {
         final AdvisorGlobalConfiguration c =
                 new AdvisorGlobalConfiguration(FAKE_EMAIL, Collections.emptyList(), EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
@@ -212,7 +211,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithNullCC() throws Exception {
+    void testDescribeWithNullCC() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, null, EXCLUDED);
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -233,7 +232,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithNullExcluded() throws Exception {
+    void testDescribeWithNullExcluded() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, FAKE_CC, null);
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -256,7 +255,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testDescribeWithEmptyExcluded() throws Exception {
+    void testDescribeWithEmptyExcluded() throws Exception {
         final AdvisorGlobalConfiguration c = new AdvisorGlobalConfiguration(FAKE_EMAIL, FAKE_CC, new HashSet<>());
         c.setAcceptToS(ACCEPT_TOS);
         c.setNagDisabled(NAG_DISABLED);
@@ -278,7 +277,7 @@ public class AdvisorRootConfiguratorTest {
                 excludedComponentsDescribed.toArray()[0]);
     }
 
-    private Set<String> toScalarValues(Sequence s) throws Exception {
+    private static Set<String> toScalarValues(Sequence s) {
         Set<String> converted = new HashSet<>(s.size());
         for (CNode cNode : s) {
             converted.add(cNode.asScalar().getValue());
@@ -286,7 +285,7 @@ public class AdvisorRootConfiguratorTest {
         return converted;
     }
 
-    private List<String> toListValues(Sequence s) throws Exception {
+    private static List<String> toListValues(Sequence s) {
         List<String> converted = new ArrayList<>(s.size());
         for (CNode cNode : s) {
             converted.add(cNode.asScalar().getValue());
@@ -295,7 +294,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testInstance() throws Exception {
+    void testInstance() {
         AdvisorGlobalConfiguration instance = configurator.instance(mapping, context);
         assertNotNull(instance);
         assertEquals(configuration.getEmail(), instance.getEmail());
@@ -316,7 +315,7 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testInstanceSENDALL() throws Exception {
+    void testInstanceSENDALL() {
         final Mapping mappingWithDefault = new Mapping();
         mappingWithDefault.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
         mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
@@ -337,85 +336,91 @@ public class AdvisorRootConfiguratorTest {
     }
 
     @Test
-    public void testInstanceWithOutToS() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping mappingWithDefault = new Mapping();
-        mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
-        Sequence cc = new Sequence();
-        cc.add(new Scalar("onemore@mail.com"));
-        cc.add(new Scalar("another@email.com"));
-        mappingWithDefault.put(CCS_ATTR, cc);
+    void testInstanceWithOutToS() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping mappingWithDefault = new Mapping();
+            mappingWithDefault.put(EMAIL_ATTR, FAKE_EMAIL);
+            Sequence cc = new Sequence();
+            cc.add(new Scalar("onemore@mail.com"));
+            cc.add(new Scalar("another@email.com"));
+            mappingWithDefault.put(CCS_ATTR, cc);
 
-        configurator.instance(mappingWithDefault, context);
+            configurator.instance(mappingWithDefault, context);
+        });
     }
 
     @Test
-    public void testInstanceNotAcceptedToS() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping mappingNotAcceptingToS = new Mapping();
-        mappingNotAcceptingToS.put(ACCEPT_TOS_ATTR, false);
-        mappingNotAcceptingToS.put(EMAIL_ATTR, FAKE_EMAIL);
-        Sequence cc = new Sequence();
-        cc.add(new Scalar("onemore@mail.com"));
-        cc.add(new Scalar("another@email.com"));
-        mappingNotAcceptingToS.put(CCS_ATTR, cc);
-        mappingNotAcceptingToS.put(NAG_DISABLED_ATTR, NAG_DISABLED);
+    void testInstanceNotAcceptedToS() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping mappingNotAcceptingToS = new Mapping();
+            mappingNotAcceptingToS.put(ACCEPT_TOS_ATTR, false);
+            mappingNotAcceptingToS.put(EMAIL_ATTR, FAKE_EMAIL);
+            Sequence cc = new Sequence();
+            cc.add(new Scalar("onemore@mail.com"));
+            cc.add(new Scalar("another@email.com"));
+            mappingNotAcceptingToS.put(CCS_ATTR, cc);
+            mappingNotAcceptingToS.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
-        configurator.instance(mappingNotAcceptingToS, context);
+            configurator.instance(mappingNotAcceptingToS, context);
+        });
     }
 
     @Test
-    public void testInstanceEmptyEmail() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping m = new Mapping();
-        m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
-        m.put(EMAIL_ATTR, "");
-        Sequence cc = new Sequence();
-        cc.add(new Scalar("onemore@mail.com"));
-        cc.add(new Scalar("another@email.com"));
-        m.put(CCS_ATTR, cc);
-        m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
+    void testInstanceEmptyEmail() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping m = new Mapping();
+            m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
+            m.put(EMAIL_ATTR, "");
+            Sequence cc = new Sequence();
+            cc.add(new Scalar("onemore@mail.com"));
+            cc.add(new Scalar("another@email.com"));
+            m.put(CCS_ATTR, cc);
+            m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
-        configurator.instance(m, context);
+            configurator.instance(m, context);
+        });
     }
 
     @Test
-    public void testInstanceBadEmail() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping m = new Mapping();
-        m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
-        Sequence cc = new Sequence();
-        cc.add(new Scalar("onemore@mail.com"));
-        cc.add(new Scalar("another@email.com"));
-        m.put(CCS_ATTR, cc);
-        m.put(EMAIL_ATTR, "");
-        m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
+    void testInstanceBadEmail() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping m = new Mapping();
+            m.put(ACCEPT_TOS_ATTR, ACCEPT_TOS);
+            Sequence cc = new Sequence();
+            cc.add(new Scalar("onemore@mail.com"));
+            cc.add(new Scalar("another@email.com"));
+            m.put(CCS_ATTR, cc);
+            m.put(EMAIL_ATTR, "");
+            m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
-        configurator.instance(m, context);
+            configurator.instance(m, context);
+        });
     }
 
     @Test
-    public void testInstanceEmptyCC() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping m = new Mapping();
-        m.put(ACCEPT_TOS_ATTR, false);
-        m.put(EMAIL_ATTR, FAKE_EMAIL);
-        m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
+    void testInstanceEmptyCC() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping m = new Mapping();
+            m.put(ACCEPT_TOS_ATTR, false);
+            m.put(EMAIL_ATTR, FAKE_EMAIL);
+            m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
-        configurator.instance(m, context);
+            configurator.instance(m, context);
+        });
     }
 
     @Test
-    public void testInstanceBadCC() throws Exception {
-        thrown.expect(ConfiguratorException.class);
-        final Mapping m = new Mapping();
-        m.put(ACCEPT_TOS_ATTR, false);
-        Sequence cc = new Sequence();
-        cc.add(new Scalar("bad_cc"));
-        m.put(CCS_ATTR, cc);
-        m.put(EMAIL_ATTR, FAKE_EMAIL);
-        m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
+    void testInstanceBadCC() {
+        assertThrows(ConfiguratorException.class, () -> {
+            final Mapping m = new Mapping();
+            m.put(ACCEPT_TOS_ATTR, false);
+            Sequence cc = new Sequence();
+            cc.add(new Scalar("bad_cc"));
+            m.put(CCS_ATTR, cc);
+            m.put(EMAIL_ATTR, FAKE_EMAIL);
+            m.put(NAG_DISABLED_ATTR, NAG_DISABLED);
 
-        configurator.instance(m, context);
+            configurator.instance(m, context);
+        });
     }
 }
