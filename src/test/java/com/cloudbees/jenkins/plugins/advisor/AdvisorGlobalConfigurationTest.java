@@ -6,21 +6,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.google.gson.Gson;
 import hudson.util.FormValidation;
 import java.lang.reflect.Field;
@@ -33,11 +32,12 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
@@ -47,27 +47,30 @@ import org.kohsuke.stapler.StaplerRequest2;
  * Test the AdvisorGlobalConfiguration page; essentially the core of
  * the Jenkins Health Advisor by CloudBees connection.
  */
-public class AdvisorGlobalConfigurationTest {
+@WithJenkins
+class AdvisorGlobalConfigurationTest {
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    @RegisterExtension
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort())
+            .build();
 
-    @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-
-    private final String email = "test@cloudbees.com";
+    private static final String EMAIL = "test@cloudbees.com";
     private AdvisorGlobalConfiguration advisor;
 
-    @Before
-    public void setup() {
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setup(JenkinsRule j) {
+        this.j = j;
         advisor = AdvisorGlobalConfiguration.getInstance();
         // Dynamically configure the Advisor Server URL to reach WireMock server
         System.setProperty(
-                "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL", wireMockRule.url("/"));
+                "com.cloudbees.jenkins.plugins.advisor.client.AdvisorClientConfig.advisorURL", wireMock.url("/"));
     }
 
     @Test
-    public void testBaseConfigurationPage() throws Exception {
+    void testBaseConfigurationPage() throws Exception {
         WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         WebRequest req = new WebRequest(new URL(j.jenkins.getRootUrl() + advisor.getUrlName()), HttpMethod.GET);
@@ -77,14 +80,14 @@ public class AdvisorGlobalConfigurationTest {
     }
 
     @Test
-    public void testHelpOnPage() throws Exception {
+    void testHelpOnPage() throws Exception {
         j.assertHelpExists(AdvisorGlobalConfiguration.class, "-nagDisabled");
     }
 
     @Test
-    public void testServerConnectionFailure() throws Exception {
-        wireMockRule.resetAll();
-        stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(404)));
+    void testServerConnectionFailure() throws Exception {
+        wireMock.resetAll();
+        wireMock.stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(404)));
 
         WebClient wc = j.createWebClient();
         HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
@@ -99,7 +102,7 @@ public class AdvisorGlobalConfigurationTest {
 
         DoConfigureInfo doConfigure = new DoConfigureInfo();
         doConfigure.setTerms(true);
-        doConfigure.setUp(email);
+        doConfigure.setUp(EMAIL);
         j.executeOnServer(doConfigure);
 
         result = advisorDescriptor.validateServerConnection();
@@ -110,9 +113,9 @@ public class AdvisorGlobalConfigurationTest {
     }
 
     @Test
-    public void testServerConnectionPass() throws Exception {
-        wireMockRule.resetAll();
-        stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(200)));
+    void testServerConnectionPass() throws Exception {
+        wireMock.resetAll();
+        wireMock.stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(200)));
 
         WebClient wc = j.createWebClient();
         HtmlPage managePage = wc.goTo("cloudbees-jenkins-advisor");
@@ -127,7 +130,7 @@ public class AdvisorGlobalConfigurationTest {
 
         DoConfigureInfo doConfigure = new DoConfigureInfo();
         doConfigure.setTerms(true);
-        doConfigure.setUp(email);
+        doConfigure.setUp(EMAIL);
         j.executeOnServer(doConfigure);
 
         result = advisorDescriptor.validateServerConnection();
@@ -138,70 +141,67 @@ public class AdvisorGlobalConfigurationTest {
     }
 
     @Test
-    public void testSendEmail() {
-        wireMockRule.resetAll();
-        stubFor(post(urlEqualTo("/api/test/emails"))
+    void testSendEmail() {
+        wireMock.resetAll();
+        wireMock.stubFor(post(urlEqualTo("/api/test/emails"))
                 .withRequestBody(equalTo("{\"email\":\"test@cloudbees.com\"}"))
                 .willReturn(aResponse().withStatus(200)));
 
         final AdvisorGlobalConfiguration.DescriptorImpl advisorDescriptor =
                 (AdvisorGlobalConfiguration.DescriptorImpl) advisor.getDescriptor();
-        FormValidation formValidation = advisorDescriptor.doTestSendEmail(email, true);
-        assertEquals("Test connection pass was expected", FormValidation.Kind.OK, formValidation.kind);
+        FormValidation formValidation = advisorDescriptor.doTestSendEmail(EMAIL, true);
+        assertEquals(FormValidation.Kind.OK, formValidation.kind, "Test connection pass was expected");
     }
 
     @Test
-    public void testConfigure() throws Exception {
+    void testConfigure() throws Exception {
 
         DoConfigureInfo doConfigure = new DoConfigureInfo();
         // Invalid email - send back to main page
         doConfigure.setUp("", Collections.emptyList());
         HttpRedirect hr1 = (HttpRedirect) j.executeOnServer(doConfigure);
         String url1 = getInternalState(hr1, "url");
-        assertEquals("Rerouted back to configuration", ".", url1);
+        assertEquals(".", url1, "Rerouted back to configuration");
 
         // Didn't accept Terms of Service - send back to main page
-        doConfigure.setUp(email, Collections.singletonList(new Recipient(email)));
+        doConfigure.setUp(EMAIL, Collections.singletonList(new Recipient(EMAIL)));
         doConfigure.setTerms(false);
         HttpRedirect hr2 = (HttpRedirect) j.executeOnServer(doConfigure);
         String url2 = getInternalState(hr2, "url");
-        assertEquals("Rerouted back to configuration", ".", url2);
+        assertEquals(".", url2, "Rerouted back to configuration");
 
         // Redirect to main page
         doConfigure.setTerms(true);
         HttpRedirect hr4 = (HttpRedirect) j.executeOnServer(doConfigure);
         String url4 = getInternalState(hr4, "url");
-        assertEquals("Rerouted back to main mpage", "/jenkins/manage", url4);
+        assertEquals("/jenkins/manage", url4, "Rerouted back to main mpage");
     }
 
     @Test
-    public void testPersistence() throws Exception {
-        assertNull("Email before configuration save - ", advisor.getEmail());
+    void testPersistence() throws Exception {
+        assertNull(advisor.getEmail(), "Email before configuration save - ");
 
         DoConfigureInfo doConfigure = new DoConfigureInfo();
-        doConfigure.setUp(email);
+        doConfigure.setUp(EMAIL);
         j.executeOnServer(doConfigure);
         advisor.load();
-        assertEquals("Email after configuration save - ", email, advisor.getEmail());
+        assertEquals(EMAIL, advisor.getEmail(), "Email after configuration save - ");
         assertThat(advisor.getExcludedComponents().size(), is(5));
 
         DoConfigureInfo doConfigure2 = new DoConfigureInfo();
-        doConfigure2.setUp(email, Collections.singletonList(new Recipient(email)));
+        doConfigure2.setUp(EMAIL, Collections.singletonList(new Recipient(EMAIL)));
         j.executeOnServer(doConfigure2);
         advisor.load();
-        assertEquals("Email after configuration save - ", email, advisor.getEmail());
-        assertEquals("CC size after configuration save - ", 1, advisor.getCcs().size());
-        assertEquals(
-                "CC content after configuration save - ",
-                email,
-                advisor.getCcs().get(0).getEmail());
+        assertEquals(EMAIL, advisor.getEmail(), "Email after configuration save - ");
+        assertEquals(1, advisor.getCcs().size(), "CC size after configuration save - ");
+        assertEquals(EMAIL, advisor.getCcs().get(0).getEmail(), "CC content after configuration save - ");
         assertThat(advisor.getExcludedComponents().size(), is(5));
     }
 
     @Test
-    public void testSaveExcludedComponents() throws Exception {
-        wireMockRule.resetAll();
-        stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(200)));
+    void testSaveExcludedComponents() throws Exception {
+        wireMock.resetAll();
+        wireMock.stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(200)));
         WebClient wc = j.createWebClient();
 
         String noComponentsSelected =
@@ -237,7 +237,7 @@ public class AdvisorGlobalConfigurationTest {
     }
 
     @Test
-    public void testSetEmail() {
+    void testSetEmail() {
         advisor.setEmail(null);
         assertNull(advisor.getEmail());
 
@@ -247,8 +247,8 @@ public class AdvisorGlobalConfigurationTest {
         advisor.setEmail(" ");
         assertNull(advisor.getEmail());
 
-        advisor.setEmail(email + " ");
-        assertThat(advisor.getEmail(), is(email));
+        advisor.setEmail(EMAIL + " ");
+        assertThat(advisor.getEmail(), is(EMAIL));
     }
 
     private class DoConfigureInfo implements Callable<HttpResponse> {
@@ -275,7 +275,7 @@ public class AdvisorGlobalConfigurationTest {
          * This call is designed to run successfully.
          */
         public void setUpComponents(String allToEnable) {
-            testEmail = email;
+            testEmail = EMAIL;
             this.allToEnable = allToEnable;
         }
 

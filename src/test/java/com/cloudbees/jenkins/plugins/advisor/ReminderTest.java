@@ -1,27 +1,25 @@
 package com.cloudbees.jenkins.plugins.advisor;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.util.Properties;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ReminderTest {
-
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ReminderTest {
 
     private String blurb;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         Properties props = new Properties();
         InputStream input = Reminder.class.getResourceAsStream("Reminder/message.properties");
         props.load(input);
@@ -29,7 +27,7 @@ public class ReminderTest {
     }
 
     @Test
-    public void visitConfigPage() throws Exception {
+    void visitConfigPage(JenkinsRule j) throws Exception {
         // just in case the disable test is run first
         j.getPluginManager().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME).enable();
 
@@ -41,33 +39,33 @@ public class ReminderTest {
         assertTrue(managePage.asNormalizedText().contains(blurb));
 
         // page doesn't show warning
-        submitForm(w, part, "test@test.test", false, true);
+        submitForm(j, w, part, "test@test.test", false, true);
         managePage = w.goTo("manage");
         assertFalse(managePage.asNormalizedText().contains(blurb));
 
         // page shows warning
-        submitForm(w, part, "", false, true);
+        submitForm(j, w, part, "", false, true);
         managePage = w.goTo("manage");
         assertTrue(managePage.asNormalizedText().contains(blurb));
 
         // page doesn't show warning
-        submitForm(w, part, "", true, true);
+        submitForm(j, w, part, "", true, true);
         managePage = w.goTo("manage");
         assertFalse(managePage.asNormalizedText().contains(blurb));
 
         // page shows warning
-        submitForm(w, part, "", false, false);
+        submitForm(j, w, part, "", false, false);
         managePage = w.goTo("manage");
         assertTrue(managePage.asNormalizedText().contains(blurb));
 
         // page doesn't show warning
-        submitForm(w, part, "", true, false);
+        submitForm(j, w, part, "", true, false);
         managePage = w.goTo("manage");
         assertFalse(managePage.asNormalizedText().contains(blurb));
     }
 
     @Test
-    public void testPluginDisabled() throws Exception {
+    void testPluginDisabled(JenkinsRule j) throws Exception {
         j.getPluginManager().getPlugin(AdvisorGlobalConfiguration.PLUGIN_NAME).disable();
 
         WebClient w = j.createWebClient();
@@ -75,7 +73,8 @@ public class ReminderTest {
         assertFalse(managePage.asNormalizedText().contains(blurb));
     }
 
-    private void submitForm(WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms)
+    private static void submitForm(
+            JenkinsRule j, WebClient wc, String part, String userEmail, boolean nagOff, boolean acceptTerms)
             throws Exception {
         HtmlForm form = wc.goTo(part).getFirstByXPath("//form[@action='configure']");
         form.getInputByName("_.email").setValue(userEmail);

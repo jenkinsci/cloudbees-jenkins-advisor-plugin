@@ -82,7 +82,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>3944.v1a_e4f8b_452db_</version>
+        <version>4136.vca_c3202a_7fd1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -104,12 +104,6 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>support-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8-standalone</artifactId>
-      <version>2.35.0</version>
-      <scope>test</scope>
-    </dependency>
 
     <!-- test dependencies -->
     <dependency>
@@ -118,8 +112,20 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit-pioneer</groupId>
+      <artifactId>junit-pioneer</artifactId>
+      <version>2.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>3.12.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

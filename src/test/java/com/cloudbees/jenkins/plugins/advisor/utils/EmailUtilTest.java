@@ -4,14 +4,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EmailUtilTest {
+class EmailUtilTest {
 
     private static final String EMAIL = "test@acme.com";
 
     @Test
-    public void fixEmptyAndTrimAllSpaces() {
+    void fixEmptyAndTrimAllSpaces() {
         assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(null), is(nullValue()));
         assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(""), is(nullValue()));
         assertThat(EmailUtil.fixEmptyAndTrimAllSpaces(" "), is(nullValue()));
@@ -21,7 +21,7 @@ public class EmailUtilTest {
     }
 
     @Test
-    public void urlEncode() {
+    void urlEncode() {
         assertThat(EmailUtil.urlEncode(EMAIL), is("test%40acme.com"));
         assertThat(EmailUtil.urlEncode("test+foo@acme.com"), is("test%2Bfoo%40acme.com"));
         assertThat(EmailUtil.urlEncode(EMAIL + "," + EMAIL), is("test%40acme.com%2Ctest%40acme.com"));
