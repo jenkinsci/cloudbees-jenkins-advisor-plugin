@@ -5,15 +5,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AdvisorClientConfigTest {
+class AdvisorClientConfigTest {
 
     private static final int DEFAULT_UPLOAD_TIMEOUT_MINUTES = 60;
     private static final int DEFAULT_UPLOAD_IDLE_TIMEOUT_MINUTES = 60;
 
     @Test
-    public void advisorUploadTimeoutMinutes() {
+    void advisorUploadTimeoutMinutes() {
         int newAdvisorUploadTimeoutMinutes = 1;
 
         assertThat(AdvisorClientConfig.insightsUploadTimeoutMilliseconds(), is(equalTo((int)
@@ -32,7 +32,7 @@ public class AdvisorClientConfigTest {
     }
 
     @Test
-    public void advisorUploadIdleTimeoutMinutes() {
+    void advisorUploadIdleTimeoutMinutes() {
         int newAdvisorUploadIdleTimeoutMinutes = 1;
 
         assertThat(AdvisorClientConfig.insightsUploadIdleTimeoutMilliseconds(), is(equalTo((int)

@@ -1,33 +1,33 @@
 package com.cloudbees.jenkins.plugins.advisor.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.util.FormValidation;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EmailValidatorTest {
+class EmailValidatorTest {
 
-    private final String email = "test@cloudbees.com";
+    private static final String EMAIL = "test@cloudbees.com";
 
     @Test
-    public void validEmails() {
-        assertTrue("simple email", EmailValidator.isValidEmail("jdoe@acme.com"));
-        assertTrue("email with tag", EmailValidator.isValidEmail("jdoe+advisor@acme.com"));
-        assertTrue("JENKINS-65230 email", EmailValidator.isValidEmail("test.test-test@acme.com"));
+    void validEmails() {
+        assertTrue(EmailValidator.isValidEmail("jdoe@acme.com"), "simple email");
+        assertTrue(EmailValidator.isValidEmail("jdoe+advisor@acme.com"), "email with tag");
+        assertTrue(EmailValidator.isValidEmail("test.test-test@acme.com"), "JENKINS-65230 email");
         // Not supported
         // assertTrue("email with name", emailValidator.isValid("John Doe <jdoe@acme.com>"));
     }
 
     @Test
-    public void invalidEmails() {
-        assertFalse("email is empty", EmailValidator.isValidEmail(""));
+    void invalidEmails() {
+        assertFalse(EmailValidator.isValidEmail(""), "email is empty");
     }
 
     @Test
-    public void testDoCheckEmail() {
+    void testDoCheckEmail() {
         FormValidation formValidation;
 
         formValidation = EmailValidator.validateEmail(null);
@@ -42,15 +42,15 @@ public class EmailValidatorTest {
         formValidation = EmailValidator.validateEmail(",");
         assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
 
-        formValidation = EmailValidator.validateEmail(email + ";");
+        formValidation = EmailValidator.validateEmail(EMAIL + ";");
         assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
 
-        formValidation = EmailValidator.validateEmail(email + ",");
+        formValidation = EmailValidator.validateEmail(EMAIL + ",");
         assertEquals(FormValidation.Kind.ERROR, formValidation.kind);
 
-        formValidation = EmailValidator.validateEmail(StringUtils.capitalize(email));
+        formValidation = EmailValidator.validateEmail(StringUtils.capitalize(EMAIL));
         assertEquals(FormValidation.Kind.OK, formValidation.kind);
-        formValidation = EmailValidator.validateEmail(email);
+        formValidation = EmailValidator.validateEmail(EMAIL);
         assertEquals(FormValidation.Kind.OK, formValidation.kind);
 
         formValidation = EmailValidator.validateEmail("test.foo@cloudbees.com");
