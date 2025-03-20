@@ -14,7 +14,6 @@ import com.cloudbees.jenkins.support.impl.AboutBrowser;
 import com.cloudbees.jenkins.support.impl.AboutJenkins;
 import com.cloudbees.jenkins.support.impl.AboutUser;
 import com.cloudbees.jenkins.support.impl.AdministrativeMonitors;
-import com.cloudbees.jenkins.support.impl.AgentProtocols;
 import com.cloudbees.jenkins.support.impl.BuildQueue;
 import com.cloudbees.jenkins.support.impl.EnvironmentVariables;
 import com.cloudbees.jenkins.support.impl.FileDescriptorLimit;
@@ -86,12 +85,11 @@ public class AdvisorGlobalConfiguration extends ManagementLink
 
     private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
 
-    private static final Set<Class<? extends Component>> ALLOWED_COMPONENTS = Set.of(
+    private static final Set<Class<? extends Component>> ALLOWED_SUPPORT_CORE_COMPONENTS = Set.of(
             AboutBrowser.class,
             AboutJenkins.class,
             AboutUser.class,
             AdministrativeMonitors.class,
-            AgentProtocols.class,
             SystemConfiguration.class,
             UpdateCenter.class,
             ThreadDumps.class,
@@ -106,8 +104,6 @@ public class AdvisorGlobalConfiguration extends ManagementLink
             BuildQueue.class,
             ConfigFileComponent.class,
             DeadlockRequestComponent.class,
-            // TODO check if it's ok with Allan, Advisor uses it, and this is properly anonymized
-            // but I just want to make sure since env variables could hold secrets...
             EnvironmentVariables.class,
             FileDescriptorLimit.class,
             HighLoadComponent.class,
@@ -116,11 +112,28 @@ public class AdvisorGlobalConfiguration extends ManagementLink
             JVMProcessSystemMetricsContents.Master.class,
             SystemConfiguration.Master.class,
             NodeMonitors.class,
-            // TODO check with Allan: I'm on the fence on this one
             // it's used in some probes and is anonymized, and also removes credentials.xml... so
             // in theory that should be ok...
             OtherConfigFilesComponent.class,
             ReverseProxy.class);
+
+    // a set of additional components that are not in the support core plugin dependencies
+    // and not necessarily public but are used by some advisor probes
+    private static final Set<String> ALLOWED_EXTRA_COMPONENTS = Set.of(
+            "com.cloudbees.opscenter.server.model.ConnectedMasterSupportComponent",
+            "org.jenkinsci.plugins.useractivity.support.UserActivityComponent",
+            "com.cloudbees.opscenter.support.FIPSSupport",
+            "com.cloudbees.jenkins.plugins.assurance.CloudBeesAssuranceSupport");
+
+    private static final Set<String> ALLOWED_COMPONENTS;
+
+    static {
+        var allowedComponents = new HashSet<String>();
+        allowedComponents.addAll(ALLOWED_EXTRA_COMPONENTS);
+        allowedComponents.addAll(
+                ALLOWED_SUPPORT_CORE_COMPONENTS.stream().map(Class::getName).collect(Collectors.toSet()));
+        ALLOWED_COMPONENTS = Collections.unmodifiableSet(allowedComponents);
+    }
 
     private String email;
     private List<Recipient> ccs;
@@ -348,7 +361,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
 
     public List<Component> getComponents() {
         return SupportPlugin.getComponents().stream()
-                .filter(c -> ALLOWED_COMPONENTS.contains(c.getClass()))
+                .filter(c -> ALLOWED_COMPONENTS.contains(c.getClass().getName()))
                 .collect(Collectors.toUnmodifiableList());
     }
 
