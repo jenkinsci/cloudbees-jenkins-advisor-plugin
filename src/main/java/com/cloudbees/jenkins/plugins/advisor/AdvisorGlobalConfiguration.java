@@ -7,6 +7,31 @@ import com.cloudbees.jenkins.plugins.advisor.utils.EmailValidator;
 import com.cloudbees.jenkins.support.SupportAction;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import com.cloudbees.jenkins.support.api.Component;
+import com.cloudbees.jenkins.support.configfiles.AgentsConfigFile;
+import com.cloudbees.jenkins.support.configfiles.ConfigFileComponent;
+import com.cloudbees.jenkins.support.configfiles.OtherConfigFilesComponent;
+import com.cloudbees.jenkins.support.impl.AboutBrowser;
+import com.cloudbees.jenkins.support.impl.AboutJenkins;
+import com.cloudbees.jenkins.support.impl.AboutUser;
+import com.cloudbees.jenkins.support.impl.AdministrativeMonitors;
+import com.cloudbees.jenkins.support.impl.BuildQueue;
+import com.cloudbees.jenkins.support.impl.EnvironmentVariables;
+import com.cloudbees.jenkins.support.impl.FileDescriptorLimit;
+import com.cloudbees.jenkins.support.impl.JVMProcessSystemMetricsContents;
+import com.cloudbees.jenkins.support.impl.JenkinsLogs;
+import com.cloudbees.jenkins.support.impl.LoggerManager;
+import com.cloudbees.jenkins.support.impl.NodeMonitors;
+import com.cloudbees.jenkins.support.impl.ReverseProxy;
+import com.cloudbees.jenkins.support.impl.RunningBuilds;
+import com.cloudbees.jenkins.support.impl.SlaveLaunchLogs;
+import com.cloudbees.jenkins.support.impl.SlaveLogs;
+import com.cloudbees.jenkins.support.impl.SystemConfiguration;
+import com.cloudbees.jenkins.support.impl.SystemProperties;
+import com.cloudbees.jenkins.support.impl.ThreadDumps;
+import com.cloudbees.jenkins.support.impl.UpdateCenter;
+import com.cloudbees.jenkins.support.slowrequest.SlowRequestComponent;
+import com.cloudbees.jenkins.support.threaddump.HighLoadComponent;
+import com.cloudbees.jenkins.support.timer.DeadlockRequestComponent;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -59,6 +84,56 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     public static final String SERVICE_OPERATIONAL = "service-operational";
 
     private static final Logger LOG = Logger.getLogger(AdvisorGlobalConfiguration.class.getName());
+
+    private static final Set<Class<? extends Component>> ALLOWED_SUPPORT_CORE_COMPONENTS = Set.of(
+            AboutBrowser.class,
+            AboutJenkins.class,
+            AboutUser.class,
+            AdministrativeMonitors.class,
+            SystemConfiguration.class,
+            UpdateCenter.class,
+            ThreadDumps.class,
+            SystemProperties.class,
+            SlowRequestComponent.class,
+            SlaveLogs.class,
+            SlaveLaunchLogs.class,
+            RunningBuilds.class,
+            JVMProcessSystemMetricsContents.Agents.class,
+            SystemConfiguration.Agents.class,
+            AgentsConfigFile.class,
+            BuildQueue.class,
+            ConfigFileComponent.class,
+            DeadlockRequestComponent.class,
+            EnvironmentVariables.class,
+            FileDescriptorLimit.class,
+            HighLoadComponent.class,
+            JenkinsLogs.class,
+            LoggerManager.class,
+            JVMProcessSystemMetricsContents.Master.class,
+            SystemConfiguration.Master.class,
+            NodeMonitors.class,
+            // it's used in some probes and is anonymized, and also removes credentials.xml... so
+            // in theory that should be ok...
+            OtherConfigFilesComponent.class,
+            ReverseProxy.class);
+
+    // a set of additional components that are not in the support core plugin dependencies
+    // and not necessarily public but are used by some advisor probes
+    private static final Set<String> ALLOWED_EXTRA_COMPONENTS = Set.of(
+            "com.cloudbees.opscenter.server.model.ConnectedMasterSupportComponent",
+            "org.jenkinsci.plugins.useractivity.support.UserActivityComponent",
+            "com.cloudbees.opscenter.support.FIPSSupport",
+            "com.cloudbees.jenkins.plugins.assurance.CloudBeesAssuranceSupport");
+
+    private static final Set<String> ALLOWED_COMPONENTS;
+
+    static {
+        var allowedComponents = new HashSet<String>();
+        allowedComponents.addAll(ALLOWED_EXTRA_COMPONENTS);
+        allowedComponents.addAll(
+                ALLOWED_SUPPORT_CORE_COMPONENTS.stream().map(Class::getName).collect(Collectors.toSet()));
+        ALLOWED_COMPONENTS = Collections.unmodifiableSet(allowedComponents);
+    }
 
     private String email;
     private List<Recipient> ccs;
@@ -285,7 +360,9 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     }
 
     public List<Component> getComponents() {
-        return SupportPlugin.getComponents();
+        return SupportPlugin.getComponents().stream()
+                .filter(c -> ALLOWED_COMPONENTS.contains(c.getClass().getName()))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public boolean isValid() {

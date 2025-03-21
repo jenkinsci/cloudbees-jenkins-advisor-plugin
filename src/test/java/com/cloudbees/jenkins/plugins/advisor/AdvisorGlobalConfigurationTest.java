@@ -19,6 +19,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
+import com.cloudbees.jenkins.support.impl.GCLogs;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.google.gson.Gson;
 import hudson.util.FormValidation;
@@ -249,6 +250,16 @@ class AdvisorGlobalConfigurationTest {
 
         advisor.setEmail(EMAIL + " ");
         assertThat(advisor.getEmail(), is(EMAIL));
+    }
+
+    @Test
+    void doNotProvideDeniedComponents() {
+        var components = advisor.getComponents();
+        // this is done to ensure that if the list is modified, the test will fail, prompting the developer
+        // to really think about adding a new component to the list
+        // and prompting the reviewer to double check the added component is not presenting a security risk
+        assertThat(components.size(), is(27));
+        assertThat(components.contains(new GCLogs()), is(false));
     }
 
     private class DoConfigureInfo implements Callable<HttpResponse> {
