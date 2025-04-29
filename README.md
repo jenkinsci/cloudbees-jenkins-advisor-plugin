@@ -7,8 +7,6 @@
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/cloudbees-jenkins-advisor.svg?color=blue)](https://plugins.jenkins.io/cloudbees-jenkins-advisor)
 [![Supported by CloudBees](https://img.shields.io/badge/Supported%20by-CloudBees-blue?logo=cloudbees&logoColor=white)](https://www.cloudbees.com/products/cloudbees-jenkins-support?utm_medium=badge&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin)
 
-<img src="src/main/webapp/icons/advisor.svg" width="192" alt="butler dressed as a doctor">
-
 ## Introduction
 
 Jenkins Health Advisor by CloudBees (formerly known as "CloudBees Jenkins Advisor") proactively notifies you of problems with your Jenkins-based environment. Jenkins Health Advisor by CloudBees identifies numerous issues before they affect your users, including security vulnerabilities, performance problems, and plugin version issues. Best of all, Jenkins Health Advisor by CloudBees is constantly being improved by the [CloudBees Support](https://www.cloudbees.com/products/cloudbees-jenkins-support?utm_medium=documentation&utm_source=github&utm_campaign=cloudbees-jenkins-advisor-plugin) and Engineering teams to cover the most recent identified issues.

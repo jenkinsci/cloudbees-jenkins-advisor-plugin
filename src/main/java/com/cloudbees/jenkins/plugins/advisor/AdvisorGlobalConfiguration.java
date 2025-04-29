@@ -170,7 +170,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     @CheckForNull
     @Override
     public String getIconFileName() {
-        return "/plugin/cloudbees-jenkins-advisor/icons/advisor.svg";
+        return "symbol-medkit-outline plugin-ionicons-api";
     }
 
     @CheckForNull
@@ -185,12 +185,9 @@ public class AdvisorGlobalConfiguration extends ManagementLink
         return Messages.Insights_DisplayName();
     }
 
-    /**
-     * Name of the category for this management link.
-     * TBD: Use getCategory when core requirement is greater or equal to 2.226
-     */
-    public @Nonnull String getCategoryName() {
-        return "TROUBLESHOOTING";
+    @Override
+    public @Nonnull Category getCategory() {
+        return Category.TROUBLESHOOTING;
     }
 
     @CheckForNull
