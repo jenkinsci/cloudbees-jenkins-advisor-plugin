@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>cloudbees-jenkins-advisor</artifactId>
-  <version>${changelist}</version>
+  <version>374.${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Health Advisor by CloudBees</name>
