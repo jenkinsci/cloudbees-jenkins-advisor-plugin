@@ -7,6 +7,7 @@ import com.cloudbees.jenkins.plugins.advisor.client.model.ClientUploadRequest;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import com.cloudbees.jenkins.support.SupportPlugin;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
@@ -102,11 +103,12 @@ public class BundleUpload extends AsyncPeriodicWork {
             }
         } catch (Exception e) {
             logError(COULD_NOT_SAVE_SUPPORT_BUNDLE, e);
+            var sanitizedMessage = Util.xmlEscape(e.getMessage());
             updateLastBundleResult(
                     config,
                     createTimestampedErrorMessage(
                             "<strong>%s</strong><br/><pre><code>%s</code></pre>",
-                            COULD_NOT_SAVE_SUPPORT_BUNDLE, e.getMessage()));
+                            COULD_NOT_SAVE_SUPPORT_BUNDLE, sanitizedMessage));
             if (file != null && file.exists() && !file.delete()) {
                 log(Level.WARNING, "Could not delete bundle {0}" + file);
             }
@@ -124,11 +126,12 @@ public class BundleUpload extends AsyncPeriodicWork {
             if (response.getCode() == 200) {
                 updateLastBundleResult(config, createTimestampedInfoMessage(BUNDLE_SUCCESSFULLY_UPLOADED));
             } else {
+                var sanitizedMessage = Util.xmlEscape(response.getMessage());
                 updateLastBundleResult(
                         config,
                         createTimestampedErrorMessage(
                                 "<strong>Bundle upload failed</strong><br/>Server response is: <code>%d - %s</code>",
-                                response.getCode(), response.getMessage()));
+                                response.getCode(), sanitizedMessage));
             }
         } catch (Exception e) {
             log(Level.SEVERE, "Issue while uploading file to bundle upload service: " + e.getMessage());
@@ -136,10 +139,11 @@ public class BundleUpload extends AsyncPeriodicWork {
                     Level.FINEST,
                     "Exception while uploading file to bundle upload service. Cause: "
                             + ExceptionUtils.getStackTrace(e));
+            var sanitizedMessage = Util.xmlEscape(e.getMessage());
             updateLastBundleResult(
                     config,
                     createTimestampedErrorMessage(
-                            "<strong>Bundle upload failed</strong><br/><pre><code>%s</code></pre>", e.getMessage()));
+                            "<strong>Bundle upload failed</strong><br/><pre><code>%s</code></pre>", sanitizedMessage));
         } finally {
             if (!file.delete()) {
                 log(Level.WARNING, "Could not delete bundle {0}" + file);

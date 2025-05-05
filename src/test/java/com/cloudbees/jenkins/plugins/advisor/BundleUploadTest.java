@@ -153,6 +153,24 @@ class BundleUploadTest {
                 is(equalTo(TimeUnit.MINUTES.toMillis(BundleUpload.INITIAL_DELAY_MINUTES))));
     }
 
+    @WithTimeout(30)
+    @Test
+    void protectsAgainstRogueServer(JenkinsRule j) {
+        var config = AdvisorGlobalConfiguration.getInstance();
+        config.setEmail(TEST_EMAIL);
+        config.setAcceptToS(true);
+
+        wireMock.stubFor(get(urlEqualTo("/api/health")).willReturn(aResponse().withStatus(200)));
+        wireMock.stubFor(post(format(
+                        "/api/users/%s/upload/%s", TEST_EMAIL, j.getInstance().getLegacyInstanceId()))
+                .willReturn(aResponse().withStatus(201).withBody("<img/src/onerror=alert(1)>")));
+
+        runBundleUpload(j);
+
+        // The stored response is properly escaped
+        assertThat(config.getLastBundleResult(), containsString("<code>201 - &lt;img/src/onerror=alert(1)&gt;</code>"));
+    }
+
     /**
      * Runs the {@link BundleUpload} task and waits for it to finish.
      */
