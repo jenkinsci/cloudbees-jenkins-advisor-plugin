@@ -28,8 +28,6 @@
       <div class="jenkins-health-advisor">
 
         <h1>
-          <img width="48" height="48" alt="Jenkins Health Advisor by CloudBees Icon"
-               src="${rootURL}${h.resourcePath}/plugin/cloudbees-jenkins-advisor/icons/advisor.svg"/>
           ${it.actionTitle}
         </h1>
         <p>
