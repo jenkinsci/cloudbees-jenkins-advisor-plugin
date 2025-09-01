@@ -74,6 +74,9 @@
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
     <spotless.check.skip>false</spotless.check.skip>
+    <!--    No bundled artifact-->
+    <hpi.bundledArtifacts />
+    <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
   </properties>
 
   <dependencyManagement>
