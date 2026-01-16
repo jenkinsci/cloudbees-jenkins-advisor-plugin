@@ -6,7 +6,7 @@ import com.cloudbees.jenkins.plugins.advisor.client.AdvisorClient;
 import com.cloudbees.jenkins.plugins.advisor.client.model.Recipient;
 import hudson.util.FormValidation;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public final class EmailValidator {
 
