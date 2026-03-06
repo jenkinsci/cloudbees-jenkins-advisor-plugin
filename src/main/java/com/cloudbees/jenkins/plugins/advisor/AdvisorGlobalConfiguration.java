@@ -32,6 +32,8 @@ import com.cloudbees.jenkins.support.impl.UpdateCenter;
 import com.cloudbees.jenkins.support.slowrequest.SlowRequestComponent;
 import com.cloudbees.jenkins.support.threaddump.HighLoadComponent;
 import com.cloudbees.jenkins.support.timer.DeadlockRequestComponent;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -57,8 +59,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -186,7 +186,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
     }
 
     @Override
-    public @Nonnull Category getCategory() {
+    public @NonNull Category getCategory() {
         return Category.TROUBLESHOOTING;
     }
 
@@ -259,9 +259,9 @@ public class AdvisorGlobalConfiguration extends ManagementLink
      * @return the response.
      */
     @RequirePOST
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
-    public HttpResponse doConfigure(@Nonnull StaplerRequest2 req) {
+    public HttpResponse doConfigure(@NonNull StaplerRequest2 req) {
         Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         try {
@@ -311,7 +311,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
         this.email = EmailUtil.fixEmptyAndTrimAllSpaces(email);
     }
 
-    @Nonnull
+    @NonNull
     public List<Recipient> getCcs() {
         return ccs != null ? ccs : Collections.emptyList();
     }
@@ -321,7 +321,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
         this.ccs = ccs;
     }
 
-    @Nonnull
+    @NonNull
     public Set<String> getExcludedComponents() {
         return excludedComponents != null ? excludedComponents : Collections.emptySet();
     }
@@ -450,7 +450,7 @@ public class AdvisorGlobalConfiguration extends ManagementLink
         /**
          * {@inheritDoc}
          */
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Insights_DisplayName();
