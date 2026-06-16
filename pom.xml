@@ -70,7 +70,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.baseline>2.541</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/cloudbees-jenkins-advisor-plugin/releases</hpi.pluginChangelogUrl>
     <spotless.check.skip>false</spotless.check.skip>
@@ -86,7 +86,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>5054.v620b_5d2b_d5e6</version>
+        <version>6486.v7c7b_3635dc42</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
