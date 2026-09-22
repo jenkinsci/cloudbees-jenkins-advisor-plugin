@@ -26,7 +26,7 @@ public class MultipartConnection {
     private PrintWriter writer;
 
     public MultipartConnection(final String requestURL, final Charset charset) throws IOException {
-        boundary = "===" + System.currentTimeMillis() + "===";
+        boundary = "----AdvisorBoundary" + System.currentTimeMillis();
 
         httpConn = (HttpURLConnection) ProxyConfiguration.open(new URL(requestURL));
         httpConn.setUseCaches(false);
@@ -62,8 +62,9 @@ public class MultipartConnection {
                 .append(fileName)
                 .append("\"")
                 .append(LINE_FEED);
+        String fileContentType = URLConnection.guessContentTypeFromName(fileName);
         writer.append("Content-Type: ")
-                .append(URLConnection.guessContentTypeFromName(fileName))
+                .append(fileContentType != null ? fileContentType : "application/octet-stream")
                 .append(LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         writer.append(LINE_FEED);
@@ -85,7 +86,6 @@ public class MultipartConnection {
     public ClientResponse finish() throws IOException {
         StringBuilder response = new StringBuilder();
 
-        writer.append(LINE_FEED).flush();
         writer.append("--").append(boundary).append("--").append(LINE_FEED);
         writer.close();
 
