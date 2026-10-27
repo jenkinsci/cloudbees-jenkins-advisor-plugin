@@ -28,8 +28,9 @@ public class AdvisorClient {
     }
 
     public String doTestEmail() {
+        HttpURLConnection con = null;
         try {
-            HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI());
+            con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.testEmailURI());
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/json");
             con.setDoOutput(true);
@@ -48,12 +49,17 @@ public class AdvisorClient {
 
         } catch (Exception e) {
             throw new InsightsAuthenticationException("Exception while attempting to send test email. Message: " + e);
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
         }
     }
 
     public String doCheckHealth() {
+        HttpURLConnection con = null;
         try {
-            HttpURLConnection con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.healthURI());
+            con = HttpUrlConnectionFactory.openGetConnection(AdvisorClientConfig.healthURI());
 
             int responseCode = con.getResponseCode();
 
@@ -65,6 +71,10 @@ public class AdvisorClient {
 
         } catch (Exception e) {
             throw new InsightsAuthenticationException("Exception when attempting to check health. Message: " + e);
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
         }
     }
 
